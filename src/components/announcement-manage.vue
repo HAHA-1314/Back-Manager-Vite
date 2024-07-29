@@ -1,5 +1,5 @@
 <template>
-<router-view />
+ <h1>Announce-Manage</h1>
 </template>
 
 <script setup>
