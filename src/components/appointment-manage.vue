@@ -314,10 +314,13 @@ const confirmDate = () => {
     dateTime.value = []
   }
 
-  let startMin = new Date(dateTime.value[0]).getMinutes()
-  let endMin = new Date(dateTime.value[1]).getMinutes()
+  let startMinute = new Date(dateTime.value[0]).getMinutes()
+  let endMinute = new Date(dateTime.value[1]).getMinutes()
 
-  if ((startMin !== 0 && startMin !== 30) || (endMin !== 0 && endMin !== 30)) {
+  if (
+    (startMinute !== 0 && startMinute !== 30) ||
+    (endMinute !== 0 && endMinute !== 30)
+  ) {
     alert('预约时间必须为整点或者半整点！')
     dateTime.value = []
   }
