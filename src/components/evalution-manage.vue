@@ -1,4 +1,8 @@
 <template>
+  <link
+    rel="stylesheet"
+    href="//at.alicdn.com/t/c/font_4635501_lj77pzln4y.css"
+  />
   <div>
     <el-button
       style="float: right; margin-top: 15px; margin-bottom: 15px"
@@ -9,48 +13,47 @@
       <el-table-column
         label="考核名称"
         prop="name"
-        width="150 "
+        width="131 "
       ></el-table-column>
       <el-table-column
         label="开始时间"
         prop="start"
-        width="200"
+        width="170"
       ></el-table-column>
       <el-table-column
         label="结束时间"
         prop="end"
-        width="200"
+        width="170"
       ></el-table-column>
       <el-table-column
         label="创建人"
         prop="creater"
-        width="170"
+        width="150"
       ></el-table-column>
       <el-table-column
         label="当前状态"
         prop="now"
         width="300"
       ></el-table-column>
-      <el-table-column label="操作">
+      <el-table-column label="操作" width="350">
         <template #default>
           <el-button>编辑</el-button>
           <el-button>删除</el-button>
         </template>
       </el-table-column>
+      <el-table-column></el-table-column>
     </el-table>
   </div>
-
   <el-dialog
     class="addBox"
     v-model="dialogVisible"
     :show-close="false"
-    style="width: 800px; position: relative"
+    style="width: 800px; height: 500px; position: relative"
   >
     <div
       style="
         background-color: #f8f8f8;
         width: 100%;
-
         position: absolute;
         top: 0;
         left: 0;
@@ -66,31 +69,52 @@
         ><CloseBold
       /></el-icon>
     </div>
-    <div style="margin-top: 30px; margin-left: 30px; padding-bottom: 20px">
+    <div style="margin-top: 30px; margin-left: 30px">
       <el-form>
-        <el-form-item label="考核名称">
-          <el-input placeholder="请输入" style="width: 200px"> </el-input>
-        </el-form-item>
-
-        <el-form-item style="width: 500px" label="考核时间">
-          <el-date-picker
-            v-model="date"
-            type="daterange"
-            range-separator="To"
-            start-placeholder="2024-06-20"
-            end-placeholder="2024-08-20"
-          />
-        </el-form-item>
+        <div style="display: flex; align-content: center; margin-left: -11px">
+          <i
+            class="iconfont icon-bitian"
+            style="color: red; margin-right: -3px; margin-top: 5px"
+          ></i>
+          <el-form-item label="考核名称">
+            <el-input
+              placeholder="请输入"
+              style="width: 200px"
+              v-model="testName"
+            >
+            </el-input>
+          </el-form-item>
+        </div>
+        <div style="display: flex; align-content: center; margin-left: -11px">
+          <i
+            class="iconfont icon-bitian"
+            style="color: red; margin-right: -3px; margin-top: 5px"
+          ></i>
+          <el-form-item style="width: 500px" label="考核时间">
+            <el-date-picker
+              v-model="date"
+              type="daterange"
+              range-separator="To"
+              start-placeholder="2024-06-20"
+              end-placeholder="2024-08-20"
+            />
+          </el-form-item>
+        </div>
 
         <el-form-item label="考核要求">
-          <el-input placeholder="请输入" style="width: 400px; height: 200px">
+          <el-input
+            placeholder="请输入"
+            style="width: 400px; height: 200px"
+            v-model="testReq"
+          >
           </el-input>
         </el-form-item>
 
         <el-form-item label="文件上传">
-          <el-upload v-model:file-list="fileList" :auto-upload="false">
-            <el-button>上传文件</el-button>
-          </el-upload>
+          <el-button
+            ><i class="iconfont icon-shangchuan" style="margin-right: 8px"></i
+            >上传文件</el-button
+          >
         </el-form-item>
       </el-form>
     </div>
@@ -101,7 +125,6 @@
         height: 50px;
         position: absolute;
         bottom: 0;
-        top: 5;
         left: 0;
         display: flex;
         flex-direction: row-reverse;
@@ -121,6 +144,7 @@
 <script setup>
 // const showPage = ref('page1')
 import { ref } from 'vue'
+
 const processList = [
   {
     name: '第一次考核',
@@ -131,8 +155,11 @@ const processList = [
   },
 ]
 
-const dialogVisible = ref(false)
+const testName = ref('')
+const testReq = ref('')
 const date = ref('')
+
+const dialogVisible = ref(false)
 </script>
 
 <style scoped>
