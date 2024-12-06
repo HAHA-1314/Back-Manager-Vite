@@ -1,65 +1,70 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
-const someCondition = false
+import { computed, ref } from "vue";
+const someCondition = false;
 interface User {
   //date: string
-  name: string
+  name: string;
   //address: string
 }
-const dialogVisible = ref(false)
-const title = ref('')
-const search = ref('')
-const imgArticle = ref('')
+const dialogVisible = ref(false);
+const title = ref("");
+const search = ref("");
+const imgArticle = ref("");
 const filterTableData = computed(() =>
   tableData.filter(
-    (data) => !search.value || data.name.toLowerCase().includes(search.value.toLowerCase())
+    (data) =>
+      !search.value ||
+      data.name.toLowerCase().includes(search.value.toLowerCase())
   )
-)
+);
 const handleAdd = () => {
-  dialogVisible.value = true
-  title.value = '添加推文'
-}
+  dialogVisible.value = true;
+  title.value = "添加推文";
+};
 const handleEdit = (index: number, row: User) => {
-  dialogVisible.value = true
-  title.value = '编辑推文'
-  console.log(index, row)
-}
+  dialogVisible.value = true;
+  title.value = "编辑推文";
+  console.log(index, row);
+};
 const handleDelete = (index: number, row: User) => {
-  console.log(index, row)
-}
+  console.log(index, row);
+};
+const handleClose = () => {
+  dialogVisible.value = false;
+};
 
 const tableData: User[] = [
   {
-    name: '推文1'
+    name: "推文1",
   },
   {
-    name: '推文2'
+    name: "推文2",
   },
   {
-    name: '推文3'
+    name: "推文3",
   },
   {
-    name: '推文4'
-  }
-]
+    name: "推文4",
+  },
+];
 const buttonConfirm = () => {
-  dialogVisible.value = false
-}
-const dialogImageUrl = ref('')
-const dialogSee = ref(false)
+  dialogVisible.value = false;
+};
+const dialogImageUrl = ref("");
+const dialogSee = ref(false);
 const fileList = ref([
   // {
   //   name: 'figure-2.png',
   //   url: '/images/figure-2.png'
   // }
-])
+]);
 const handleRemove = (uploadFile, uploadFiles) => {
-  console.log(uploadFile, uploadFiles)
-}
+  console.log(uploadFile, uploadFiles);
+};
 const handlePictureCardPreview = (uploadFile) => {
-  dialogImageUrl.value = uploadFile.url
-  dialogSee.value = true
-}
+  dialogImageUrl.value = uploadFile.url;
+  dialogSee.value = true;
+};
 </script>
 
 <template>
@@ -67,7 +72,12 @@ const handlePictureCardPreview = (uploadFile) => {
     <el-button class="add_len" @click="handleAdd">添加</el-button>
   </div>
   <el-card class="box-card">
-    <el-table :data="filterTableData" style="width: 100%" :show-header="false" size="large">
+    <el-table
+      :data="filterTableData"
+      style="width: 100%"
+      :show-header="false"
+      size="large"
+    >
       <el-table-column prop="name" />
       <el-table-column align="right">
         <template #default="scope">
@@ -78,7 +88,11 @@ const handlePictureCardPreview = (uploadFile) => {
           >
             编辑
           </el-button>
-          <el-button @click="handleDelete(scope.$index, scope.row)" class="add_len" type="danger">
+          <el-button
+            @click="handleDelete(scope.$index, scope.row)"
+            class="add_len"
+            type="danger"
+          >
             删除
           </el-button>
         </template>

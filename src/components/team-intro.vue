@@ -1,49 +1,44 @@
 <script setup>
-import { ref } from 'vue'
-import group_com from './groupCom.vue'
+import { ref, onMounted } from "vue";
+import team_com from "./teamCom.vue";
+
 const tableData = [
-  {
-    name: '运营组',
-  },
-  {
-    name: '前端组',
-  },
-  {
-    name: '后台组',
-  },
-]
-const dialogVisible = ref(false)
-const title = ref('')
-const teamAdd = () => {
-  title.value = '添加组别'
-  dialogVisible.value = true
-}
+  { name: "前端组" },
+  { name: "后台组" },
+  { name: "A I 组" },
+  { name: "运营组" },
+  { name: "项目组" },
+  { name: "机械组" },
+  { name: "电控组" },
+];
+const dialogVisible = ref(false);
+const title = ref("");
 const teamEdit = () => {
-  title.value = '编辑组别'
-  dialogVisible.value = true
-}
-const teamDelete = () => {
-}
+  title.value = "编辑组别";
+  dialogVisible.value = true;
+};
 </script>
 <template>
-  <div class="container">  
-    <el-button class="add_len" @click="teamAdd">添加</el-button>
-  </div>  
-  <el-card style="margin-top: 25px;">
-   <el-table :data="tableData" 
-   style="width: 100%;" 
-   :show-header="false"  
-   size = "large"
-   class="table"
-   >
-    <el-table-column prop="name" style="padding-left: 50px;"/>
-    <el-table-column align="right">
-      <template #default>
-        <el-button type="primary" style="margin-right:50px;width: 120px" @click="teamEdit">编辑</el-button>
-        <el-button type="danger"  style="width: 80px" @click="teamDelete">删除</el-button>
-      </template>
-    </el-table-column>
-   </el-table>
+  <el-card style="margin-top: 70px">
+    <el-table
+      :data="tableData"
+      style="width: 100%"
+      :show-header="false"
+      size="large"
+      class="tableBox"
+    >
+      <el-table-column prop="name" style="padding-left: 50px" />
+      <el-table-column align="right">
+        <template #default>
+          <el-button
+            type="primary"
+            style="margin-right: 50px; width: 120px"
+            @click="teamEdit"
+            >编辑</el-button
+          >
+        </template>
+      </el-table-column>
+    </el-table>
   </el-card>
   <el-dialog
     v-model="dialogVisible"
@@ -52,32 +47,40 @@ const teamDelete = () => {
     :before-close="handleClose"
     align-center
   >
-    <group_com></group_com>
+    <team_com></team_com>
   </el-dialog>
 </template>
 
-<script setup>
-
-</script>
+<script setup></script>
 
 <style scoped>
-.container{
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 17px;
-  margin-right: 37px;
-}
-.add_len {
-  width: 80px;
-}
-:deep(.el-table__row) {  
+:deep(.el-table__row) {
   height: 70px;
 }
 .el-card {
---el-card-padding: 0;
+  --el-card-padding: 0;
 }
-:deep(.el-table--large .el-table__cell)  {
-  padding:12px 16px;
+:deep(.el-table--large .el-table__cell) {
+  padding: 12px 16px;
 }
-
+.divideBox {
+  padding-bottom: 20px;
+  border-bottom: 1px solid #dcdfe6;
+}
+.keyForm {
+  display: flex;
+  justify-content: space-between;
+}
+.el-input {
+  margin-left: 30px;
+}
+.titleBox {
+  font-size: 16px;
+  margin-left: 6px;
+  margin-bottom: 20px;
+}
+.titleBox .el-text {
+  margin-left: 50px;
+  font-weight: bold;
+}
 </style>
