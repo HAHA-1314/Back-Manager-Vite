@@ -1,24 +1,24 @@
 <script setup>
 import { ref } from "vue";
 import group_com from "./groupCom.vue";
-const tableData = [
-  { name: "前端组" },
-  { name: "后台组" },
-  { name: "A I 组" },
-  { name: "运营组" },
-  { name: "项目组" },
-  { name: "机械组" },
-  { name: "电控组" },
-];
+const tableData = [{ name: "项目1" }, { name: "项目2" }, { name: "项目3" }];
 const dialogVisible = ref(false);
 const title = ref("");
-const teamEdit = () => {
-  title.value = "编辑组别";
+const teamAdd = () => {
+  title.value = "添加项目";
   dialogVisible.value = true;
 };
+const teamEdit = () => {
+  title.value = "编辑项目";
+  dialogVisible.value = true;
+};
+const teamDelete = () => {};
 </script>
 <template>
-  <el-card style="margin-top: 70px">
+  <div class="container">
+    <el-button class="add_len" @click="teamAdd">添加</el-button>
+  </div>
+  <el-card style="margin-top: 25px">
     <el-table
       :data="tableData"
       style="width: 100%"
@@ -32,8 +32,14 @@ const teamEdit = () => {
           <el-button
             type="primary"
             style="margin-right: 50px; width: 120px"
-            @click="teamEdit"
+            @click="teamEdit(scope.$index, scope.row)"
             >编辑</el-button
+          >
+          <el-button
+            type="danger"
+            style="width: 80px"
+            @click="teamDelete(scope.$index, scope.row)"
+            >删除</el-button
           >
         </template>
       </el-table-column>
@@ -50,9 +56,16 @@ const teamEdit = () => {
   </el-dialog>
 </template>
 
-<script setup></script>
-
 <style scoped>
+.container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 17px;
+  margin-right: 37px;
+}
+.add_len {
+  width: 80px;
+}
 :deep(.el-table__row) {
   height: 70px;
 }

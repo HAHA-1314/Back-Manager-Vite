@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue";
-const someCondition = false;
 interface User {
   //date: string
   name: string;
@@ -10,6 +9,20 @@ const dialogVisible = ref(false);
 const title = ref("");
 const search = ref("");
 const imgArticle = ref("");
+const dialogImageUrl = ref("");
+const dialogSee = ref(false);
+const ruleFormRef = ref();
+const ruleForm = ref({
+  articleName: "",
+  fileList: [],
+  articleLink: "",
+});
+const rules = {
+  articleName: [{ required: true, message: "请输入推文名称", trigger: "blur" }],
+  fileList: [{ required: true, message: "请上传图片", trigger: "blur" }],
+  articleLink: [{ required: true, message: "请输入推文链接", trigger: "blur" }],
+};
+
 const filterTableData = computed(() =>
   tableData.filter(
     (data) =>
@@ -47,17 +60,11 @@ const tableData: User[] = [
     name: "推文4",
   },
 ];
-const buttonConfirm = () => {
+const buttonConfirm = async () => {
+  await ruleFormRef.value.validate();
   dialogVisible.value = false;
 };
-const dialogImageUrl = ref("");
-const dialogSee = ref(false);
-const fileList = ref([
-  // {
-  //   name: 'figure-2.png',
-  //   url: '/images/figure-2.png'
-  // }
-]);
+
 const handleRemove = (uploadFile, uploadFiles) => {
   console.log(uploadFile, uploadFiles);
 };
@@ -82,9 +89,9 @@ const handlePictureCardPreview = (uploadFile) => {
       <el-table-column align="right">
         <template #default="scope">
           <el-button
+            type="primary"
             @click="handleEdit(scope.$index, scope.row)"
             class="add_lener"
-            :type="someCondition ? 'primary' : ''"
           >
             编辑
           </el-button>
@@ -107,19 +114,24 @@ const handlePictureCardPreview = (uploadFile) => {
     align-center
   >
     <el-card>
-      <el-form>
-        <el-form-item label="推文名称：">
-          <el-input placeholder="请输入" style="width: 300px"></el-input>
+      <el-form ref="ruleFormRef" :rules="rules" :model="ruleForm">
+        <el-form-item label="推文名称：" prop="articleName">
+          <el-input
+            placeholder="请输入"
+            style="width: 300px"
+            v-model="ruleForm.articleName"
+          ></el-input>
         </el-form-item>
 
         <el-form-item
           label="图片添加："
           style="display: flex; flex-direction: column; align-items: start"
+          prop="fileList"
         >
           <el-scrollbar>
             <div class="imgList">
               <el-upload
-                v-model:file-list="fileList"
+                v-model:file-list="ruleForm.fileList"
                 :auto-upload="false"
                 list-type="picture-card"
                 :on-preview="handlePictureCardPreview"
@@ -136,8 +148,12 @@ const handlePictureCardPreview = (uploadFile) => {
           </el-scrollbar>
         </el-form-item>
 
-        <el-form-item label="推文链接：">
-          <el-input placeholder="请输入链接" style="width: 300px"></el-input>
+        <el-form-item label="推文链接：" prop="articleLink">
+          <el-input
+            placeholder="请输入链接"
+            style="width: 300px"
+            v-model="ruleForm.articleLink"
+          ></el-input>
         </el-form-item>
       </el-form>
     </el-card>

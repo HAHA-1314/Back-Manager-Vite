@@ -17,6 +17,9 @@ const teamEdit = () => {
   title.value = "编辑组别";
   dialogVisible.value = true;
 };
+const dialogChange = () => {
+  dialogVisible.value = !dialogVisible.value;
+};
 </script>
 <template>
   <el-card style="margin-top: 70px">
@@ -50,8 +53,6 @@ const teamEdit = () => {
     <team_com></team_com>
   </el-dialog>
 </template>
-
-<script setup></script>
 
 <style scoped>
 :deep(.el-table__row) {

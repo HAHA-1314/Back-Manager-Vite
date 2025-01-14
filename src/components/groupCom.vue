@@ -1,53 +1,42 @@
 <script setup>
 import { Picture as IconPicture } from "@element-plus/icons-vue";
-import { ref } from "vue";
-$(document).ready(function () {
-  $("#summernote").summernote("fontName", "Helvetica");
-  $("#summernote").summernote("destroy");
-  $("#summernote").summernote({
-    height: 250,
-    minHeight: null,
-    maxHeight: null,
-    focus: true,
-    fontNamesIgnoreCheck: ["Helvetica"],
-    fontNames: ["Helvetica"],
+import { ref, onMounted, onBeforeUnmount } from "vue";
+const initSummernote = () => {
+  $(document).ready(function () {
+    $("#summernote").summernote("fontName", "Helvetica");
+    $("#summernote").summernote("destroy");
+    $("#summernote").summernote({
+      height: 250,
+      minHeight: null,
+      maxHeight: null,
+      focus: true,
+      fontNamesIgnoreCheck: ["Helvetica"],
+      fontNames: ["Helvetica"],
+    });
+    $("#summernote").summernote("fontName", "Helvetica");
   });
-  $("#summernote").summernote("fontName", "Helvetica");
+};
+
+onMounted(() => {
+  initSummernote();
+});
+onBeforeUnmount(() => {
+  $("#summernote").summernote("destroy");
 });
 
 const imgUrl = ref("");
 const imgUrl2 = ref("");
 
 const imgList = ref([]);
-const buttonConfirm = () => {};
-const onSelectFile = (uploadFile) => {
-  // 基于 FileReader 读取图片做预览
-  const reader = new FileReader();
-  reader.readAsDataURL(uploadFile.raw);
-  reader.onload = () => {
-    imgUrl.value = reader.result;
-  };
+const onSelectFile = (file) => {
+  imgUrl.value = file.raw ? URL.createObjectURL(file.raw) : "";
 };
-const onSelectFile2 = (uploadFile) => {
-  // 基于 FileReader 读取图片做预览
-  const reader = new FileReader();
-  reader.readAsDataURL(uploadFile.raw);
-  reader.onload = () => {
-    imgUrl2.value = reader.result;
-  };
+
+const onSelectFile2 = (file) => {
+  imgUrl2.value = file.raw ? URL.createObjectURL(file.raw) : "";
 };
-const fileList = ref([
-  // {
-  //   name: 'figure-2.png',
-  //   url: '/images/figure-2.png'
-  // }
-]);
-const fileList2 = ref([
-  // {
-  //   name: 'figure-2.png',
-  //   url: '/images/figure-2.png'
-  // }
-]);
+
+const listImages = ref([]);
 const handleexceed = () => {
   console.log(1);
 };
@@ -63,78 +52,130 @@ const handlePictureCardPreview = (uploadFile) => {
   dialogVisible.value = true;
 };
 const isUploaded = ref(false);
-const beforeUpload = (file) => {
-  // 如果已上传图片，则不再允许上传
-  console.log(2);
-  if (isUploaded.value) {
-    // 这里可以根据需要弹出错误消息或使用Element UI的Message组件
-    alert("只能上传一张照片！");
-    return false;
+//处理表单校验
+const ruleFormRef = ref();
+const ruleForm = ref({
+  carouselImages: [],
+});
+const checkImages = (rule, value, callback) => {
+  console.log(value);
+  console.log(value.length);
+  if (value.length === 0) {
+    callback(new Error("请上传轮播图图片"));
+  } else {
+    callback();
   }
-  // 可以在这里添加其他文件类型、大小等校验
-  isUploaded.value = true; // 标记为已上传
-  return true; // 允许上传
+};
+const rules = ref({
+  carouselImages: [
+    {
+      validator: checkImages,
+      trigger: "blur",
+    },
+  ],
+});
+const buttonConfirm = () => {
+  ruleForm.value.carouselImages = [
+    ...ruleForm.value.carouselImages,
+    ...listImages._rawValue,
+  ];
+  ruleFormRef.value.validate((valid) => {
+    if (valid) {
+      // 表单校验成功
+      console.log("提交");
+    } else {
+      console.log("表单验证失败");
+    }
+  });
+};
+const handleSingleFileChange = (file, index) => {
+  const fileUrl = file.raw ? URL.createObjectURL(file.raw) : "";
+  if (index === 0) imgUrl.value = fileUrl; // 更新图片预览
+  if (index === 1) imgUrl2.value = fileUrl; // 更新图片预览
+  // 确保 `ruleForm.carouselImages` 的长度足够
+  ruleForm.value.carouselImages[index] = {
+    name: file.name,
+    url: fileUrl,
+    uid: file.uid || index, // 使用文件对象中的 UID 或自定义 UID
+  };
+};
+
+const handleSingleFileRemove = (file, index) => {
+  // 删除指定索引的文件
+  ruleForm.carouselImages.splice(index, 1, null);
+  if (index === 0) imgUrl.value = ""; // 清空图片预览
+  if (index === 1) imgUrl2.value = ""; // 清空图片预览
 };
 </script>
 <template>
   <el-card style="margin-top: 20px">
     <el-header>
-      <p>轮播图图片：</p>
-      <el-scrollbar>
-        <div class="imgList">
-          <el-upload
-            :auto-upload="false"
-            list-type="picture"
-            :on-change="onSelectFile"
-            :on-preview="handlePictureCardPreview"
-            :on-remove="handleRemove"
-            :show-file-list="false"
-            style="margin-right: 8px"
-          >
-            <img :src="imgUrl" v-if="imgUrl" class="imgFirst" />
-            <el-image v-else>
-              <template #error>
-                <div class="image-slot" style="background-color: #e5e5e5">
-                  <el-icon><icon-picture /></el-icon>
-                </div>
-              </template>
-            </el-image>
-          </el-upload>
+      <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules">
+        <el-form-item
+          required
+          label="轮播图图片："
+          prop="carouselImages"
+          style="display: block"
+        >
+          <el-scrollbar>
+            <div class="imgList">
+              <el-upload
+                v-model="ruleForm.carouselImages"
+                :auto-upload="false"
+                list-type="picture"
+                :on-preview="onSelectFile"
+                :on-change="(file) => handleSingleFileChange(file, 0)"
+                :on-remove="(file) => handleSingleFileRemove(file, 0)"
+                :show-file-list="false"
+                style="margin-right: 8px"
+              >
+                <img :src="imgUrl" v-if="imgUrl" class="imgFirst" />
+                <el-image v-else>
+                  <template #error>
+                    <div class="image-slot" style="background-color: #e5e5e5">
+                      <el-icon><icon-picture /></el-icon>
+                    </div>
+                  </template>
+                </el-image>
+              </el-upload>
 
-          <el-upload
-            :auto-upload="false"
-            list-type="picture"
-            :on-change="onSelectFile2"
-            :on-preview="handlePictureCardPreview"
-            :on-remove="handleRemove"
-            :show-file-list="false"
-            style="margin-right: 8px"
-          >
-            <img :src="imgUrl2" v-if="imgUrl2" class="imgFirst" />
-            <el-image v-else>
-              <template #error>
-                <div class="image-slot" style="background-color: #e5e5e5">
-                  <el-icon><icon-picture /></el-icon>
-                </div>
-              </template>
-            </el-image>
-          </el-upload>
-          <el-upload
-            v-model:file-list="fileList"
-            :auto-upload="false"
-            list-type="picture-card"
-            :on-preview="handlePictureCardPreview"
-            :on-remove="handleRemove"
-            class="avatar-uploader"
-          >
-            <el-icon><Plus /></el-icon>
-          </el-upload>
+              <el-upload
+                v-model="ruleForm.carouselImages"
+                :auto-upload="false"
+                list-type="picture"
+                :on-preview="onSelectFile2"
+                :on-change="(file) => handleSingleFileChange(file, 1)"
+                :on-remove="(file) => handleSingleFileRemove(file, 1)"
+                :show-file-list="false"
+                style="margin-right: 8px"
+              >
+                <img :src="imgUrl2" v-if="imgUrl2" class="imgFirst" />
+                <el-image v-else>
+                  <template #error>
+                    <div class="image-slot" style="background-color: #e5e5e5">
+                      <el-icon><icon-picture /></el-icon>
+                    </div>
+                  </template>
+                </el-image>
+              </el-upload>
+              <el-upload
+                v-model:file-list="listImages"
+                :auto-upload="false"
+                list-type="picture-card"
+                :on-preview="handlePictureCardPreview"
+                :on-remove="handleRemove"
+                class="avatar-uploader"
+              >
+                <el-icon><Plus /></el-icon>
+              </el-upload>
 
-          <el-dialog v-model="dialogVisible">
-            <img w-full :src="dialogImageUrl" alt="Preview Image" />
-          </el-dialog>
-        </div>
-      </el-scrollbar>
+              <el-dialog v-model="dialogVisible">
+                <img w-full :src="dialogImageUrl" alt="Preview Image" />
+              </el-dialog>
+            </div>
+          </el-scrollbar>
+        </el-form-item>
+      </el-form>
     </el-header>
     <el-main><div id="summernote"></div></el-main>
   </el-card>
