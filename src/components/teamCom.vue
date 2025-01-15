@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, onBeforeUnmount, ref } from "vue";
+import extractTextFromHTML from "../utils/extractText";
 let markupStr1 = $("#summernote1").summernote("code");
 let markupStr2 = $("#summernote2").summernote("code");
 const initSummernote = () => {
@@ -35,14 +36,7 @@ const initSummernote = () => {
     // 设置字体样式
   });
 };
-function extractTextFromHTML(htmlString) {
-  // 创建一个 DOMParser 实例
-  const parser = new DOMParser();
-  // 将 HTML 字符串解析为文档
-  const doc = parser.parseFromString(htmlString, "text/html");
-  // 提取文档中的文本内容
-  return doc.body.textContent.trim();
-}
+
 // $("#summernote2").on("summernote.change", function (we, contents, $editable) {
 //   console.log("Content changed:");
 //   console.log(contents); // 输出变化后的内容

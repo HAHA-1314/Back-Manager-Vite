@@ -1,12 +1,14 @@
 <script setup>
 import { Picture as IconPicture } from "@element-plus/icons-vue";
 import { ref, onMounted, onBeforeUnmount } from "vue";
+import extractTextFromHTML from "../utils/extractText";
 const initSummernote = () => {
   $(document).ready(function () {
     $("#summernote").summernote("fontName", "Helvetica");
     $("#summernote").summernote("destroy");
     $("#summernote").summernote({
       height: 250,
+      width: 1400,
       minHeight: null,
       maxHeight: null,
       focus: true,
@@ -56,6 +58,7 @@ const isUploaded = ref(false);
 const ruleFormRef = ref();
 const ruleForm = ref({
   carouselImages: [],
+  groupIntro: "",
 });
 const checkImages = (rule, value, callback) => {
   console.log(value);
@@ -73,12 +76,22 @@ const rules = ref({
       trigger: "blur",
     },
   ],
+  groupIntro: [
+    {
+      required: true,
+      message: "请输入团队介绍",
+      trigger: "blur",
+    },
+  ],
 });
 const buttonConfirm = () => {
   ruleForm.value.carouselImages = [
     ...ruleForm.value.carouselImages,
     ...listImages._rawValue,
   ];
+  $("#summernote").summernote("fontName", "Helvetica");
+  const markupStr = $("#summernote").summernote("code");
+  ruleForm.value.groupIntro = extractTextFromHTML(markupStr);
   ruleFormRef.value.validate((valid) => {
     if (valid) {
       // 表单校验成功
@@ -109,8 +122,8 @@ const handleSingleFileRemove = (file, index) => {
 </script>
 <template>
   <el-card style="margin-top: 20px">
-    <el-header>
-      <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules">
+    <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules">
+      <el-header>
         <el-form-item
           required
           label="轮播图图片："
@@ -175,9 +188,13 @@ const handleSingleFileRemove = (file, index) => {
             </div>
           </el-scrollbar>
         </el-form-item>
-      </el-form>
-    </el-header>
-    <el-main><div id="summernote"></div></el-main>
+      </el-header>
+      <el-main>
+        <el-form-item prop="groupIntro">
+          <div id="summernote"></div>
+        </el-form-item>
+      </el-main>
+    </el-form>
   </el-card>
   <el-footer
     ><el-button class="buttonConfirm" size="large" @click="buttonConfirm"
