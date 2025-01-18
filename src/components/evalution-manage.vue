@@ -37,8 +37,8 @@
       ></el-table-column>
       <el-table-column label="操作" width="350">
         <template #default>
-          <el-button>编辑</el-button>
-          <el-button>删除</el-button>
+          <el-button @click="dialogVisible = true">编辑</el-button>
+          <el-button @click="deleteFn">删除</el-button>
         </template>
       </el-table-column>
       <el-table-column></el-table-column>
@@ -134,7 +134,7 @@
       <el-button
         type="primary"
         style="width: 120px; margin-right: 10px"
-        @click="dialogVisible = false"
+        @click="addEva"
         >确定</el-button
       >
     </div>
@@ -144,6 +144,7 @@
 <script setup>
 // const showPage = ref('page1')
 import { ref } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const processList = [
   {
@@ -160,6 +161,40 @@ const testReq = ref('')
 const date = ref('')
 
 const dialogVisible = ref(false)
+
+const addEva = () => {
+  if (testName.value == '' || testReq.value == '' || date.value == '') {
+    ElMessage({
+      type: 'warning',
+      message: '请完善信息',
+    })
+    return
+  }
+  ElMessageBox.confirm('您确定要添加吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    ElMessage({
+      type: 'success',
+      message: '添加成功',
+    })
+    dialogVisible.value = false
+  })
+}
+
+const deleteFn = () => {
+  ElMessageBox.confirm('您确定要删除吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    ElMessage({
+      type: 'success',
+      message: '删除成功',
+    })
+  })
+}
 </script>
 
 <style scoped>

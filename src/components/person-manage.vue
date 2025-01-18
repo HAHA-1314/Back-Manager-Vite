@@ -41,7 +41,9 @@
           <el-form-item></el-form-item>
           <el-form-item class="buttonBox">
             <el-button style="width: 80px; color: #959595">搜索</el-button>
-            <el-button style="width: 80px; color: #959595; margin-left: 30px"
+            <el-button
+              style="width: 80px; color: #959595; margin-left: 30px"
+              @click="clear"
               >重置</el-button
             ></el-form-item
           >
@@ -114,7 +116,22 @@
           "
         >
           <p>详细资料：</p>
-          <el-button style="width: 80px">修改</el-button>
+          <el-button style="width: 80px" @click="change" class="changeBtn"
+            >修改</el-button
+          >
+          <div class="chooseBtn" style="display: none">
+            <el-button
+              class="saveBtn"
+              type="primary"
+              style="margin-right: 10px"
+              @click="save"
+            >
+              保存
+            </el-button>
+            <el-button class="cancelBtn" type="danger" @click="cancel"
+              >取消</el-button
+            >
+          </div>
         </div>
         <el-form style="margin-left: 20px">
           <el-form-item label="姓名：">
@@ -182,6 +199,7 @@
                 <el-button
                   type="primary"
                   style="float: right; margin-top: -34px; margin-bottom: 10px"
+                  @click="pass"
                   >确定</el-button
                 ><el-input
                   style="width: 270px; height: 150px"
@@ -195,7 +213,7 @@
               <el-button type="danger">未通过</el-button>
             </div>
 
-            <el-button type="plain">回退</el-button>
+            <el-button type="plain" @click="returnFn">回退</el-button>
           </div>
         </div>
       </el-card>
@@ -205,6 +223,8 @@
 
 <script setup>
 import { ref } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+
 import router from '../routes'
 import { computed } from 'vue'
 import { useStore } from 'vuex'
@@ -226,6 +246,72 @@ const goToPage1 = () => {
 }
 const goToPage2 = () => {
   store.dispatch('updatePage', String(page2.value))
+}
+
+const pass = () => {
+  console.log(assess.value)
+  ElMessageBox.confirm('您确定提交该评价吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    ElMessage({
+      type: 'success',
+      message: '评价成功',
+    })
+  })
+}
+
+const clear = () => {
+  ;(grade.value = ''),
+    (name.value = ''),
+    (id.value = ''),
+    (academy.value = ''),
+    (process.value = '')
+}
+
+const change = () => {
+  const changeBtn = document.querySelector('.changeBtn')
+  const chooseBtn = document.querySelector('.chooseBtn')
+  changeBtn.style.display = 'none'
+  chooseBtn.style.display = 'flex'
+}
+
+const save = () => {
+  const changeBtn = document.querySelector('.changeBtn')
+  const chooseBtn = document.querySelector('.chooseBtn')
+  ElMessageBox.confirm('您确定修改信息吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    ElMessage({
+      type: 'success',
+      message: '修改成功',
+    })
+    changeBtn.style.display = 'flex'
+    chooseBtn.style.display = 'none'
+  })
+}
+
+const cancel = () => {
+  const changeBtn = document.querySelector('.changeBtn')
+  const chooseBtn = document.querySelector('.chooseBtn')
+  changeBtn.style.display = 'flex'
+  chooseBtn.style.display = 'none'
+}
+
+const returnFn = () => {
+  ElMessageBox.confirm('您确定要回退吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    ElMessage({
+      type: 'success',
+      message: '已回退',
+    })
+  })
 }
 
 const studentList = [
@@ -369,6 +455,7 @@ const activities = [
 }
 
 .el-timeline-item {
+  width: 200px;
   height: 130px;
   font-size: 20px;
 }

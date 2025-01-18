@@ -39,8 +39,8 @@
         ></el-table-column>
         <el-table-column label="面试间隔时间">
           <template #default>
-            <el-button>编辑</el-button>
-            <el-button>删除</el-button>
+            <el-button @click="changeAppoint">编辑</el-button>
+            <el-button @click="deleteFn">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -167,7 +167,7 @@
         "
       >
         <el-button
-          @click="dialogVisible = false"
+          @click="addAppoint"
           style="
             width: 120px;
             background-color: blue;
@@ -223,7 +223,7 @@
           </el-form-item>
           <el-form-item>
             <el-button>搜索</el-button>
-            <el-button>重置</el-button>
+            <el-button @click="clear">重置</el-button>
           </el-form-item>
         </el-form>
         <el-table :data="studentList">
@@ -261,6 +261,7 @@
 import { useStore } from 'vuex'
 import { ref } from 'vue'
 import router from '../routes'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const store = useStore()
 const newPage = ref('page2')
@@ -309,21 +310,63 @@ const disabledDate = (time) => {
 const confirmDate = () => {
   let startTime = new Date(dateTime.value[0]).getTime()
   let endTime = new Date(dateTime.value[1]).getTime()
+  let startMinute = new Date(dateTime.value[0]).getMinutes()
+  let endMinute = new Date(dateTime.value[1]).getMinutes()
   if (endTime - startTime > 14400000) {
     alert('单次预约时间不能超过4小时！')
     dateTime.value = []
-  }
-
-  let startMinute = new Date(dateTime.value[0]).getMinutes()
-  let endMinute = new Date(dateTime.value[1]).getMinutes()
-
-  if (
+  } else if (
     (startMinute !== 0 && startMinute !== 30) ||
     (endMinute !== 0 && endMinute !== 30)
   ) {
     alert('预约时间必须为整点或者半整点！')
     dateTime.value = []
   }
+}
+
+const addAppoint = () => {
+  if (process.value == '' || gap.value == '' || sum.value == '') {
+    ElMessage({
+      type: 'warning',
+      message: '请完善信息',
+    })
+    return
+  }
+  ElMessageBox.confirm('您确定要添加/修改吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+  }).then(() => {
+    ElMessage({
+      type: 'success',
+      message: '添加/修改成功',
+    })
+    dialogVisible.value = false
+  })
+}
+
+const changeAppoint = () => {
+  dialogVisible.value = true
+}
+
+const clear = () => {
+  id.value = ''
+  name.value = ''
+  grade.value = ''
+  appointId.value = ''
+  process.value = ''
+}
+
+const deleteFn = () => {
+  ElMessageBox.confirm('您确定要删除吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    ElMessage({
+      type: 'success',
+      message: '删除成功',
+    })
+  })
 }
 </script>
 
@@ -338,7 +381,7 @@ const confirmDate = () => {
 }
 
 .bottom-box {
-  height: 430px;
+  height: 400px;
 }
 
 ::v-deep .cell {
