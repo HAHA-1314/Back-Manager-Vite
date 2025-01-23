@@ -27,6 +27,7 @@ const routes = [
   {
     path: "/superadmin-system",
     component: AdminSystemView, //首页导航组件
+    redirect: "/superadmin-system/home",
     children: [
       {
         path: "home", //首页
@@ -116,6 +117,7 @@ const routes = [
   {
     path: "/user-system/:oid",
     component: UserSystemView, //首页导航组件
+    redirct: "/user-system/:oid/home",
     children: [
       {
         path: "home", //首页

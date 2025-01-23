@@ -323,7 +323,7 @@ const announce_click = (row, column, event) => {
 .right-space {
   display: flex;
   float: right;
-  width: 35%;
+  width: 32%;
   height: 100%;
 }
 .announce {

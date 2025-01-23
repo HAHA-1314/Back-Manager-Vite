@@ -63,4 +63,10 @@ router.beforeEach(async (to, from) => {
 });
 </script>
 
-<style scoped></style>
+<style>
+html {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+}
+</style>

@@ -165,7 +165,7 @@ onMounted(() => {
   <div class="common-layout">
     <!-- ElementUI 预设布局 -->
     <el-container>
-      <el-aside width="16%">
+      <el-aside width="200px">
         <!-- 侧边==账号名字 -->
         <div class="header">
           <span class="circle">
@@ -178,7 +178,7 @@ onMounted(() => {
           :default-active="this.$route.name"
           class="el-menu-vertical-demo"
           @click="handleMenuOpen(this.$route.name, this.$route.path)"
-          style="user-select: none; min-height: calc(100% - 60px)"
+          style="user-select: none;"
           router
         >
           <!-- (index) 首页 1  || 考核管理 2 -> 人员管理 2-1 | 考核管理 2-2 | 预约管理 2-3 | 公告设置 2-4 || 信息管理 3 -> 团队管理 3-1 | 组别管理 3-2 | 项目介绍 3-3 | 精选推文 3-4 || -->
@@ -350,4 +350,5 @@ onMounted(() => {
 .menu-item {
   margin-left: 10px;
 }
+
 </style>
