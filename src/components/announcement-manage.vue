@@ -15,9 +15,11 @@
         <el-table-column label="标题" prop="title"></el-table-column>
         <el-table-column label="发布时间" prop="time"></el-table-column>
         <el-table-column label="发布人员" prop="author"></el-table-column>
-        <el-table-column label="操作" #default width="380">
-          <el-button> 编辑 </el-button>
-          <el-button> 删除 </el-button>
+        <el-table-column label="操作" width="380">
+          <template #default>
+            <el-button @click="change"> 编辑 </el-button>
+            <el-button @click="deleteFn"> 删除 </el-button>
+          </template>
         </el-table-column>
       </el-table>
     </div>
@@ -35,14 +37,16 @@
   >
     <div style="margin-top: 13px; margin-left: 30px">
       <el-form>
-        <el-form-item label="标题：" v-model="title">
+        <el-form-item label="标题：">
           <el-input
+            v-model="title"
             placeholder="请输入"
             style="width: 200px; margin-left: 30px"
           ></el-input>
         </el-form-item>
-        <el-form-item label="内容：" v-model="content">
+        <el-form-item label="内容：">
           <el-input
+            v-model="content"
             placeholder="请输入"
             style="width: 500px; height: 200px; margin-left: 30px"
           ></el-input>
@@ -69,7 +73,7 @@
       <el-button style="width: 80px; margin-right: 20px" @click="page = 'page3'"
         >取消</el-button
       >
-      <el-button type="primary" style="width: 80px" @click="page = 'page3'"
+      <el-button type="primary" style="width: 80px" @click="addAnnoucement"
         >确认</el-button
       >
     </div>
@@ -78,6 +82,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const page = ref('page3')
 const title = ref('')
@@ -105,6 +110,47 @@ const annouceList = [
     author: '嘻嘻',
   },
 ]
+
+const addAnnoucement = () => {
+  if (title.value == '' || content.value == '') {
+    ElMessage({
+      type: 'warning',
+      message: '请完善信息',
+    })
+  } else {
+    ElMessageBox.confirm('您确定要添加吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }).then(() => {
+      ElMessage({
+        type: 'success',
+        message: '添加成功',
+      })
+      page.value = 'page3'
+    })
+  }
+}
+
+const change = () => {
+  page.value = 'page4'
+  title.value = '我是公告标题'
+  content.value = '我是公告内容'
+  author.value = '嘻嘻'
+}
+
+const deleteFn = () => {
+  ElMessageBox.confirm('您确定要删除吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    ElMessage({
+      type: 'success',
+      message: '删除成功',
+    })
+  })
+}
 </script>
 
 <style scoped>

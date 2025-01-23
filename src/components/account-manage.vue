@@ -2,11 +2,7 @@
   <div>
     <el-button @click="addVisible = true" class="addButton">+ 添加</el-button>
   </div>
-  <el-dialog
-    v-model="addVisible"
-    title="账号信息"
-    width="500"
-    :before-close="handleClose">
+  <el-dialog v-model="addVisible" title="账号信息" width="500">
     <span>
       <el-form
         :model="addForm"
@@ -47,17 +43,13 @@
     </span>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="handleAddClose">退出</el-button>
+        <el-button @click="addVisible = false">退出</el-button>
         <el-button type="primary" @click="addItem('Form1')"> 提交 </el-button>
       </div>
     </template>
   </el-dialog>
   <!-- 编辑模态框 -->
-  <el-dialog
-    v-model="editVisible"
-    title="编辑账号信息"
-    width="500"
-    :before-close="handleClose">
+  <el-dialog v-model="editVisible" title="编辑账号信息" width="500">
     <span>
       <el-form
         :model="editForm"
@@ -99,7 +91,7 @@
     </span>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="handleEditClose">退出</el-button>
+        <el-button @click="editVisible = false">退出</el-button>
         <el-button type="primary" @click="editItem('Form2')"> 提交 </el-button>
       </div>
     </template>
@@ -108,9 +100,7 @@
     <span>删除此账号后，此账号不再能够登录</span>
     <template #footer>
       <div class="dialog-footer">
-        <el-button type="primary" @click="deleteVisible = false"
-          >取消</el-button
-        >
+        <el-button plain @click="deleteVisible = false">取消</el-button>
         <el-button type="danger" @click="deleteItem">确认</el-button>
       </div>
     </template>
@@ -150,7 +140,7 @@
 
 <script setup>
 import { getCurrentInstance, ref } from "vue";
-import { ElMessageBox } from "element-plus";
+import { ElMessage } from "element-plus";
 
 const addVisible = ref(false);
 const editVisible = ref(false);
@@ -267,71 +257,50 @@ const tableData = [
     createtime: "No. 189, Grove St, Los Angeles",
   },
 ];
-const handleClose = (done) => {
-  ElMessageBox.confirm(
-    "您有未提交的表单，确认退出吗？（刷新页面将清空表单数据）"
-  )
-    .then(() => {
-      done();
-    })
-    .catch(() => {
-      // catch error
-    });
-};
-const handleAddClose = (done) => {
-  ElMessageBox.confirm(
-    "您有未提交的表单，确认退出吗？\n（刷新页面将清空表单数据）"
-  )
-    .then(() => {
-      addVisible.value = false;
-      done();
-    })
-    .catch(() => {
-      // catch error
-    });
-};
-const handleEditClose = (done) => {
-  ElMessageBox.confirm(
-    "您有未提交的表单，确认退出吗？\n（注意：刷新页面不保存表单数据）"
-  )
-    .then(() => {
-      editVisible.value = false;
-      done();
-    })
-    .catch(() => {
-      // catch error
-    });
-};
 
 const addItem = async (formName) => {
   console.log(addForm.value);
   proxy.$refs[formName].validate((valid) => {
     if (valid) {
-      alert("提交成功!");
+      ElMessage({
+        type: "success",
+        message: "添加成功!",
+      });
       addVisible.value = false;
     } else {
-      alert("验证失败");
+      ElMessage({
+        type: "error",
+        message: "您有表单未完成或者输入的格式不正确",
+      });
       return false;
     }
   });
 };
+
 const editItem = async (formName) => {
   console.log(editForm.value);
   console.log(proxy);
-  
   proxy.$refs[formName].validate((valid) => {
     if (valid) {
-      alert("提交成功!");
+      ElMessage({
+        type: "success",
+        message: "编辑成功!",
+      });
       editVisible.value = false;
     } else {
-      alert("验证失败");
+      ElMessage({
+        type: "error",
+        message: "您有表单未完成或者输入的格式不正确",
+      });
       return false;
     }
   });
 };
+
 const deleteItem = async () => {
   deleteVisible.value = false;
 };
+
 </script>
 
 <style scoped>

@@ -1,8 +1,171 @@
+<script setup>
+import { ref, reactive, watch, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { SwitchButton } from "@element-plus/icons";
+
+const router = useRouter();
+const goRouter = ref("");
+const isCommen = ref(false);
+const menuTitle = ref("");
+
+const tabIndex = ref(1);
+const editableTabsValue = ref(
+  JSON.parse(sessionStorage.getItem("editableTabsValue")) || "home"
+);
+const editableTabs = ref(
+  JSON.parse(sessionStorage.getItem("editableTabs")) || [
+    {
+      title: "首页",
+      name: "home",
+      content: "",
+    },
+  ]
+);
+
+const activeMenu = ref("home");
+const handleMenuOpen = (keyPath) => {
+  isCommen.value = false;
+  let activeName = editableTabsValue.value;
+
+  for (let i = 0; i < editableTabs.value.length; i++) {
+    if (editableTabs.value[i].name === keyPath) {
+      activeName = i;
+      isCommen.value = true;
+      editableTabsValue.value = keyPath;
+      break;
+    }
+  }
+
+  sessionStorage.setItem(
+    "editableTabsValue",
+    JSON.stringify(editableTabsValue.value)
+  );
+
+  if (isCommen.value) return;
+
+  switch (keyPath) {
+    case "home":
+      menuTitle.value = "首页";
+      break;
+    case "person-management":
+      menuTitle.value = "人员管理";
+      break;
+    case "evalution-management":
+      menuTitle.value = "考核管理";
+      break;
+    case "appointment-management":
+      menuTitle.value = "预约管理";
+      break;
+    case "announcement-management":
+      menuTitle.value = "公告设置";
+      break;
+    case "group-intro":
+      menuTitle.value = "团队介绍";
+      break;
+    case "team-intro":
+      menuTitle.value = "组别介绍";
+      break;
+    case "project-intro":
+      menuTitle.value = "项目介绍";
+      break;
+    case "selected-post":
+      menuTitle.value = "精选推文";
+      break;
+    case "account-management":
+      menuTitle.value = "账号管理";
+      break;
+    default:
+      menuTitle.value = keyPath; // Fallback to keyPath if not matched
+      break;
+  }
+
+  editableTabs.value.push({
+    title: menuTitle.value,
+    name: keyPath,
+    content: "",
+  });
+  editableTabsValue.value = keyPath;
+  activeMenu.value = keyPath;
+};
+
+const handleMenuClose = (key, keyPath) => {
+  console.log(key, keyPath);
+};
+
+const clickTab = (key) => {
+  goRouter.value = key.props.name;
+  router.push(goRouter.value);
+  editableTabsValue.value = goRouter.value;
+};
+
+const removeTab = (targetName) => {
+  let tabs = editableTabs.value;
+  let activeName = editableTabsValue.value;
+
+  if (activeName === targetName) {
+    tabs.forEach((tab, index) => {
+      if (tab.name === targetName) {
+        const nextTab = tabs[index + 1] || tabs[index - 1];
+        if (nextTab) {
+          activeName = nextTab.name;
+        }
+      }
+    });
+  }
+  editableTabsValue.value = activeName;
+  router.push(activeName);
+  editableTabs.value = tabs.filter((tab) => tab.name !== targetName);
+};
+const arrowLeft = () => {
+  let tabs = editableTabs.value;
+  let activeName = editableTabsValue.value;
+  let index = tabs.findIndex((tab) => tab.name === activeName);
+  if (index > 0) {
+    activeName = tabs[index - 1].name;
+    editableTabsValue.value = activeName;
+    router.push(activeName);
+  }
+};
+const arrowRight = () => {
+  let tabs = editableTabs.value;
+  let activeName = editableTabsValue.value;
+  let index = tabs.findIndex((tab) => tab.name === activeName);
+  if (index < tabs.length - 1) {
+    activeName = tabs[index + 1].name;
+    editableTabsValue.value = activeName;
+    router.push(activeName);
+  }
+};
+const refresh = () => {
+  window.location.reload();
+};
+// Watchers
+watch(
+  () => editableTabsValue.value,
+  (newValue) => {
+    sessionStorage.setItem("editableTabsValue", JSON.stringify(newValue));
+  },
+  { deep: true }
+);
+
+watch(
+  () => editableTabs.value,
+  (newValue) => {
+    sessionStorage.setItem("editableTabs", JSON.stringify(newValue));
+  },
+  { deep: true }
+);
+
+onMounted(() => {
+  activeMenu.value = "home";
+});
+</script>
+
 <template>
   <div class="common-layout">
     <!-- ElementUI 预设布局 -->
     <el-container>
-      <el-aside width="16%">
+      <el-aside width="200px">
         <!-- 侧边==账号名字 -->
         <div class="header">
           <span class="circle">
@@ -15,7 +178,7 @@
           :default-active="this.$route.name"
           class="el-menu-vertical-demo"
           @click="handleMenuOpen(this.$route.name, this.$route.path)"
-          style="user-select: none; min-height: calc(100% - 60px)"
+          style="user-select: none;"
           router
         >
           <!-- (index) 首页 1  || 考核管理 2 -> 人员管理 2-1 | 考核管理 2-2 | 预约管理 2-3 | 公告设置 2-4 || 信息管理 3 -> 团队管理 3-1 | 组别管理 3-2 | 项目介绍 3-3 | 精选推文 3-4 || -->
@@ -74,25 +237,50 @@
               <el-icon class="el-icon--left"><SwitchButton /></el-icon>退出登录
             </el-button>
           </div>
-          <KeepAlive
-            ><el-tabs
-              v-model="editableTabsValue"
-              type="card"
-              class="demo-tabs"
-              closable
-              @tab-click="clickTab"
-              @tab-remove="removeTab"
-            >
-              <el-tab-pane
-                v-for="item in editableTabs"
-                :key="item.name"
-                :label="item.title"
-                :name="item.name"
-              >
-                {{ item.content }}
-              </el-tab-pane>
-            </el-tabs></KeepAlive
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              border-bottom: 1px solid #e4e7ed;
+              height: 40px;
+            "
           >
+            <div style="display: flex; align-items: center">
+              <el-icon style="width: 40px" @click="arrowLeft"
+                ><ArrowLeft
+              /></el-icon>
+              <el-tabs
+                style="margin-bottom: -15px"
+                v-model="editableTabsValue"
+                type="card"
+                class="demo-tabs"
+                closable
+                @tab-click="clickTab"
+                @tab-remove="removeTab"
+              >
+                <el-tab-pane
+                  v-for="item in editableTabs"
+                  :key="item.name"
+                  :label="item.title"
+                  :name="item.name"
+                >
+                  {{ item.content }}
+                </el-tab-pane>
+              </el-tabs>
+            </div>
+
+            <div>
+              <el-icon
+                style="width: 40px; /* height: 45px; */"
+                @click="arrowRight"
+                ><ArrowRight
+              /></el-icon>
+              <el-icon style="width: 70px" @click="refresh"
+                ><Refresh /> 刷新</el-icon
+              >
+            </div>
+          </div>
         </el-header>
         <el-main>
           <!-- 主题==重要内容 -->
@@ -103,141 +291,6 @@
   </div>
 </template>
 
-<script>
-import { SwitchButton } from '@element-plus/icons'
-export default {
-  data() {
-    return {
-      goRouter: '',
-      isCommen: false,
-      menuTitle: '',
-
-      tabIndex: 1,
-      editableTabsValue:
-        JSON.parse(sessionStorage.getItem('editableTabsValue')) || 'home',
-      editableTabs: JSON.parse(sessionStorage.getItem('editableTabs')) || [
-        {
-          title: '首页',
-          name: 'home',
-          content: '',
-        },
-      ],
-    }
-  },
-  methods: {
-    handleMenuOpen(keyPath, Path) {
-      //回调函数 -- 点击菜单 -> 增加标签页
-      this.isCommen = false
-      let activeName = this.editableTabsValue
-      let tabs = this.editableTabs
-      this.editableTabsValue = activeName
-      //相同标签页直接跳回去
-      for (let i = 0; i < tabs.length; i++) {
-        if (tabs[i].name === keyPath) {
-          activeName = i
-          this.isCommen = true
-          this.editableTabsValue = keyPath
-          break
-        }
-      }
-      sessionStorage.setItem(
-        'editableTabsValue',
-        JSON.stringify(this.editableTabsValue)
-      )
-      if (this.isCommen) return
-      console.log(this.isCommen)
-
-      switch (keyPath) {
-        case 'home':
-          this.menuTitle = '首页'
-          break
-        case 'person-management':
-          this.menuTitle = '人员管理'
-          break
-        case 'evalution-management':
-          this.menuTitle = '考核管理'
-          break
-        case 'appointment-management':
-          this.menuTitle = '预约管理'
-          break
-        case 'announcement-management':
-          this.menuTitle = '公告设置'
-          break
-        case 'group-intro':
-          this.menuTitle = '团队介绍'
-          break
-        case 'team-intro':
-          this.menuTitle = '组别介绍'
-          break
-        case 'project-intro':
-          this.menuTitle = '项目介绍'
-          break
-        case 'selected-post':
-          this.menuTitle = '精选推文'
-          break
-        case 'account-management':
-          this.menuTitle = '账号管理'
-          break
-        default:
-          this.menuTitle = keyPath // Fallback to keyPath if not matched
-          break
-      }
-      console.log(this.menuTitle)
-      this.editableTabs.push({
-        title: this.menuTitle,
-        name: keyPath,
-        content: '',
-      })
-      this.editableTabsValue = keyPath
-      this.activeMenu = keyPath
-    },
-    handleMenuClose(key, keyPath) {
-      //回调函数 -- 关闭菜单
-      console.log(key, keyPath)
-    },
-    clickTab(key) {
-      this.goRouter = key['props'].name
-      this.$router.push(this.goRouter)
-      this.editableTabsValue = this.goRouter
-    },
-    removeTab(targetName) {
-      let tabs = this.editableTabs
-      let activeName = this.editableTabsValue
-      if (activeName === targetName) {
-        tabs.forEach((tab, index) => {
-          if (tab.name === targetName) {
-            let nextTab = tabs[index + 1] || tabs[index - 1]
-            if (nextTab) {
-              activeName = nextTab.name
-            }
-          }
-        })
-      }
-      this.editableTabsValue = activeName
-      this.$router.push(activeName)
-      this.editableTabs = tabs.filter((tab) => tab.name !== targetName)
-    },
-  },
-  mounted: function () {
-    this.activeMenu = 'home'
-  },
-  watch: {
-    editableTabsValue: {
-      deep: true,
-      handler(newValue) {
-        sessionStorage.setItem('editableTabsValue', JSON.stringify(newValue))
-      },
-    },
-    editableTabs: {
-      deep: true,
-      handler(newValue) {
-        sessionStorage.setItem('editableTabs', JSON.stringify(newValue))
-      },
-    },
-  },
-}
-</script>
-
 <style lang="css" scoped>
 .common-layout {
   margin: -8px;
@@ -247,6 +300,10 @@ export default {
 }
 .tabs-box {
   padding: 0;
+}
+
+.el-icon {
+  cursor: pointer;
 }
 
 .circle {
@@ -293,4 +350,5 @@ export default {
 .menu-item {
   margin-left: 10px;
 }
+
 </style>

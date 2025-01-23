@@ -3,6 +3,7 @@ import { useStore } from "vuex";
 
 const store = useStore();
 
+
 router.beforeEach(async (to, from, next) => {
   // set page title
   // document.title = getPageTitle(to.meta.title);
@@ -12,6 +13,6 @@ router.beforeEach(async (to, from, next) => {
     next();
   } else {
     // 否则全部重定向到登录页 params 保存 重定向页面路径
-    next(`/login?redirect=${to.path}`);
+    next(`/login?redirect=${to.fullPath}`);
   }
 });

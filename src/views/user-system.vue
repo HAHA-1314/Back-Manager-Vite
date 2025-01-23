@@ -2,42 +2,34 @@
   <div class="common-layout">
     <!-- ElementUI 预设布局 -->
     <el-container>
-      <el-aside width="16%">
+      <el-aside width="200px">
         <!-- 侧边==账号名字 -->
         <div class="header">
           <span class="circle">
             <el-icon><Monitor /></el-icon>
           </span>
-          <h5 class="nav-header">运营组</h5>
+          <h5 class="nav-header">{{ $route.params.oid }}</h5>
         </div>
         <!-- 侧边==导航栏 -->
         <el-menu
-          :default-active="this.$route.name"
+          :default-active="$route.meta.activeMenu"
           class="el-menu-vertical-demo"
-          @click="handleMenuOpen(this.$route.name, this.$route.path)"
-          style="user-select: none; min-height: calc(100% - 60px)"
-          router
-        >
+          style="user-select: none"
+          router>
           <!-- (index) 首页 1  || 考核管理 2 -> 人员管理 2-1 | 考核管理 2-2 | 预约管理 2-3 | 公告设置 2-4 || 信息管理 3 -> 团队管理 3-1 | 组别管理 3-2 | 项目介绍 3-3 | 精选推文 3-4 || -->
           <el-menu-item index="home">
             <el-icon><House /></el-icon>
             <span>首页</span>
           </el-menu-item>
-          <el-sub-menu index="2">
+          <el-sub-menu index="user-system">
             <template #title>
               <el-icon><User /></el-icon>
               <span>考核管理</span>
             </template>
-            <el-menu-item class="menu-item" index="person-management"
-              >人员管理</el-menu-item
-            >
-            <el-menu-item class="menu-item" index="evalution-management"
-              >考核管理</el-menu-item
-            >
-            <el-menu-item class="menu-item" index="appointment-management"
-              >预约管理</el-menu-item
-            >
-            <el-menu-item class="menu-item" index="announcement-management"
+            <el-menu-item index="person-management">人员管理</el-menu-item>
+            <el-menu-item index="evalution-management">考核管理</el-menu-item>
+            <el-menu-item index="appointment-management">预约管理</el-menu-item>
+            <el-menu-item index="announcement-management"
               >公告设置</el-menu-item
             >
           </el-sub-menu>
@@ -46,49 +38,41 @@
               <el-icon><Message /></el-icon>
               <span>信息管理</span>
             </template>
-
-            <el-menu-item class="menu-item" index="group-intro"
-              >团队介绍</el-menu-item
-            >
-            <el-menu-item class="menu-item" index="team-intro"
-              >组别介绍</el-menu-item
-            >
-            <el-menu-item class="menu-item" index="project-intro"
-              >项目介绍</el-menu-item
-            >
-            <el-menu-item class="menu-item" index="selected-post"
-              >精选推文</el-menu-item
-            >
+            <el-menu-item index="group-intro">团队介绍</el-menu-item>
+            <el-menu-item index="team-intro">组别介绍</el-menu-item>
+            <el-menu-item index="project-intro">项目介绍</el-menu-item>
+            <el-menu-item index="selected-post">精选推文</el-menu-item>
           </el-sub-menu>
         </el-menu>
       </el-aside>
       <el-container>
         <!-- 主体==头部==蓝色条块 以及 可增减标签页 -->
-        <el-header height="85px" class="tabs-box">
+        <el-header height="85px" width="80%" class="tabs-box">
           <div class="blue">
-            <el-button type="primary" class="sign-out">
+            <el-button type="primary" class="sign-out" @click="signOut">
               <el-icon class="el-icon--left"><SwitchButton /></el-icon>退出登录
             </el-button>
           </div>
-          <KeepAlive
-            ><el-tabs
-              v-model="editableTabsValue"
-              type="card"
-              class="demo-tabs"
-              closable
-              @tab-click="clickTab"
-              @tab-remove="removeTab"
-            >
-              <el-tab-pane
-                v-for="item in editableTabs"
-                :key="item.name"
-                :label="item.title"
-                :name="item.name"
-              >
-                {{ item.content }}
-              </el-tab-pane>
-            </el-tabs></KeepAlive
-          >
+          <keep-alive>
+            <div style="position: relative">
+              <el-tabs
+                v-model="xStore.state.activeIndex"
+                type="card"
+                class="demo-tabs"
+                closable
+                @tab-change="clickTab"
+                @tab-remove="removeTab"
+                style="user-select: none">
+                <el-tab-pane
+                  v-for="item in xStore.state.openTab"
+                  :key="item.name"
+                  :label="item.title"
+                  :name="item.name">
+                </el-tab-pane>
+              </el-tabs>
+              <el-button :icon="Refresh" class="refresh-button">刷新</el-button>
+            </div>
+          </keep-alive>
         </el-header>
         <el-main>
           <!-- 主题==重要内容 -->
@@ -103,6 +87,7 @@
 import { useStore } from "vuex";
 import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import { Refresh } from "@element-plus/icons";
 
 const router = useRouter();
 const route = useRoute();
@@ -179,21 +164,15 @@ onMounted(() => {
 }
 
 .nav-header {
-  font-size: 22px;
+  font-size: 18px;
+  font-weight: 400;
   color: #006eff;
 }
 
-.nav {
-  width: 20%;
-}
-
-.content {
-  width: 80%;
-  height: 500px;
-  background-color: #fff;
-}
-
 .blue {
+  position: relative;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 60px;
   background-color: #006eff;
@@ -205,27 +184,19 @@ onMounted(() => {
   top: 12px;
 }
 
-.nav-left {
-  float: left;
+.refresh-button {
+  box-sizing: border-box;
+  position: absolute;
+  right: 10px;
+  top: 5px;
+  right: 8px;
 }
 
-.nav-right {
-  float: right;
+:deep(.el-tabs--card) {
+  width: calc(100% - 88px);
 }
 
-.sub-nav span {
-  font-size: 17px;
-  padding: 15px;
-  height: 50px;
-  width: 50px;
-  line-height: 50px;
-  /* display: inline-block; */
-  border-left: 0;
-  border-right: 1px solid #e4e4e4;
-}
-
-.update {
-  padding-right: 10px;
-  font-size: 17px;
+:deep(.el-tabs--card > .el-tabs__header .el-tabs__nav) {
+  border-radius: 0;
 }
 </style>

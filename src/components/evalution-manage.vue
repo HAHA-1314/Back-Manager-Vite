@@ -1,4 +1,8 @@
 <template>
+  <link
+    rel="stylesheet"
+    href="//at.alicdn.com/t/c/font_4635501_lj77pzln4y.css"
+  />
   <div>
     <el-button
       style="float: right; margin-top: 15px; margin-bottom: 15px"
@@ -33,8 +37,8 @@
       ></el-table-column>
       <el-table-column label="操作" width="350">
         <template #default>
-          <el-button>编辑</el-button>
-          <el-button>删除</el-button>
+          <el-button @click="dialogVisible = true">编辑</el-button>
+          <el-button @click="deleteFn">删除</el-button>
         </template>
       </el-table-column>
       <el-table-column></el-table-column>
@@ -67,27 +71,50 @@
     </div>
     <div style="margin-top: 30px; margin-left: 30px">
       <el-form>
-        <el-form-item label="考核名称">
-          <el-input placeholder="请输入" style="width: 200px"> </el-input>
-        </el-form-item>
-
-        <el-form-item style="width: 500px" label="考核时间">
-          <el-date-picker
-            v-model="date"
-            type="daterange"
-            range-separator="To"
-            start-placeholder="2024-06-20"
-            end-placeholder="2024-08-20"
-          />
-        </el-form-item>
+        <div style="display: flex; align-content: center; margin-left: -11px">
+          <i
+            class="iconfont icon-bitian"
+            style="color: red; margin-right: -3px; margin-top: 5px"
+          ></i>
+          <el-form-item label="考核名称">
+            <el-input
+              placeholder="请输入"
+              style="width: 200px"
+              v-model="testName"
+            >
+            </el-input>
+          </el-form-item>
+        </div>
+        <div style="display: flex; align-content: center; margin-left: -11px">
+          <i
+            class="iconfont icon-bitian"
+            style="color: red; margin-right: -3px; margin-top: 5px"
+          ></i>
+          <el-form-item style="width: 500px" label="考核时间">
+            <el-date-picker
+              v-model="date"
+              type="daterange"
+              range-separator="To"
+              start-placeholder="2024-06-20"
+              end-placeholder="2024-08-20"
+            />
+          </el-form-item>
+        </div>
 
         <el-form-item label="考核要求">
-          <el-input placeholder="请输入" style="width: 400px; height: 200px">
+          <el-input
+            placeholder="请输入"
+            style="width: 400px; height: 200px"
+            v-model="testReq"
+          >
           </el-input>
         </el-form-item>
 
         <el-form-item label="文件上传">
-          <el-button>上传文件</el-button>
+          <el-button
+            ><i class="iconfont icon-shangchuan" style="margin-right: 8px"></i
+            >上传文件</el-button
+          >
         </el-form-item>
       </el-form>
     </div>
@@ -107,7 +134,7 @@
       <el-button
         type="primary"
         style="width: 120px; margin-right: 10px"
-        @click="dialogVisible = false"
+        @click="addEva"
         >确定</el-button
       >
     </div>
@@ -117,6 +144,8 @@
 <script setup>
 // const showPage = ref('page1')
 import { ref } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+
 const processList = [
   {
     name: '第一次考核',
@@ -127,7 +156,45 @@ const processList = [
   },
 ]
 
+const testName = ref('')
+const testReq = ref('')
+const date = ref('')
+
 const dialogVisible = ref(false)
+
+const addEva = () => {
+  if (testName.value == '' || testReq.value == '' || date.value == '') {
+    ElMessage({
+      type: 'warning',
+      message: '请完善信息',
+    })
+    return
+  }
+  ElMessageBox.confirm('您确定要添加吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    ElMessage({
+      type: 'success',
+      message: '添加成功',
+    })
+    dialogVisible.value = false
+  })
+}
+
+const deleteFn = () => {
+  ElMessageBox.confirm('您确定要删除吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    ElMessage({
+      type: 'success',
+      message: '删除成功',
+    })
+  })
+}
 </script>
 
 <style scoped>

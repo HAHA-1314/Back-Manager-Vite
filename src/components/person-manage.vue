@@ -2,45 +2,52 @@
   <div class="personBox" style="margin-top: 20px" v-if="showPage === 'page1'">
     <el-card style="min-width: 95%" class="personTop">
       <el-form inline>
-        <el-form-item label="姓名：">
-          <el-input placeholder="请输入姓名" v-model="name"> </el-input>
-        </el-form-item>
-        <el-form-item label="学号：">
-          <el-input placeholder="请输入学号" v-model="id"> </el-input>
-        </el-form-item>
-        <el-form-item label="年级：">
-          <el-select v-model="grade" placeholder="请选择年级">
-            <el-option label="2021" value="2021"></el-option>
-            <el-option label="2022" value="2022"></el-option>
-            <el-option label="2023" value="2023"></el-option>
-            <el-option label="2024" value="2024"></el-option>
-            <el-option label="2025" value="2025"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="学院：">
-          <el-select v-model="academy" placeholder="请选择学院">
-            <el-option label="计算机学院" value="计算机学院"></el-option>
-            <el-option label="信息工程学院" value="信息工程学院"></el-option>
-            <el-option label="自动化学院" value="自动化学院"></el-option>
-            <el-option label="外国语学院" value="外国语学院"></el-option>
-            <el-option label="机电工程学院" value="机电工程学院"></el-option>
-            <el-option label="集成电路学院" value="集成电路学院"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="当前考核流程：">
-          <el-select v-model="process" placeholder="请选择考核流程">
-            <el-option label="第一次考核" value="第一次考核"></el-option>
-            <el-option label="第二次考核" value="第二次考核"></el-option>
-            <el-option label="第三次考核" value="第三次考核"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item></el-form-item>
-        <el-form-item class="buttonBox">
-          <el-button style="width: 80px; color: #959595">搜索</el-button>
-          <el-button style="width: 80px; color: #959595; margin-left: 50px"
-            >重置</el-button
-          ></el-form-item
-        >
+        <div style="display: flex; justify-content: space-between">
+          <el-form-item label="姓名：">
+            <el-input placeholder="请输入姓名" v-model="name"> </el-input>
+          </el-form-item>
+          <el-form-item label="学号：">
+            <el-input placeholder="请输入学号" v-model="id"> </el-input>
+          </el-form-item>
+          <el-form-item label="年级：">
+            <el-select v-model="grade" placeholder="请选择年级">
+              <el-option label="2021" value="2021"></el-option>
+              <el-option label="2022" value="2022"></el-option>
+              <el-option label="2023" value="2023"></el-option>
+              <el-option label="2024" value="2024"></el-option>
+              <el-option label="2025" value="2025"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="学院：">
+            <el-select v-model="academy" placeholder="请选择学院">
+              <el-option label="计算机学院" value="计算机学院"></el-option>
+              <el-option label="信息工程学院" value="信息工程学院"></el-option>
+              <el-option label="自动化学院" value="自动化学院"></el-option>
+              <el-option label="外国语学院" value="外国语学院"></el-option>
+              <el-option label="机电工程学院" value="机电工程学院"></el-option>
+              <el-option label="集成电路学院" value="集成电路学院"></el-option>
+            </el-select>
+          </el-form-item>
+        </div>
+
+        <div style="display: flex; justify-content: space-between">
+          <el-form-item label="当前考核流程">
+            <el-select v-model="process" placeholder="请选择考核流程">
+              <el-option label="第一次考核" value="第一次考核"></el-option>
+              <el-option label="第二次考核" value="第二次考核"></el-option>
+              <el-option label="第三次考核" value="第三次考核"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item></el-form-item>
+          <el-form-item class="buttonBox">
+            <el-button style="width: 80px; color: #959595">搜索</el-button>
+            <el-button
+              style="width: 80px; color: #959595; margin-left: 30px"
+              @click="clear"
+              >重置</el-button
+            ></el-form-item
+          >
+        </div>
       </el-form>
     </el-card>
     <el-card style="min-width: 95%" class="personBottom">
@@ -79,9 +86,9 @@
         <el-table-column
           label="专业班级"
           prop="class"
-          width="140"
+          width="150"
         ></el-table-column>
-        <el-table-column label="操作" width="140">
+        <el-table-column label="操作">
           <template #default>
             <el-button @click="goToPage2">查看</el-button>
           </template>
@@ -109,7 +116,22 @@
           "
         >
           <p>详细资料：</p>
-          <el-button style="width: 80px">修改</el-button>
+          <el-button style="width: 80px" @click="change" class="changeBtn"
+            >修改</el-button
+          >
+          <div class="chooseBtn" style="display: none">
+            <el-button
+              class="saveBtn"
+              type="primary"
+              style="margin-right: 10px"
+              @click="save"
+            >
+              保存
+            </el-button>
+            <el-button class="cancelBtn" type="danger" @click="cancel"
+              >取消</el-button
+            >
+          </div>
         </div>
         <el-form style="margin-left: 20px">
           <el-form-item label="姓名：">
@@ -177,6 +199,7 @@
                 <el-button
                   type="primary"
                   style="float: right; margin-top: -34px; margin-bottom: 10px"
+                  @click="pass"
                   >确定</el-button
                 ><el-input
                   style="width: 270px; height: 150px"
@@ -190,7 +213,7 @@
               <el-button type="danger">未通过</el-button>
             </div>
 
-            <el-button type="plain">回退</el-button>
+            <el-button type="plain" @click="returnFn">回退</el-button>
           </div>
         </div>
       </el-card>
@@ -200,6 +223,8 @@
 
 <script setup>
 import { ref } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+
 import router from '../routes'
 import { computed } from 'vue'
 import { useStore } from 'vuex'
@@ -221,6 +246,72 @@ const goToPage1 = () => {
 }
 const goToPage2 = () => {
   store.dispatch('updatePage', String(page2.value))
+}
+
+const pass = () => {
+  console.log(assess.value)
+  ElMessageBox.confirm('您确定提交该评价吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    ElMessage({
+      type: 'success',
+      message: '评价成功',
+    })
+  })
+}
+
+const clear = () => {
+  ;(grade.value = ''),
+    (name.value = ''),
+    (id.value = ''),
+    (academy.value = ''),
+    (process.value = '')
+}
+
+const change = () => {
+  const changeBtn = document.querySelector('.changeBtn')
+  const chooseBtn = document.querySelector('.chooseBtn')
+  changeBtn.style.display = 'none'
+  chooseBtn.style.display = 'flex'
+}
+
+const save = () => {
+  const changeBtn = document.querySelector('.changeBtn')
+  const chooseBtn = document.querySelector('.chooseBtn')
+  ElMessageBox.confirm('您确定修改信息吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    ElMessage({
+      type: 'success',
+      message: '修改成功',
+    })
+    changeBtn.style.display = 'flex'
+    chooseBtn.style.display = 'none'
+  })
+}
+
+const cancel = () => {
+  const changeBtn = document.querySelector('.changeBtn')
+  const chooseBtn = document.querySelector('.chooseBtn')
+  changeBtn.style.display = 'flex'
+  chooseBtn.style.display = 'none'
+}
+
+const returnFn = () => {
+  ElMessageBox.confirm('您确定要回退吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    ElMessage({
+      type: 'success',
+      message: '已回退',
+    })
+  })
 }
 
 const studentList = [
@@ -342,6 +433,11 @@ const activities = [
   border-right: 1px solid white;
 }
 
+.el-table {
+  --el-table-header-bg-color: #4095e5;
+  --el-table-header-text-color: #ffffff;
+}
+
 .detailMain {
   margin-top: 15px;
   display: flex;
@@ -359,6 +455,7 @@ const activities = [
 }
 
 .el-timeline-item {
+  width: 200px;
   height: 130px;
   font-size: 20px;
 }
