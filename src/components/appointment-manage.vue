@@ -260,7 +260,7 @@ const studentList = [
   height: 430px;
 }
 
-::v-deep .cell {
+:deep(.cell) {
   font-weight: 400;
   height: 30px;
   display: flex;

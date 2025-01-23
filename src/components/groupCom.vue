@@ -27,7 +27,6 @@ const onSelectFile = (uploadFile) => {
     imgUrl.value = reader.result
   }
   console.log(imgUrl.value);
-  
 }
 </script>
 <template>
@@ -64,8 +63,8 @@ const onSelectFile = (uploadFile) => {
   </el-card>
   <el-footer><el-button class="buttonConfirm" size="large" @click="buttonConfirm">确定</el-button></el-footer>
 </template>
-<style scoped>
 
+<style scoped lang="scss">
 .el-upload img,.el-image {
   padding: 0 5px;
   width: 230px;
@@ -108,7 +107,7 @@ const onSelectFile = (uploadFile) => {
   width: 130px;
 }
 
-:deep(.avatar-uploader .el-upload ){
+:deep(.avatar-uploader .el-upload){
   box-sizing: border-box;
   border: 2px dashed #bbb;
   width: 230px;
@@ -119,7 +118,7 @@ const onSelectFile = (uploadFile) => {
   transition: var(--el-transition-duration-fast);
 }
 
-:deep(.avatar-uploader .el-upload:hover ){
+:deep(.avatar-uploader .el-upload:hover){
   border-color: var(--el-color-primary);
 }
 
