@@ -32,6 +32,7 @@ const routes = [
         name: "home",
         meta: {
           activeMenu: "首页",
+          title: "首页",
         },
       },
       {
@@ -40,6 +41,7 @@ const routes = [
         name: "person-management",
         meta: {
           activeMenu: "人员管理",
+          title: "人员管理",
         },
       },
       {
@@ -48,6 +50,7 @@ const routes = [
         name: "evalution-management",
         meta: {
           activeMenu: "考核管理",
+          title: "考核管理",
         },
       },
       {
@@ -56,6 +59,7 @@ const routes = [
         name: "appointment-management",
         meta: {
           activeMenu: "预约管理",
+          title: "预约管理",
         },
       },
       {
@@ -64,6 +68,7 @@ const routes = [
         name: "announcement-management",
         meta: {
           activeMenu: "公告设置",
+          title: "公告设置",
         },
       },
       {
@@ -72,6 +77,7 @@ const routes = [
         name: "group-intro",
         meta: {
           activeMenu: "团队介绍",
+          title: "团队介绍",
         },
       },
       {
@@ -80,6 +86,7 @@ const routes = [
         name: "team-intro",
         meta: {
           activeMenu: "组别介绍",
+          title: "组别介绍",
         },
       },
       {
@@ -88,6 +95,7 @@ const routes = [
         name: "project-intro",
         meta: {
           activeMenu: "项目介绍",
+          title: "项目介绍",
         },
       },
       {
@@ -96,6 +104,7 @@ const routes = [
         name: "selected-post",
         meta: {
           activeMenu: "精选推文",
+          title: "精选推文",
         },
       },
       {
@@ -104,11 +113,13 @@ const routes = [
         name: "account-management",
         meta: {
           activeMenu: "账号管理",
+          title: "账号管理",
         },
       },
     ],
     meta: {
       requireAuth: true,
+      permission: "superadmin",
     },
   },
   {
@@ -123,6 +134,7 @@ const routes = [
         meta: {
           activeMenu: "home",
           activeTab: "首页",
+          title: "首页",
         },
       },
       {
@@ -132,6 +144,7 @@ const routes = [
         meta: {
           activeMenu: "person-management",
           activeTab: "人员管理",
+          title: "人员管理",
         },
       },
       {
@@ -141,6 +154,7 @@ const routes = [
         meta: {
           activeMenu: "evalution-management",
           activeTab: "考核管理",
+          title: "考核管理",
         },
       },
       {
@@ -150,6 +164,7 @@ const routes = [
         meta: {
           activeMenu: "appointment-management",
           activeTab: "预约管理",
+          title: "预约管理",
         },
       },
       {
@@ -159,6 +174,7 @@ const routes = [
         meta: {
           activeMenu: "announcement-management",
           activeTab: "公告设置",
+          title: "公告设置",
         },
       },
       {
@@ -168,6 +184,7 @@ const routes = [
         meta: {
           activeMenu: "group-intro",
           activeTab: "团队介绍",
+          title: "团队介绍",
         },
       },
       {
@@ -177,6 +194,7 @@ const routes = [
         meta: {
           activeMenu: "team-intro",
           activeTab: "组别介绍",
+          title: "组别介绍",
         },
       },
       {
@@ -186,6 +204,7 @@ const routes = [
         meta: {
           activeMenu: "project-intro",
           activeTab: "项目介绍",
+          title: "项目介绍",
         },
       },
       {
@@ -195,11 +214,13 @@ const routes = [
         meta: {
           activeMenu: "selected-post",
           activeTab: "精选推文",
+          title: "精选推文",
         },
       },
     ],
     meta: {
       requireAuth: true,
+      permission: "admin",
     },
   },
   {

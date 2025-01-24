@@ -7,19 +7,32 @@ const state = sessionStorage.getItem("state")
   ? JSON.parse(sessionStorage.getItem("state"))
   : {
       islogin: false,
-      rule: "运营组",
-      username: null, //username
+      rule: "",
+      username: "", //username
       openTab: [], // 所有打开的路由
       activeIndex: "", //激活状态
       whiteList: ["/login"],
+      permissionList: [],
       showPage: "page1",
     };
 
 const mutations = {
-  islogin(state, user) {
-    state.islogin = user.islogin;
-    state.rule = user.authority;
+  getLogin(state,user) {
+    state.islogin = true;
+    state.rule = "超级管理员";
     state.username = user.username;
+    state.permissionList.push("superadmin");
+    state.permissionList.push("admin");
+  },
+  logout(state) {
+    state.islogin = false;
+    state.rule = "";
+    state.username = "";
+    state.openTab = []; // 所有打开的路由
+    state.activeIndex = ""; //激活状态
+    state.whiteList = ["/login"];
+    state.permissionList = [];
+    state.showPage = "page1";
   },
   // 添加 tabs
   addTab(state, data) {
@@ -70,7 +83,14 @@ const actions = {
             type: "success",
             duration: 2 * 1000,
           });
-          resolve();
+
+          this.state.permissionList.push("superadmin");
+          this.state.permissionList.push("admin");
+          this.state.rule = "超级管理员";
+          this.state.username = "admin";
+
+          this.state.islogin = true;
+          resolve(response);
         })
         .catch((error) => {
           reject(error);
@@ -83,12 +103,12 @@ const actions = {
 };
 
 const modules = {
-  Setting: Setting,
+  setting: Setting,
 };
 
 export default createStore({
+  modules,
   state,
   mutations,
   actions,
-  modules,
 });

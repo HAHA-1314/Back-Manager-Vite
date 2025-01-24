@@ -8,6 +8,13 @@ export function login(params) {
   });
 }
 
+export function signOut() {
+  return request({
+    url: "/webuser/logout",
+    method: "get",
+  });
+}
+
 // get例子
 // export function apifox(params) {
 //   return request({
