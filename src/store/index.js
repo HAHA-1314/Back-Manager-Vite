@@ -33,6 +33,7 @@ const mutations = {
     state.whiteList = ["/login"];
     state.permissionList = [];
     state.showPage = "page1";
+    sessionStorage.clear();
   },
   // 添加 tabs
   addTab(state, data) {
