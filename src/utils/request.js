@@ -66,9 +66,9 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   (res) => {
     //如果响应成功(2xx内响应码)
-    const code = res.data.code || 200;
+    const code = res.code || 200;
     // 获取错误信息
-    const msg = errorCode[code] || res.data.msg || errorCode["default"];
+    const msg = res.msg;
     // 二进制数据则直接返回
     if (
       res.request.responseType === "blob" ||
