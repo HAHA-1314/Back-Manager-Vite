@@ -18,9 +18,6 @@ import _404 from "../views/404.vue"; // 网络错误、用户未授权等页面
 const routes = [
   //存储路由，自由定义路由规则
   {
-    path: "/", //根路径
-  },
-  {
     path: "/login", //根路径
     component: LoginView, //导入对应组件
   },
@@ -115,9 +112,9 @@ const routes = [
     },
   },
   {
-    path: "/user-system/:oid",
+    path: "/user-system/:oid(\\d+)",
     component: UserSystemView, //首页导航组件
-    redirct: "/user-system/:oid/home",
+    redirct: "/user-system/:oid(\\d+)/home",
     children: [
       {
         path: "home", //首页

@@ -1,5 +1,7 @@
 import { createStore } from 'vuex'
-import { login } from '../api/user'
+import * as userApi from '../api/user'
+import { ElMessage } from 'element-plus'
+import Setting from './modules/setting'
 
 const state = sessionStorage.getItem('state')
   ? JSON.parse(sessionStorage.getItem('state'))
@@ -48,20 +50,35 @@ const actions = {
   login({ commit }, userInfo) {
     const { username, password } = userInfo
     return new Promise((resolve, reject) => {
-      login({ username: username, password: password }) // ../api/user login
+      userApi.login({ username: username, password: password }) // ../api/user login
         .then((response) => {
           if (response.data.code !== 200) {
-            reject(error)
+            ElMessage({
+              message: response.data.message,
+              type: 'error',
+              duration: 2 * 1000, 
+            })
+            reject(error);
           }
           // const { data } = response;
           // console.log('data.tokenValue',data.tokenValue); //debug 不能显示token！！
           // commit('SET_TOKEN', data.tokenValue);
           // setToken(data.tokenValue)
-          resolve()
+          ElMessage({
+            message: '登录成功',
+            type: 'success',
+            duration: 2 * 1000,
+          })
+          resolve();
         })
         .catch((error) => {
-          reject(error)
-        })
+          ElMessage({
+            message: "登录失败",
+            type: "error",
+            duration: 2 * 1000,
+          });
+          reject(error);
+        });
     })
   },
   updatePage({ commit }, newPage) {
@@ -69,8 +86,13 @@ const actions = {
   },
 }
 
+const modules = {
+  Setting: Setting,
+}
+
 export default createStore({
   state,
   mutations,
   actions,
+  modules,
 })

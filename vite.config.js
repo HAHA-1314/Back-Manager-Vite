@@ -7,14 +7,16 @@ export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd());
   const { VITE_APP_ENV } = env;
   return {
-    // 自定义根路径 例如 "/web/" "/app/" 
+    // 自定义根路径 例如 "/web/" "/app/"
     base: VITE_APP_ENV === "development" ? "/" : "/",
     plugins: [vue()],
     server: {
       port: 8080,
+      host: true,
+      open: true,
       proxy: {
         "/api": {
-          target: "http://localhost:3002", //后端目标服务器
+          target: "https://smalla.cosh.fun", //后端目标服务器
           changeOrigin: true, //允许跨域请求
           rewrite: (path) => path.replace(/^\/api/, ""), //将所有含/api路径的，去掉/api转发给服务器
         },
