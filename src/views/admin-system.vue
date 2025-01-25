@@ -1,12 +1,14 @@
 <script setup>
 import { ref, reactive, watch, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter,useRoute } from "vue-router";
 import { useStore } from "vuex";
 import { SwitchButton } from "@element-plus/icons";
 import * as userApi from "@/api/user";
 import { ElMessage } from "element-plus";
 import Cookies from "js-cookie";
 
+// 获取当前的路由对象
+const route = useRoute()
 const router = useRouter();
 const store = useStore();
 const goRouter = ref("");
@@ -195,9 +197,9 @@ const signOut = () => {
         </div>
         <!-- 侧边==导航栏 -->
         <el-menu
-          :default-active="this.$route.name"
+          :default-active="route.name"
           class="el-menu-vertical-demo"
-          @click="handleMenuOpen(this.$route.name, this.$route.path)"
+          @click="handleMenuOpen(route.name, route.path)"
           style="user-select: none"
           router>
           <!-- (index) 首页 1  || 考核管理 2 -> 人员管理 2-1 | 考核管理 2-2 | 预约管理 2-3 | 公告设置 2-4 || 信息管理 3 -> 团队管理 3-1 | 组别管理 3-2 | 项目介绍 3-3 | 精选推文 3-4 || -->
