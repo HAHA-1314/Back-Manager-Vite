@@ -1,8 +1,8 @@
-import request from '../../utils/request.js'
+import request from '../utils/request'
 
 export function getAllEva() {
   return request({
     url: '/test/get/all',
-    method: 'GET',
+    method: 'get',
   })
 }
