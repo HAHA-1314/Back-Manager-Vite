@@ -262,6 +262,7 @@ import { useStore } from 'vuex'
 import { ref } from 'vue'
 import router from '../routes'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { getAllEva } from '../api/evaluation/allEva'
 
 const store = useStore()
 const newPage = ref('page2')
@@ -275,6 +276,13 @@ const dateTime = ref('')
 
 const gap = ref('')
 const sum = ref('')
+
+const getData = async () => {
+  const res = await getAllEva()
+  console.log(res)
+}
+
+getData()
 
 const goToPerson = () => {
   router.push({ name: 'person-management' })
