@@ -1,7 +1,8 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import group_com from "./groupCom.vue";
-const tableData = [{ name: "项目1" }, { name: "项目2" }, { name: "项目3" }];
+import { getProjectList } from "../api/project";
+const tableData = ref([]);
 const dialogVisible = ref(false);
 const title = ref("");
 const teamAdd = () => {
@@ -12,7 +13,16 @@ const teamEdit = () => {
   title.value = "编辑项目";
   dialogVisible.value = true;
 };
+const renderData = async () => {
+  const res = await getProjectList();
+  console.log(res);
+  
+  tableData.value = res.data || [];
+};
 const teamDelete = () => {};
+onMounted(() => {
+  renderData();
+});
 </script>
 <template>
   <div class="container">
@@ -28,7 +38,7 @@ const teamDelete = () => {};
     >
       <el-table-column prop="name" style="padding-left: 50px" />
       <el-table-column align="right">
-        <template #default>
+        <template #default="scope">
           <el-button
             type="primary"
             style="margin-right: 50px; width: 120px"

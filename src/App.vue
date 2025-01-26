@@ -3,9 +3,9 @@
 </template>
 
 <script setup>
-// import axios from "axios";
+import axios from "axios";
 import { useStore } from "vuex";
-// import router from "./routes";
+import router from "./routes";
 import { onMounted } from "vue";
 
 const store = useStore();

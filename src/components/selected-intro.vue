@@ -1,10 +1,6 @@
 <script lang="ts" setup>
-import { computed, ref } from "vue";
-interface User {
-  //date: string
-  name: string;
-  //address: string
-}
+import { computed, ref, onMounted } from "vue";
+import { getArticleList } from "../api/article";
 const dialogVisible = ref(false);
 const title = ref("");
 const search = ref("");
@@ -12,7 +8,12 @@ const imgArticle = ref("");
 const dialogImageUrl = ref("");
 const dialogSee = ref(false);
 const ruleFormRef = ref();
-const ruleForm = ref({
+interface RuleForm {
+  articleName: string;
+  fileList: { url: string }[]; // fileList 应该是一个包含 { url: string } 对象的数组
+  articleLink: string;
+}
+const ruleForm = ref<RuleForm>({
   articleName: "",
   fileList: [],
   articleLink: "",
@@ -23,46 +24,37 @@ const rules = {
   articleLink: [{ required: true, message: "请输入推文链接", trigger: "blur" }],
 };
 
-const filterTableData = computed(() =>
-  tableData.filter(
-    (data) =>
-      !search.value ||
-      data.name.toLowerCase().includes(search.value.toLowerCase())
-  )
-);
 const handleAdd = () => {
   dialogVisible.value = true;
   title.value = "添加推文";
 };
-const handleEdit = (index: number, row: User) => {
+const handleEdit = (row) => {
   dialogVisible.value = true;
   title.value = "编辑推文";
-  console.log(index, row);
+  console.log(row);
+  ruleForm.value.articleName = row.name;
+  ruleForm.value.fileList = row.pics;
+  ruleForm.value.articleLink = row.url;
 };
-const handleDelete = (index: number, row: User) => {
-  console.log(index, row);
+const handleDelete = (row) => {
+  console.log(row);
 };
 const handleClose = () => {
   dialogVisible.value = false;
 };
+const getArticle = async () => {
+  const res = await getArticleList();
+  tableData.value = res.data || [];
+};
 
-const tableData: User[] = [
-  {
-    name: "推文1",
-  },
-  {
-    name: "推文2",
-  },
-  {
-    name: "推文3",
-  },
-  {
-    name: "推文4",
-  },
-];
+const tableData = ref([]);
 const buttonConfirm = async () => {
   await ruleFormRef.value.validate();
   dialogVisible.value = false;
+  if (title.value === "添加推文") {
+  } else {
+    console.log(ruleForm.value.fileList);
+  }
 };
 
 const handleRemove = (uploadFile, uploadFiles) => {
@@ -72,6 +64,13 @@ const handlePictureCardPreview = (uploadFile) => {
   dialogImageUrl.value = uploadFile.url;
   dialogSee.value = true;
 };
+const handleFileChange = (file) => {
+  console.log(file);
+  ruleForm.value.fileList.push({ url: file.data });
+};
+onMounted(() => {
+  getArticle();
+});
 </script>
 
 <template>
@@ -80,7 +79,7 @@ const handlePictureCardPreview = (uploadFile) => {
   </div>
   <el-card class="box-card">
     <el-table
-      :data="filterTableData"
+      :data="tableData"
       style="width: 100%"
       :show-header="false"
       size="large"
@@ -90,13 +89,13 @@ const handlePictureCardPreview = (uploadFile) => {
         <template #default="scope">
           <el-button
             type="primary"
-            @click="handleEdit(scope.$index, scope.row)"
+            @click="handleEdit(scope.row)"
             class="add_lener"
           >
             编辑
           </el-button>
           <el-button
-            @click="handleDelete(scope.$index, scope.row)"
+            @click="handleDelete(scope.row)"
             class="add_len"
             type="danger"
           >
@@ -132,8 +131,9 @@ const handlePictureCardPreview = (uploadFile) => {
             <div class="imgList">
               <el-upload
                 v-model:file-list="ruleForm.fileList"
-                :auto-upload="false"
+                action="http://localhost:8080/api/file/upload"
                 list-type="picture-card"
+                :on-success="handleFileChange"
                 :on-preview="handlePictureCardPreview"
                 :on-remove="handleRemove"
                 class="avatar-uploader"

@@ -2,6 +2,8 @@
 import { Picture as IconPicture } from "@element-plus/icons-vue";
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import extractTextFromHTML from "../utils/extractText";
+import { useRoute } from "vue-router";
+import { Route } from "router";
 const initSummernote = () => {
   $(document).ready(function () {
     $("#summernote").summernote("fontName", "Helvetica");
@@ -20,12 +22,14 @@ const initSummernote = () => {
 };
 
 onMounted(() => {
+  
   initSummernote();
+  
 });
 onBeforeUnmount(() => {
   $("#summernote").summernote("destroy");
 });
-
+const route = useRoute();
 const imgUrl = ref("");
 const imgUrl2 = ref("");
 
@@ -85,10 +89,17 @@ const rules = ref({
   ],
 });
 const buttonConfirm = () => {
+  if (route.name === "group-intro") {
+    
+  } else {
+    
+  }
   ruleForm.value.carouselImages = [
     ...ruleForm.value.carouselImages,
     ...listImages._rawValue,
   ];
+  console.log(ruleForm.value.carouselImages);
+  
   $("#summernote").summernote("fontName", "Helvetica");
   const markupStr = $("#summernote").summernote("code");
   ruleForm.value.groupIntro = extractTextFromHTML(markupStr);

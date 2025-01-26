@@ -1,9 +1,10 @@
 const Setting = {
+  namespaced: true,
   state: {
     title: import.meta.env.VITE_APP_TITLE,
   },
-  mutation: {
-    setTitle(meta) {
+  mutations: {
+    setTitle(state, meta) {
       document.title = meta + " - " + state.title;
     },
   },

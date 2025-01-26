@@ -1,25 +1,29 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, nextTick } from "vue";
 import team_com from "./teamCom.vue";
-
-const tableData = [
-  { name: "前端组" },
-  { name: "后台组" },
-  { name: "A I 组" },
-  { name: "运营组" },
-  { name: "项目组" },
-  { name: "机械组" },
-  { name: "电控组" },
-];
+import { getGroupList } from "@/api/group";
+const tableData = ref([]);
 const dialogVisible = ref(false);
 const title = ref("");
-const teamEdit = () => {
+const editGroup = ref();
+const teamEdit = (row) => {
   title.value = "编辑组别";
   dialogVisible.value = true;
+  console.log(row);
+  nextTick(() => {
+    editGroup.value.openEditGroup(row.id);
+  });
 };
 const dialogChange = () => {
   dialogVisible.value = !dialogVisible.value;
 };
+const renderGroupList = async () => {
+  const res = await getGroupList();
+  tableData.value = res.data || [];
+};
+onMounted(() => {
+  renderGroupList();
+});
 </script>
 <template>
   <el-card style="margin-top: 70px">
@@ -32,11 +36,11 @@ const dialogChange = () => {
     >
       <el-table-column prop="name" style="padding-left: 50px" />
       <el-table-column align="right">
-        <template #default>
+        <template #default="scope">
           <el-button
             type="primary"
             style="margin-right: 50px; width: 120px"
-            @click="teamEdit"
+            @click="teamEdit(scope.row)"
             >编辑</el-button
           >
         </template>
@@ -50,7 +54,7 @@ const dialogChange = () => {
     :before-close="handleClose"
     align-center
   >
-    <team_com></team_com>
+    <team_com ref="editGroup"></team_com>
   </el-dialog>
 </template>
 

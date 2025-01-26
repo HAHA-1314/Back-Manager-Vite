@@ -7,16 +7,17 @@ const state = sessionStorage.getItem("state")
   ? JSON.parse(sessionStorage.getItem("state"))
   : {
       islogin: false,
-      rule: "运营组",
-      username: null, //username
+      rule: "",
+      username: "", //username
       openTab: [], // 所有打开的路由
       activeIndex: "", //激活状态
       whiteList: ["/login"],
+      permissionList: [],
       showPage: "page1",
     };
 
 const mutations = {
-  getLogin(state, user) {
+  getLogin(state,user) {
     state.islogin = true;
     state.rule = "超级管理员";
     state.username = user.username;
@@ -66,9 +67,9 @@ const actions = {
       userApi
         .login({ username: username, password: password }) // ../api/user login
         .then((response) => {
-          if (response.data.code !== 200) {
+          if (response.code !== 200) {
             ElMessage({
-              message: response.data.message,
+              message: response.msg,
               type: "error",
               duration: 2 * 1000,
             });
@@ -105,10 +106,11 @@ const actions = {
 };
 
 const modules = {
-  Setting: Setting,
+  setting: Setting,
 };
 
 export default createStore({
+  modules,
   state,
   mutations,
   actions,

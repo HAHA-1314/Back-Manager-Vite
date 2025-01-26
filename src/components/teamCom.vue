@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, onBeforeUnmount, ref } from "vue";
 import extractTextFromHTML from "../utils/extractText";
+import { getGroupDetail } from "@/api/group";
 let markupStr1 = $("#summernote1").summernote("code");
 let markupStr2 = $("#summernote2").summernote("code");
 const initSummernote = () => {
@@ -37,11 +38,6 @@ const initSummernote = () => {
   });
 };
 
-// $("#summernote2").on("summernote.change", function (we, contents, $editable) {
-//   console.log("Content changed:");
-//   console.log(contents); // 输出变化后的内容
-//   // 你可以在这里添加你的逻辑，比如更新预览或保存到服务器
-// });
 onMounted(() => {
   initSummernote();
 });
@@ -93,6 +89,15 @@ const teamSave = async () => {
 
   await ruleFormRef.value.validate();
 };
+const openEditGroup = async (id) => {
+  console.log(id);
+
+  const res = await getGroupDetail(id);
+  console.log(res);
+};
+defineExpose({
+  openEditGroup,
+});
 </script>
 <template>
   <el-form :model="ruleForm" ref="ruleFormRef" :rules="rules">

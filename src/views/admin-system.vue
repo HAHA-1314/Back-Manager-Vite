@@ -1,9 +1,16 @@
 <script setup>
 import { ref, reactive, watch, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter,useRoute } from "vue-router";
+import { useStore } from "vuex";
 import { SwitchButton } from "@element-plus/icons";
+import * as userApi from "@/api/user";
+import { ElMessage } from "element-plus";
+import Cookies from "js-cookie";
 
+// 获取当前的路由对象
+const route = useRoute()
 const router = useRouter();
+const store = useStore();
 const goRouter = ref("");
 const isCommen = ref(false);
 const menuTitle = ref("");
@@ -159,6 +166,21 @@ watch(
 onMounted(() => {
   activeMenu.value = "home";
 });
+
+const signOut = () => {
+  userApi.signOut().then((res) => {
+    if (res.code == 200) {
+      ElMessage.success("退出成功");
+      store.commit("logout");
+      Cookies.remove("username");
+      Cookies.remove("password");
+      Cookies.remove("satoken");
+      router.push(`/login?redirect=${router.currentRoute.value.path}`);
+    } else {
+      ElMessage.error(res.msg);
+    }
+  });
+};
 </script>
 
 <template>
@@ -175,12 +197,11 @@ onMounted(() => {
         </div>
         <!-- 侧边==导航栏 -->
         <el-menu
-          :default-active="this.$route.name"
+          :default-active="route.name"
           class="el-menu-vertical-demo"
-          @click="handleMenuOpen(this.$route.name, this.$route.path)"
-          style="user-select: none;"
-          router
-        >
+          @click="handleMenuOpen(route.name, route.path)"
+          style="user-select: none"
+          router>
           <!-- (index) 首页 1  || 考核管理 2 -> 人员管理 2-1 | 考核管理 2-2 | 预约管理 2-3 | 公告设置 2-4 || 信息管理 3 -> 团队管理 3-1 | 组别管理 3-2 | 项目介绍 3-3 | 精选推文 3-4 || -->
           <el-menu-item index="home">
             <el-icon><House /></el-icon>
@@ -233,7 +254,7 @@ onMounted(() => {
         <!-- 主体==头部==蓝色条块 以及 可增减标签页 -->
         <el-header height="85px" class="tabs-box">
           <div class="blue">
-            <el-button type="primary" class="sign-out">
+            <el-button type="primary" class="sign-out" @click="signOut">
               <el-icon class="el-icon--left"><SwitchButton /></el-icon>退出登录
             </el-button>
           </div>
@@ -244,8 +265,7 @@ onMounted(() => {
               justify-content: space-between;
               border-bottom: 1px solid #e4e7ed;
               height: 40px;
-            "
-          >
+            ">
             <div style="display: flex; align-items: center">
               <el-icon style="width: 40px" @click="arrowLeft"
                 ><ArrowLeft
@@ -257,14 +277,12 @@ onMounted(() => {
                 class="demo-tabs"
                 closable
                 @tab-click="clickTab"
-                @tab-remove="removeTab"
-              >
+                @tab-remove="removeTab">
                 <el-tab-pane
                   v-for="item in editableTabs"
                   :key="item.name"
                   :label="item.title"
-                  :name="item.name"
-                >
+                  :name="item.name">
                   {{ item.content }}
                 </el-tab-pane>
               </el-tabs>
@@ -350,5 +368,4 @@ onMounted(() => {
 .menu-item {
   margin-left: 10px;
 }
-
 </style>

@@ -1,11 +1,18 @@
-import request from "../utils/request";
+import request from '../utils/request'
 
 export function login(params) {
   return request({
-    url: "/webuser/login",
-    method: "post",
+    url: '/webuser/login',
+    method: 'post',
     params,
-  });
+  })
+}
+
+export function signOut() {
+  return request({
+    url: '/webuser/logout',
+    method: 'get',
+  })
 }
 
 // get例子
