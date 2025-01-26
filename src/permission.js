@@ -8,8 +8,6 @@ router.beforeEach(async (to, from, next) => {
   const store = useStore();
   to.meta.title && store.Setting.commit("setTitle", to.meta.title);
   // console.log(store.state);
-<<<<<<< Updated upstream
-=======
   if (store.state.islogin) {
     // 已登录
     console.log(to);
@@ -40,7 +38,6 @@ router.beforeEach(async (to, from, next) => {
       next(`/login?redirect=${to.fullPath}`);
     }
   }
->>>>>>> Stashed changes
   console.log(to.path);
   if (store.state.whiteList.indexOf(to.path) !== -1) {
     //  白名单，准许进入
