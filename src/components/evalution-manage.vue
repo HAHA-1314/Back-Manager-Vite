@@ -17,7 +17,7 @@
       ></el-table-column>
       <el-table-column
         label="开始时间"
-        prop="start"
+        prop="begin"
         width="170"
       ></el-table-column>
       <el-table-column
@@ -27,12 +27,12 @@
       ></el-table-column>
       <el-table-column
         label="创建人"
-        prop="creater"
+        prop="createName"
         width="150"
       ></el-table-column>
       <el-table-column
         label="当前状态"
-        prop="now"
+        prop="status"
         width="300"
       ></el-table-column>
       <el-table-column label="操作" width="350">
@@ -148,15 +148,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { getAllEva } from '@/api/allEva.js'
 import { onMounted } from 'vue'
 
-const processList = [
-  {
-    name: '第一次考核',
-    start: '2024-06-20',
-    end: '2024-06-28',
-    creater: '123',
-    now: '已结束',
-  },
-]
+const processList = ref([])
 
 const testName = ref('')
 const testReq = ref('')
@@ -166,8 +158,9 @@ const dialogVisible = ref(false)
 
 const getData = async () => {
   const res = await getAllEva()
-
-  console.log(res)
+  processList.value = res.data || []
+  console.log(processList)
+  console.log(res.data)
 }
 
 onMounted(() => {
