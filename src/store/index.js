@@ -16,10 +16,30 @@ const state = sessionStorage.getItem('state')
     }
 
 const mutations = {
+<<<<<<< Updated upstream
   islogin(state, user) {
     state.islogin = user.islogin
     state.rule = user.authority
     state.username = user.username
+=======
+  getLogin(state, user) {
+    state.islogin = true;
+    state.rule = "超级管理员";
+    state.username = user.username;
+    state.permissionList.push("superadmin");
+    state.permissionList.push("admin");
+  },
+  logout(state) {
+    state.islogin = false;
+    state.rule = "";
+    state.username = "";
+    state.openTab = []; // 所有打开的路由
+    state.activeIndex = ""; //激活状态
+    state.whiteList = ["/login"];
+    state.permissionList = [];
+    state.showPage = "page1";
+    sessionStorage.clear();
+>>>>>>> Stashed changes
   },
   // 添加 tabs
   addTab(state, data) {
@@ -68,8 +88,25 @@ const actions = {
             message: '登录成功',
             type: 'success',
             duration: 2 * 1000,
+<<<<<<< Updated upstream
           })
           resolve();
+=======
+          });
+          if (response.data === "superadmin") {
+            this.state.permissionList.push("superadmin");
+            this.state.permissionList.push("admin");
+            this.state.rule = "超级管理员";
+            this.state.username = "admin";
+          } else {
+            this.state.permissionList.push("admin");
+            this.state.rule = "普通用户";
+            this.state.username = "user";
+          }
+
+          this.state.islogin = true;
+          resolve(response);
+>>>>>>> Stashed changes
         })
         .catch((error) => {
           ElMessage({

@@ -2,91 +2,96 @@
   <div>
     <div class="left-space">
       <h3>实时分析</h3>
-      <el-row>
-        <el-col :span="4" class="increase">
-          <div style="text-align: center; margin-top: 12px; font-size: 16px">
-            今日新增报名
-          </div>
-          <div
+      <el-row :gutter="20">
+        <el-col :span="6">
+          <el-card
+            shadow="hover"
+            :body-style="{ padding: '10px' }"
             style="
-              font-size: 20px;
-              font-weight: 500;
-              margin-top: 25px;
-              margin-left: -25%;
-              text-align: center;
-            "
-          >
-            {{ increase_num }}
-          </div>
-          <span
-            style="
-              display: inline-block;
-              font-size: 12px;
-              margin-top: 10px;
-              margin-left: 15%;
-              text-align: center;
-            "
-          >
-            <span> 较昨 </span>
-          </span>
-          <span style="margin-left: 10px">
-            <span>
-              <el-icon style="top: 3px" v-if="up" color="red"><Top /></el-icon>
+              background: linear-gradient(
+                177deg,
+                rgb(253, 253, 253),
+                rgb(233, 244, 253)
+              );
+              height: 140px;
+            ">
+            <div class="msg-title">今日新增报名</div>
+            <div class="msg-num">
+              {{ increase_num }}
+            </div>
+            <span
+              style="display: inline-block; font-size: 12px; margin-top: 10px">
+              <strong style="margin-left: 20px"> 较昨 </strong>
             </span>
-            <span>
-              <el-icon style="top: 3px" v-if="down" color="green"
-                ><Bottom
-              /></el-icon>
-            </span>
-          </span>
-        </el-col>
-        <el-col :span="5" :offset="1" class="cumulation">
-          <div style="text-align: center; margin-top: 12px; font-size: 16px">
-            <span>累计报名总量</span>
-            <div
+            <span
               style="
-                font-size: 20px;
-                font-weight: 500;
-                margin-top: 25px;
-                margin-left: -25%;
-                text-align: center;
-              "
-            >
+                position: relative;
+                margin-left: 10px;
+                top: 5px;
+                font-size: 18px;
+              ">
+              <span>
+                <el-icon v-if="up" color="red"><Top /></el-icon>
+              </span>
+              <span>
+                <el-icon v-if="down" color="green"><Bottom /></el-icon>
+              </span>
+            </span>
+          </el-card>
+        </el-col>
+        <el-col :span="6">
+          <el-card
+            shadow="hover"
+            style="
+              height: 140px;
+              background: linear-gradient(
+                177deg,
+                rgb(259, 259, 252),
+                rgb(235, 253, 239)
+              );
+            "
+            :body-style="{ padding: '10px' }">
+            <div class="msg-title">累计报名总量</div>
+            <div class="msg-num">
               {{ cumulation_num }}
             </div>
-          </div>
+          </el-card>
         </el-col>
-        <el-col :span="6" :offset="1" class="now">
-          <div style="text-align: center; margin-top: 12px">
-            <span> 当前正在进行流程 </span>
-            <div
-              style="
-                font-size: 20px;
-                font-weight: 500;
-                margin-top: 25px;
-                margin-left: -45%;
-                text-align: center;
-              "
-            >
+        <el-col :span="6">
+          <el-card
+            shadow="hover"
+            :body-style="{ padding: '10px' }"
+            style="
+              height: 140px;
+              background: linear-gradient(
+                177deg,
+                rgb(248, 249, 253),
+                rgb(238, 229, 252)
+              );
+            ">
+            <div class="msg-title">当前正在进行流程</div>
+            <div class="msg-num">
               {{ current_step }}
             </div>
-          </div>
+          </el-card>
         </el-col>
-        <el-col :span="5" :offset="1" class="num">
-          <div style="text-align: center; margin-top: 12px">
-            <span> 当前流程人数 </span>
-            <div
-              style="
-                font-size: 20px;
-                font-weight: 500;
-                margin-top: 25px;
-                margin-left: -25%;
-                text-align: center;
-              "
-            >
+        <el-col :span="6">
+          <el-card
+            shadow="hover"
+            :body-style="{ padding: '10px' }"
+            style="
+              height: 140px;
+              background: linear-gradient(
+                167deg,
+                rgb(252, 252, 248),
+                rgb(249, 237, 216)
+              );
+            ">
+            <div class="msg-title">当前流程人数</div>
+            <div class="msg-num">
               {{ current_num }}
             </div>
-          </div>
+          </el-card>
         </el-col>
       </el-row>
       <span
@@ -99,20 +104,19 @@
         >报名增长趋势</span
       >
 
-        <el-date-picker
-          v-model="month"
-          type="month"
-          style="
-            display: flex;
-            float: right;
-            top: 20px;
-            right: 50px;
-            width: 100px;
-            z-index: 2;
-            font-size: 12px;
-          "
-          @change="changeMonth"
-        />
+      <el-date-picker
+        v-model="month"
+        type="month"
+        style="
+          display: flex;
+          float: right;
+          top: 20px;
+          right: 50px;
+          width: 120px;
+          z-index: 2;
+          font-size: 12px;
+        "
+        @change="changeMonth" />
 
       <v-chart class="charts" :option="option" autoresize />
       <div class="person">
@@ -124,21 +128,18 @@
             max-height="160"
             :header-cell-style="{ background: '#5793df', color: '#fff' }"
             border
-            @row-click="test_click"
-          >
+            @row-click="test_click">
             <el-table-column
               prop="name"
               label="姓名"
               width="100"
-              align="center"
-            />
+              align="center" />
             <el-table-column prop="no" label="学号" width="" align="center" />
             <el-table-column
               prop="step"
               label="当前考核流程"
               align="center"
-              width=""
-            />
+              width="" />
           </el-table>
         </div>
       </div>
@@ -154,20 +155,17 @@
               max-height="180"
               :header-cell-style="{ background: '#5793df', color: '#fff' }"
               border
-              @row-click="announce_click"
-            >
+              @row-click="announce_click">
               <el-table-column
                 prop="title"
                 label="标题"
                 width=""
-                align="center"
-              />
+                align="center" />
               <el-table-column
                 prop="date"
                 label="发布时间"
                 width=""
-                align="center"
-              />
+                align="center" />
             </el-table>
           </div>
         </div>
@@ -180,20 +178,17 @@
               max-height="180"
               :header-cell-style="{ background: '#5793df', color: '#fff' }"
               border
-              @row-click="test_click"
-            >
+              @row-click="test_click">
               <el-table-column
                 prop="title"
                 label="考核名称"
                 width=""
-                align="center"
-              />
+                align="center" />
               <el-table-column
                 prop="date"
                 label="发布时间"
                 width=""
-                align="center"
-              />
+                align="center" />
             </el-table>
           </div>
         </div>
@@ -304,7 +299,7 @@ const increase_num = ref(1111);
 const cumulation_num = ref(1212);
 const current_step = ref("一面");
 const current_num = ref(1212);
-const month = ref('2024-09');
+const month = ref("2024-09");
 const up = ref(true); //较昨日新增人数 上涨
 const down = ref(false); //较昨日新增人数 下调
 const announce_click = (row, column, event) => {
@@ -315,17 +310,50 @@ const announce_click = (row, column, event) => {
 <style scoped>
 .left-space {
   display: inline-block;
-  width: 65%;
+  width: 60%;
   height: 100%;
   border-right: 1px solid gainsboro;
-  margin-right: -1px;
+  padding: 10px;
 }
+
 .right-space {
   display: flex;
   float: right;
-  width: 32%;
+  width: 35%;
   height: 100%;
 }
+
+.msg-title {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.msg-num {
+  font-size: 20px;
+  font-weight: 500;
+  margin-top: 20px;
+  margin-left: 10px;
+}
+
+.el-row {
+  margin-bottom: 20px;
+}
+
+.el-row:last-child {
+  margin-bottom: 0;
+}
+
+.el-col {
+  border-radius: 4px;
+}
+
+.grid-content {
+  border-radius: 4px;
+  min-height: 36px;
+}
+
 .announce {
   display: inline-block;
   width: 100%;
