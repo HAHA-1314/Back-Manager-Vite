@@ -145,6 +145,8 @@
 // const showPage = ref('page1')
 import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { getAllEva } from '@/api/allEva.js'
+import { onMounted } from 'vue'
 
 const processList = [
   {
@@ -161,6 +163,17 @@ const testReq = ref('')
 const date = ref('')
 
 const dialogVisible = ref(false)
+
+const getData = async () => {
+  const res = await getAllEva()
+
+  console.log(res)
+}
+
+onMounted(() => {
+  console.log(111)
+  getData()
+})
 
 const addEva = () => {
   if (testName.value == '' || testReq.value == '' || date.value == '') {
