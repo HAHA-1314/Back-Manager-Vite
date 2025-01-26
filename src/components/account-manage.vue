@@ -2,6 +2,7 @@
   <div>
     <el-button @click="addVisible = true" class="addButton">+ 添加</el-button>
   </div>
+  <!-- 添加管理员模态框 -->
   <el-dialog v-model="addVisible" title="账号信息" width="500">
     <span>
       <el-form
@@ -10,19 +11,13 @@
         ref="Form1"
         label-width="100px"
         class="demo-ruleForm">
-        <el-form-item label="所属组别" prop="group">
-          <el-select v-model="addForm.group" placeholder="选择组别">
+        <el-form-item label="所属组别" prop="groupId">
+          <el-select v-model="addForm.groupId" placeholder="选择组别">
             <el-option
               v-for="item in groupOptions"
               :key="item.value"
               :label="item.label"
-              :value="item.value"
-              @click.native="
-                () => {
-                  addForm.group = item.label;
-                  addForm.group = item.value;
-                }
-              "></el-option>
+              :value="item.value"></el-option>
           </el-select>
         </el-form-item>
 
@@ -32,10 +27,10 @@
             placeholder="请输入账户名"></el-input>
         </el-form-item>
 
-        <el-form-item label="密码" prop="pass">
+        <el-form-item label="密码" prop="password">
           <el-input
             type="password"
-            v-model="addForm.pass"
+            v-model="addForm.password"
             autocomplete="off"
             placeholder="请输入密码"></el-input>
         </el-form-item>
@@ -57,19 +52,13 @@
         ref="Form2"
         label-width="100px"
         class="demo-ruleForm">
-        <el-form-item label="所属组别" prop="group">
-          <el-select v-model="editForm.group" placeholder="选择组别">
+        <el-form-item label="所属组别" prop="groupId">
+          <el-select v-model="editForm.groupId" placeholder="选择组别">
             <el-option
               v-for="item in groupOptions"
-              :key="item.value"
+              :key="Number(item.value)"
               :label="item.label"
-              :value="item.value"
-              @click.native="
-                () => {
-                  editForm.group = item.label;
-                  editForm.group = item.value;
-                }
-              "></el-option>
+              :value="Number(item.value)"></el-option>
           </el-select>
         </el-form-item>
 
@@ -80,10 +69,10 @@
             disabled></el-input>
         </el-form-item>
 
-        <el-form-item label="密码" prop="pass">
+        <el-form-item label="密码" prop="password">
           <el-input
             type="password"
-            v-model="editForm.pass"
+            v-model="editForm.password"
             autocomplete="off"
             placeholder="请输入密码"></el-input>
         </el-form-item>
@@ -96,15 +85,15 @@
       </div>
     </template>
   </el-dialog>
-  <el-dialog v-model="deleteVisible" title="删除此账号" width="500">
+  <!-- <el-dialog v-model="deleteVisible" title="删除此账号" width="500">
     <span>删除此账号后，此账号不再能够登录</span>
     <template #footer>
       <div class="dialog-footer">
         <el-button plain @click="deleteVisible = false">取消</el-button>
-        <el-button type="danger" @click="deleteItem">确认</el-button>
+        <el-button type="danger" @click="deleteItem(id)">确认</el-button>
       </div>
     </template>
-  </el-dialog>
+  </el-dialog> -->
   <div style="top: 20px; position: relative">
     <el-table
       :data="tableData"
@@ -116,20 +105,50 @@
         prop="username"
         label="账户名"
         width="150"
+        show-overflow-tooltip
         align="center" />
       <el-table-column
-        prop="groupname"
+        prop="name"
         label="组别"
         width="120"
-        align="center" />
-      <el-table-column prop="createtime" label="创建时间" align="center" />
-      <el-table-column prop="updatetime" label="更新时间" align="center" />
-      <el-table-column fixed="right" label="操作" align="center" width="140">
-        <template #default>
-          <el-button type="primary" size="small" @click="editVisible = true"
+        show-overflow-tooltip
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="createtime"
+        label="创建时间"
+        show-overflow-tooltip
+        align="center">
+        <template #default="{ row }">
+          {{ dayjs(row.createtime).format("YYYY-MM-DD HH:mm:ss") }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="updatetime"
+        label="更新时间"
+        show-overflow-tooltip
+        align="center">
+        <template #default="{ row }">
+          {{ dayjs(row.updatetime).format("YYYY-MM-DD HH:mm:ss") }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        fixed="right"
+        label="操作"
+        align="center"
+        width="140"
+        prop="id">
+        <template v-slot="scope">
+          <el-button
+            type="primary"
+            size="small"
+            @click="editAccount(scope.row.id)"
             >编辑</el-button
           >
-          <el-button type="danger" size="small" @click="deleteVisible = true"
+          <el-button
+            type="danger"
+            size="small"
+            @click="deleteAccount(scope.row.id)"
             >删除</el-button
           >
         </template>
@@ -139,39 +158,42 @@
 </template>
 
 <script setup>
-import { getCurrentInstance, ref } from "vue";
-import { ElMessage } from "element-plus";
+import { getCurrentInstance, onMounted, ref } from "vue";
+import { ElCollapseItem, ElMessage, ElMessageBox } from "element-plus";
+import { useStore } from "vuex";
+import * as api from "@/api/account";
+import dayjs from "dayjs";
 
+const store = useStore();
 const addVisible = ref(false);
 const editVisible = ref(false);
 const deleteVisible = ref(false);
+const groupOptions = ref();
 // const Form1 = ref(null);
 // const Form2 = ref(null);
 const { proxy } = getCurrentInstance();
+
 const addForm = ref({
   username: "",
-  group: "",
-  pass: "",
+  groupId: "",
+  password: "",
 });
 const editForm = ref({
   username: "",
-  group: "",
-  pass: "",
+  groupId: "",
+  password: "",
 });
-const groupOptions = ref([
-  {
-    label: "运营组",
-    value: "运营组",
-  },
-  {
-    label: "前端组",
-    value: "前端组",
-  },
-  {
-    label: "后台组",
-    value: "后台组",
-  },
-]);
+const tableData = ref([]);
+
+onMounted(() => {
+  getList();
+});
+
+store.dispatch("dict/getDictValue", "groupId").then((res) => {
+  groupOptions.value = res;
+  // console.log(typeof groupOptions.value[0].value);
+});
+
 var validatePass = (rule, value, callback) => {
   if (value === "") {
     callback(new Error("请输入密码"));
@@ -182,12 +204,13 @@ var validatePass = (rule, value, callback) => {
   }
   callback();
 };
+
 const addRules = ref({
   username: [
     {
       required: true,
       message: "请输入账户名",
-      trigger: "blur",
+      trigger: "change",
     },
     {
       min: 3,
@@ -196,14 +219,14 @@ const addRules = ref({
       trigger: "change",
     },
   ],
-  group: [
+  groupId: [
     {
       required: true,
       message: "请选择组别",
-      trigger: "blur",
+      trigger: "change",
     },
   ],
-  pass: [
+  password: [
     {
       required: true,
       validator: validatePass,
@@ -212,61 +235,41 @@ const addRules = ref({
   ],
 });
 const editRules = ref({
-  group: [
+  groupId: [
     {
       required: true,
       message: "请选择组别",
       trigger: "change",
     },
   ],
-  pass: [
+  password: [
     {
       required: true,
-      validator: validatePass,
+      // validator: validatePass,
       trigger: "change",
     },
   ],
 });
-const tableData = [
-  {
-    date: "2016-05-03",
-    username: "Tom",
-    groupname: "California",
-    updatetime: "Los Angeles",
-    createtime: "No. 189, Grove St, Los Angeles",
-  },
-  {
-    date: "2016-05-03",
-    username: "Tom",
-    groupname: "California",
-    updatetime: "Los Angeles",
-    createtime: "No. 189, Grove St, Los Angeles",
-  },
-  {
-    date: "2016-05-03",
-    username: "Tom",
-    groupname: "California",
-    updatetime: "Los Angeles",
-    createtime: "No. 189, Grove St, Los Angeles",
-  },
-  {
-    date: "2016-05-03",
-    username: "Tom",
-    groupname: "California",
-    updatetime: "Los Angeles",
-    createtime: "No. 189, Grove St, Los Angeles",
-  },
-];
 
 const addItem = async (formName) => {
   console.log(addForm.value);
   proxy.$refs[formName].validate((valid) => {
     if (valid) {
-      ElMessage({
-        type: "success",
-        message: "添加成功!",
+      api.addAccount(addForm.value).then((res) => {
+        if (res.code === 200) {
+          ElMessage({
+            type: "success",
+            message: "添加成功!",
+          });
+          addVisible.value = false;
+        } else {
+          ElMessage({
+            type: "error",
+            message: res.msg,
+          });
+        }
+        getList();
       });
-      addVisible.value = false;
     } else {
       ElMessage({
         type: "error",
@@ -282,11 +285,21 @@ const editItem = async (formName) => {
   console.log(proxy);
   proxy.$refs[formName].validate((valid) => {
     if (valid) {
-      ElMessage({
-        type: "success",
-        message: "编辑成功!",
+      api.updateAccount(editForm.value).then((res) => {
+        if (res.code === 200) {
+          ElMessage({
+            type: "success",
+            message: "修改成功!",
+          });
+          editVisible.value = false;
+        } else {
+          ElMessage({
+            type: "error",
+            message: res.msg,
+          });
+        }
+        getList();
       });
-      editVisible.value = false;
     } else {
       ElMessage({
         type: "error",
@@ -297,10 +310,51 @@ const editItem = async (formName) => {
   });
 };
 
-const deleteItem = async () => {
-  deleteVisible.value = false;
+const getList = async () => {
+  const res = await api.getAllAccount();
+  if (res.code === 200) tableData.value = Object.freeze(res.data);
 };
 
+const editAccount = async (id) => {
+  const res = await api.getAccountById(id);
+  if (res.code === 200) {
+    editForm.value = res.data;
+    editVisible.value = true;
+    editForm.value.groupId = parseInt(editForm.value.groupId);
+  } else {
+    ElMessage({
+      type: "error",
+      message: res.msg,
+    });
+  }
+};
+
+const deleteAccount = async (id) => {
+  // deleteVisible.value = true;
+  ElMessageBox.confirm("此操作将永久删除该账号, 是否继续?", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  }).then(() => {
+    deleteItem(id);
+  });
+};
+
+const deleteItem = async (id) => {
+  const res = await api.deleteAccountById({ id: id });
+  if (res.code === 200) {
+    ElMessage({
+      type: "success",
+      message: "删除成功!",
+    });
+    getList();
+  } else {
+    ElMessage({
+      type: "error",
+      message: res.msg,
+    });
+  }
+};
 </script>
 
 <style scoped>

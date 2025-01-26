@@ -8,7 +8,7 @@
           <span class="circle">
             <el-icon><Monitor /></el-icon>
           </span>
-          <h5 class="nav-header">{{ $route.params.oid }}</h5>
+          <h5 class="nav-header">{{ username }}</h5>
         </div>
         <!-- 侧边==导航栏 -->
         <el-menu
@@ -56,7 +56,7 @@
           <keep-alive>
             <div style="position: relative">
               <el-tabs
-                v-model="xStore.state.activeIndex"
+                v-model="store.state.activeIndex"
                 type="card"
                 class="demo-tabs"
                 closable
@@ -64,13 +64,15 @@
                 @tab-remove="removeTab"
                 style="user-select: none">
                 <el-tab-pane
-                  v-for="item in xStore.state.openTab"
+                  v-for="item in store.state.openTab"
                   :key="item.name"
                   :label="item.title"
                   :name="item.name">
                 </el-tab-pane>
               </el-tabs>
-              <el-button :icon="Refresh" class="refresh-button">刷新</el-button>
+              <el-button :icon="Refresh" class="refresh-button" @click="refresh"
+                >刷新</el-button
+              >
             </div>
           </keep-alive>
         </el-header>
@@ -88,50 +90,66 @@ import { useStore } from "vuex";
 import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { Refresh } from "@element-plus/icons";
+import Cookies from "js-cookie";
+import { ElMessage } from "element-plus";
+import { SwitchButton, House, User, Message } from "@element-plus/icons-vue";
+import * as userApi from "@/api/user";
 
 const router = useRouter();
 const route = useRoute();
-const xStore = useStore();
+const store = useStore();
+const username = store.state.username;
 
 const clickTab = async () => {
   //点击标签 跳转至 对应 路由
-  // console.log('active', xStore.state.activeIndex);
-  router.push(xStore.state.activeIndex);
+  // console.log('active', store.state.activeIndex);
+  router.push(store.state.activeIndex);
 };
 
 const removeTab = (name) => {
-  xStore.commit("deleteTab", name);
-  if (xStore.state.activeIndex === name) {
+  store.commit("deleteTab", name);
+  if (store.state.activeIndex === name) {
     //如果选中状态的标签被删除
     //重新设置激活的标签 并 跳转 对应路由
-    if (xStore.state.openTab.length >= 1) {
-      xStore.commit(
+    if (store.state.openTab.length >= 1) {
+      store.commit(
         "setActiveTab",
-        xStore.state.openTab[xStore.state.openTab.length - 1].name
+        store.state.openTab[store.state.openTab.length - 1].name
       );
       router.push({
-        path: xStore.state.openTab[xStore.state.openTab.length - 1].name,
+        path: store.state.openTab[store.state.openTab.length - 1].name,
       });
     } else {
-      xStore.commit("addTab", { title: "首页", name: "home" });
-      xStore.commit("setActiveTab", "home");
+      store.commit("addTab", { title: "首页", name: "home" });
+      store.commit("setActiveTab", "home");
       router.push("home");
     }
   }
 };
 
 const signOut = () => {
-  xStore.state.openTab = [];
-  sessionStorage.removeItem("state");
+  userApi.signOut().then((res) => {
+    if (res.code == 200) {
+      ElMessage.success("退出成功");
+      store.commit("logout");
+      Cookies.remove("username");
+      Cookies.remove("password");
+      Cookies.remove("satoken");
+      router.push(`/login?redirect=${router.currentRoute.value.path}`);
+    } else {
+      ElMessage.error(res.msg);
+    }
+  });
 };
 
 onMounted(() => {
-  xStore.commit("setActiveTab", route.meta.activeMenu);
-  console.log(route.meta);
-  if (route.path == "user-system/home") {
-    console.log(route.path);
-  }
+  store.commit("setActiveTab", route.meta.activeMenu);
 });
+
+const refresh = () => {
+  //刷新当前页面
+  window.location.reload();
+};
 </script>
 
 <style lang="css" scoped>

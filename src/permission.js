@@ -14,23 +14,29 @@ router.beforeEach(async (to, from, next) => {
   // console.log(store.state);
   if (store.state.islogin) {
     // 已登录
-    console.log(to);
-    console.log(to.path);
-    console.log(to.meta.permission);
+    // console.log(to);
+    // console.log(to.path);
+    // console.log(to.meta.permission);
     if (to.path === "/login" || to.path === "/") {
       if (store.state.rule == "超级管理员") {
-        console.log("超级管理员");
+        // console.log("超级管理员");
         next(`/superadmin-system`);
-      } else next();
+      } else next(`/user-system`);
     } else if (!to.meta.permission) {
       next();
     } else if (store.state.permissionList.indexOf(to.meta.permission) !== -1) {
       next();
     } else {
-      next(`/404`);
+      if (store.state.rule == "超级管理员") {
+        // console.log("超级管理员");
+        next(`/superadmin-system`);
+      } else next(`/user-system`);
     }
   } else {
     // 未登录
+    if (getToken()) {
+      // 有token
+    }
     if (store.state.whiteList.indexOf(to.path) !== -1) {
       //  白名单，准许进入
       next();
@@ -39,5 +45,5 @@ router.beforeEach(async (to, from, next) => {
       next(`/login?redirect=${to.fullPath}`);
     }
   }
-  console.log(to.path);
+  // console.log(to.path);
 });
