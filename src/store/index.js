@@ -17,11 +17,14 @@ const state = sessionStorage.getItem('state')
 
 const mutations = {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   islogin(state, user) {
     state.islogin = user.islogin
     state.rule = user.authority
     state.username = user.username
 =======
+=======
+>>>>>>> Stashed changes
   getLogin(state, user) {
     state.islogin = true;
     state.rule = "超级管理员";
