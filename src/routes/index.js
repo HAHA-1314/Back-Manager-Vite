@@ -123,9 +123,9 @@ const routes = [
     },
   },
   {
-    path: "/user-system/:oid(\\d+)",
+    path: "/user-system",
+    redirect: "/user-system/home",
     component: UserSystemView, //首页导航组件
-    redirct: "/user-system/:oid(\\d+)/home",
     children: [
       {
         path: "home", //首页
