@@ -1,6 +1,6 @@
 import request from '../utils/request.js'
 
-export function addTest(params) {
+export function addTestReq(params) {
   return request({
     url: '/test',
     method: 'post',

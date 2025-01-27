@@ -1,6 +1,6 @@
 import request from '../utils/request'
 
-export function getAllTest() {
+export function getAllTestReq() {
   return request({
     url: '/test/get/all',
     method: 'get',
