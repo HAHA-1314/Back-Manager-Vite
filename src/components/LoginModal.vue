@@ -53,14 +53,15 @@
 </template>
 
 <script setup>
-import { ref, getCurrentInstance, watch } from 'vue'
-import { useStore } from 'vuex'
-import { useRouter, useRoute } from 'vue-router'
-import Cookies from 'js-cookie'
-const { proxy } = getCurrentInstance()
-const store = useStore()
-const router = useRouter()
-const route = useRoute()
+import { ref, getCurrentInstance, watch } from "vue";
+import { useStore } from "vuex";
+import { useRouter, useRoute } from "vue-router";
+import Cookies from "js-cookie";
+import { encrypt,decrypt } from "../utils/jsencrypt";
+const { proxy } = getCurrentInstance();
+const store = useStore();
+const router = useRouter();
+const route = useRoute();
 const loginForm = ref({
   username: '',
   password: '',
@@ -88,8 +89,8 @@ const handleLogin = () => {
   // console.log(loginForm.value.username, loginForm.valuepassword);
   proxy.$refs.loginRef.validate((valid) => {
     if (valid) {
-      Cookies.set('username', loginForm.value.username, { expires: 30 })
-      Cookies.set('password', loginForm.value.password, {
+      Cookies.set("username", loginForm.value.username, { expires: 30 });
+      Cookies.set("password", encrypt(loginForm.value.password), {
         expires: 30,
       })
       store.dispatch('login', loginForm.value).then((res) => {

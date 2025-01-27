@@ -2,6 +2,7 @@ import { createStore } from "vuex";
 import * as userApi from "../api/user";
 import { ElMessage } from "element-plus";
 import Setting from "./modules/setting";
+import Dict from "./modules/dict";
 
 const state = sessionStorage.getItem("state")
   ? JSON.parse(sessionStorage.getItem("state"))
@@ -17,7 +18,7 @@ const state = sessionStorage.getItem("state")
     };
 
 const mutations = {
-  getLogin(state,user) {
+  getLogin(state, user) {
     state.islogin = true;
     state.rule = "超级管理员";
     state.username = user.username;
@@ -84,17 +85,18 @@ const actions = {
             type: "success",
             duration: 2 * 1000,
           });
-
-          this.state.permissionList.push("superadmin");
-          this.state.permissionList.push("admin");
-          this.state.rule = "超级管理员";
-          this.state.username = "admin";
-
+          if (response.data === "superadmin") {
+            this.state.permissionList.push("superadmin");
+            // this.state.permissionList.push("admin");
+            this.state.rule = "超级管理员";
+            this.state.username = "admin";
+          } else {
+            this.state.permissionList.push("admin");
+            this.state.rule = "普通用户";
+            this.state.username = response.data;
+          }
           this.state.islogin = true;
           resolve(response);
-        })
-        .catch((error) => {
-          reject(error);
         });
     });
   },
@@ -105,6 +107,7 @@ const actions = {
 
 const modules = {
   setting: Setting,
+  dict: Dict,
 };
 
 export default createStore({
