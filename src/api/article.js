@@ -16,11 +16,11 @@ export function getArticleDetail(id) {
 }
 
 //添加推文
-export function addArticle(data) {
+export function addArticle(params) {
   return request({
     url: "/tweet",
     method: "post",
-    data,
+    params,
   });
 }
 

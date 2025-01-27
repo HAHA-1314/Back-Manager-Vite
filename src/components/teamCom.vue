@@ -109,9 +109,13 @@ const openEditGroup = async (groupId) => {
   $("#summernote2").summernote("code", ruleForm.value.requirement);
   setFont();
 };
+const clearValidate = () => {
+  ruleFormRef.value.clearValidate();
+};
 defineExpose({
   openEditGroup,
-  initForm
+  initForm,
+  clearValidate
 });
 </script>
 <template>

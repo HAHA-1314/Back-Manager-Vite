@@ -8,6 +8,7 @@ import {
   delArticle,
 } from "../api/article";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { toRaw } from "vue";
 const dialogVisible = ref(false);
 const title = ref("");
 const search = ref("");
@@ -16,7 +17,11 @@ const dialogImageUrl = ref("");
 const dialogSee = ref(false);
 const ruleFormRef = ref();
 const articleId = ref("");
-const sendPics = ref([]);
+const sendPics = ref<{ url: string }[]>([]);
+interface ApiResponse {
+  code: number;
+  // 你可以在这里添加更多字段
+}
 interface RuleForm {
   name: string;
   pics: { url: string }[]; // pics 应该是一个包含 { url: string } 对象的数组
@@ -34,7 +39,7 @@ const defaultForm = {
 };
 const rules = {
   name: [{ required: true, message: "请输入推文名称", trigger: "blur" }],
-  // pics: [{ required: true, message: "请上传图片", trigger: "blur" }],
+  pics: [{ required: true, message: "请上传图片", trigger: "blur" }],
   url: [{ required: true, message: "请输入推文链接", trigger: "blur" }],
 };
 const getArticle = async () => {
@@ -51,12 +56,16 @@ const handleEdit = async (row) => {
   title.value = "编辑推文";
   const { data } = await getArticleDetail(row.id);
   console.log(data);
-
   ruleForm.value.name = data.name;
   ruleForm.value.url = data.url;
+  console.log(ruleForm.value.pics);
+  console.log(data.pic);
   data.pic.forEach((item) => {
     ruleForm.value.pics.push({ url: item });
   });
+  sendPics.value = data.pic;
+  console.log(ruleForm.value.pics);
+
   dialogVisible.value = true;
 };
 const handleDelete = async (row) => {
@@ -83,31 +92,49 @@ const handleDelete = async (row) => {
 };
 const handleClose = () => {
   dialogVisible.value = false;
-  ruleForm.value = defaultForm;
+  ruleForm.value.name = "";
+  ruleForm.value.pics = [];
+  ruleForm.value.url = "";
+  sendPics.value = [];
+  ruleFormRef.value.clearValidate();
 };
 
 const tableData = ref([]);
 const buttonConfirm = async () => {
   await ruleFormRef.value.validate();
-
+  const rawData = toRaw(sendPics.value);
+  console.log(ruleForm.value.name, rawData, ruleForm.value.url);
   if (title.value === "添加推文") {
-    await addArticle({
+    const res = await addArticle({
       name: ruleForm.value.name,
-      pics: sendPics.value,
+      pics: rawData,
       url: ruleForm.value.url,
     });
-    ElMessage.success("添加成功");
+    if (res.code === 200) {
+      ElMessage.success("添加成功");
+    } else {
+      ElMessage.error("添加失败");
+    }
   } else {
     console.log(ruleForm.value.pics);
-    await updateArticle({
+    const res = await updateArticle({
       id: articleId.value,
       name: ruleForm.value.name,
-      pics: [1, 2],
+      pics: rawData,
       url: ruleForm.value.url,
     });
-    // ElMessage.success("编辑成功");
+    if (res.code === 200) {
+      ElMessage.success("编辑成功");
+    } else {
+      ElMessage.error("编辑失败");
+    }
   }
+  ruleForm.value.name = "";
+  ruleForm.value.pics = [];
+  ruleForm.value.url = "";
+  sendPics.value = [];
   dialogVisible.value = false;
+  getArticle();
 };
 
 const handleRemove = (uploadFile, uploadFiles) => {

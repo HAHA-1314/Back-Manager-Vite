@@ -21,6 +21,7 @@ const renderGroupList = async () => {
 const handleClose = () => {
   dialogVisible.value = false;
   editGroup.value.initForm();
+  editGroup.value.clearValidate()
 };
 const handleEdit = (e) => {
   console.log(e);
@@ -28,7 +29,7 @@ const handleEdit = (e) => {
     ElMessage.success("编辑成功");
     dialogVisible.value = false;
   } else {
-    ElMessage.warn("编辑失败");
+    ElMessage.error("编辑失败");
   }
 };
 onMounted(() => {
