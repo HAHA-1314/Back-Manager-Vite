@@ -35,10 +35,10 @@
         prop="status"
         width="300"
       ></el-table-column>
-      <el-table-column label="操作" width="350">
-        <template #default>
+      <el-table-column label="操作" width="350" prop="id">
+        <template #default="{ row }">
           <el-button @click="dialogVisible = true">编辑</el-button>
-          <el-button @click="deleteFn">删除</el-button>
+          <el-button @click="deleteTest(row.id)">删除</el-button>
         </template>
       </el-table-column>
       <el-table-column></el-table-column>
@@ -77,11 +77,7 @@
             style="color: red; margin-right: -3px; margin-top: 5px"
           ></i>
           <el-form-item label="考核名称">
-            <el-input
-              placeholder="请输入"
-              style="width: 200px"
-              v-model="testName"
-            >
+            <el-input placeholder="请输入" style="width: 200px" v-model="name">
             </el-input>
           </el-form-item>
         </div>
@@ -105,7 +101,7 @@
           <el-input
             placeholder="请输入"
             style="width: 400px; height: 200px"
-            v-model="testReq"
+            v-model="content"
           >
           </el-input>
         </el-form-item>
@@ -134,7 +130,7 @@
       <el-button
         type="primary"
         style="width: 120px; margin-right: 10px"
-        @click="addEva"
+        @click="addTest"
         >确定</el-button
       >
     </div>
@@ -145,31 +141,63 @@
 // const showPage = ref('page1')
 import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getAllEva } from '@/api/allEva.js'
+import { getAllTestReq } from '@/api/allTest.js'
 import { onMounted } from 'vue'
+import { addTestReq } from '../api/addTest'
+import { delTestReq } from '../api/delTest'
 
 const processList = ref([])
 
-const testName = ref('')
-const testReq = ref('')
+const name = ref('')
+const content = ref('')
 const date = ref('')
-
+const begin = ref('')
+const end = ref('')
+const id = ref('')
 const dialogVisible = ref(false)
 
-const getData = async () => {
-  const res = await getAllEva()
-  processList.value = res.data || []
-  console.log(processList)
-  console.log(res.data)
+function formatData(dateString) {
+  return dateString.split('T')[0]
 }
+//格式化日期
+
+const getTestData = async () => {
+  const res = await getAllTestReq()
+  res.data.forEach((item) => {
+    ;(item.begin = formatData(item.begin)), (item.end = formatData(item.end))
+  })
+  processList.value = res.data || []
+}
+//请求获取考核信息
 
 onMounted(() => {
-  console.log(111)
-  getData()
+  getTestData()
 })
 
-const addEva = () => {
-  if (testName.value == '' || testReq.value == '' || date.value == '') {
+const addTestData = async () => {
+  const res = await addTestReq({
+    name: name.value,
+    content: content.value,
+    begin: date.value[0],
+    end: date.value[1],
+  })
+  if (res.code == 200) {
+    ElMessage({
+      type: 'success',
+      message: '添加成功',
+    })
+    dialogVisible.value = false
+  } else {
+    ElMessage({
+      type: 'error',
+      message: '添加失败',
+    })
+  }
+}
+//请求添加考核信息
+
+const addTest = () => {
+  if (name.value == '' || content.value == '' || date.value == '') {
     ElMessage({
       type: 'warning',
       message: '请完善信息',
@@ -181,26 +209,27 @@ const addEva = () => {
     cancelButtonText: '取消',
     type: 'warning',
   }).then(() => {
-    ElMessage({
-      type: 'success',
-      message: '添加成功',
-    })
+    addTestData()
     dialogVisible.value = false
   })
 }
 
-const deleteFn = () => {
+const deleteTest = (e) => {
   ElMessageBox.confirm('您确定要删除吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning',
   }).then(() => {
+    id.value = e
+    // delTestReq(id.value)
     ElMessage({
       type: 'success',
       message: '删除成功',
     })
+    // getTestData()
   })
 }
+//删除考核信息
 </script>
 
 <style scoped>
