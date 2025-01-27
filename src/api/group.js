@@ -13,10 +13,10 @@ export function getGroupDetail(id) {
   });
 }
 //修改组别信息
-export function updateGroup(data) {
+export function updateGroup(params) {
   return request({
     url: "/clazz",
     method: "put",
-    data,
+    params,
   });
 }

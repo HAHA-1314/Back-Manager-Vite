@@ -15,11 +15,31 @@ export function getArticleDetail(id) {
   });
 }
 
+//添加推文
+export function addArticle(data) {
+  return request({
+    url: "/tweet",
+    method: "post",
+    data,
+  });
+}
+
 //修改推文
-export function updateArticle(data) {
+export function updateArticle(params) {
   return request({
     url: "/tweet",
     method: "put",
-    data,
+    params,
+  });
+}
+
+//删除推文
+export function delArticle(id) {
+  return request({
+    url: "/tweet",
+    method: "delete",
+    params: {
+      id,
+    },
   });
 }

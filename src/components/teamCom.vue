@@ -48,7 +48,6 @@ onBeforeUnmount(() => {
   $("#summernote1").summernote("destroy");
   $("#summernote2").summernote("destroy");
 });
-//保存编辑组别
 
 const ruleFormRef = ref();
 const ruleForm = ref({
@@ -56,6 +55,14 @@ const ruleForm = ref({
   requirement: "",
   keywords: ["", "", ""],
 });
+const defaultForm = {
+  introduction: "",
+  requirement: "",
+  keywords: ["", "", ""],
+};
+const initForm = () => {
+  ruleForm.value = defaultForm
+}
 const validateKeywords = (rule, value, callback) => {
   // 检查是否所有关键词均为空
   const allEmpty = ruleForm.value.keywords.every((item) => !item.trim());
@@ -77,11 +84,10 @@ const rules = {
   introduction: [{ required: true, message: "请输入介绍", trigger: "blur" }],
   requirement: [{ required: true, message: "请输入招新需求", trigger: "blur" }],
 };
+const emit = defineEmits(['handleTeam'])
 const teamSave = async () => {
   markupStr1 = $("#summernote1").summernote("code");
-  //console.log(markupStr1);
   markupStr2 = $("#summernote2").summernote("code");
-  //console.log(markupStr2);
   ruleForm.value.introduction = extractTextFromHTML(markupStr1);
   ruleForm.value.requirement = extractTextFromHTML(markupStr2);
   console.log(extractTextFromHTML(markupStr1));
@@ -93,23 +99,19 @@ const teamSave = async () => {
     ...ruleForm.value,
   };
   const res = await updateGroup(dataToSend);
-  console.log(res);
+  emit('handleTeam',res.code)
 };
 const openEditGroup = async (groupId) => {
-  console.log(groupId);
-
   id.value = groupId;
   const res = await getGroupDetail(groupId);
-  console.log(res);
-  ruleForm.value.keywords = res.data.keywords;
-  ruleForm.value.introduction = res.data.introduction;
-  ruleForm.value.requirement = res.data.requirement;
+  ruleForm.value = res.data;
   $("#summernote1").summernote("code", ruleForm.value.introduction);
   $("#summernote2").summernote("code", ruleForm.value.requirement);
   setFont();
 };
 defineExpose({
   openEditGroup,
+  initForm
 });
 </script>
 <template>

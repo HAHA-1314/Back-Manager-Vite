@@ -3,8 +3,11 @@ import { computed, ref, onMounted } from "vue";
 import {
   getArticleList,
   getArticleDetail,
+  addArticle,
   updateArticle,
+  delArticle,
 } from "../api/article";
+import { ElMessage, ElMessageBox } from "element-plus";
 const dialogVisible = ref(false);
 const title = ref("");
 const search = ref("");
@@ -13,63 +16,98 @@ const dialogImageUrl = ref("");
 const dialogSee = ref(false);
 const ruleFormRef = ref();
 const articleId = ref("");
+const sendPics = ref([]);
 interface RuleForm {
-  articleName: string;
-  fileList: { url: string }[]; // fileList 应该是一个包含 { url: string } 对象的数组
-  articleLink: string;
+  name: string;
+  pics: { url: string }[]; // pics 应该是一个包含 { url: string } 对象的数组
+  url: string;
 }
 const ruleForm = ref<RuleForm>({
-  articleName: "",
-  fileList: [],
-  articleLink: "",
+  name: "",
+  pics: [],
+  url: "",
 });
+const defaultForm = {
+  name: "",
+  pics: [],
+  url: "",
+};
 const rules = {
-  articleName: [{ required: true, message: "请输入推文名称", trigger: "blur" }],
-  // fileList: [{ required: true, message: "请上传图片", trigger: "blur" }],
-  articleLink: [{ required: true, message: "请输入推文链接", trigger: "blur" }],
-};
-
-const handleAdd = () => {
-  dialogVisible.value = true;
-  title.value = "添加推文";
-};
-const handleEdit = async (row) => {
-  articleId.value = row.id;
-  dialogVisible.value = true;
-  title.value = "编辑推文";
-  console.log(row);
-  const { data } = await getArticleDetail(row.id);
-  ruleForm.value.articleName = data.name;
-  ruleForm.value.fileList = data.pics;
-  ruleForm.value.articleLink = data.url;
-};
-const handleDelete = (row) => {
-  console.log(row);
-};
-const handleClose = () => {
-  dialogVisible.value = false;
+  name: [{ required: true, message: "请输入推文名称", trigger: "blur" }],
+  // pics: [{ required: true, message: "请上传图片", trigger: "blur" }],
+  url: [{ required: true, message: "请输入推文链接", trigger: "blur" }],
 };
 const getArticle = async () => {
   const res = await getArticleList();
   tableData.value = res.data || [];
 };
+const handleAdd = () => {
+  ruleForm.value = defaultForm;
+  title.value = "添加推文";
+  dialogVisible.value = true;
+};
+const handleEdit = async (row) => {
+  articleId.value = row.id;
+  title.value = "编辑推文";
+  const { data } = await getArticleDetail(row.id);
+  console.log(data);
+
+  ruleForm.value.name = data.name;
+  ruleForm.value.url = data.url;
+  data.pic.forEach((item) => {
+    ruleForm.value.pics.push({ url: item });
+  });
+  dialogVisible.value = true;
+};
+const handleDelete = async (row) => {
+  console.log(row);
+  ElMessageBox.confirm("是否删除项目", "Warning", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      await delArticle(row.id);
+      getArticle();
+      ElMessage({
+        type: "success",
+        message: "删除成功",
+      });
+    })
+    .catch(() => {
+      ElMessage({
+        type: "info",
+        message: "取消删除",
+      });
+    });
+};
+const handleClose = () => {
+  dialogVisible.value = false;
+  ruleForm.value = defaultForm;
+};
 
 const tableData = ref([]);
 const buttonConfirm = async () => {
   await ruleFormRef.value.validate();
-  dialogVisible.value = false;
+
   if (title.value === "添加推文") {
+    await addArticle({
+      name: ruleForm.value.name,
+      pics: sendPics.value,
+      url: ruleForm.value.url,
+    });
+    ElMessage.success("添加成功");
   } else {
-    console.log(ruleForm.value.fileList);
+    console.log(ruleForm.value.pics);
     await updateArticle({
       id: articleId.value,
-      name: ruleForm.value.articleName,
-      pics: [
-        "https://sns-webpic-qc.xhscdn.com/202501261939/c2b4fb6913d00e4289683e8fc6235144/1040g00831c2e32vsgs605pqhg87i1359enn2550!nc_n_webp_mw_1",
-      ],
-      url: ruleForm.value.articleLink,
+      name: ruleForm.value.name,
+      pics: [1, 2],
+      url: ruleForm.value.url,
     });
+    // ElMessage.success("编辑成功");
   }
+  dialogVisible.value = false;
 };
 
 const handleRemove = (uploadFile, uploadFiles) => {
@@ -81,7 +119,8 @@ const handlePictureCardPreview = (uploadFile) => {
 };
 const handleFileChange = (file) => {
   console.log(file);
-  ruleForm.value.fileList.push({ url: file.data });
+  sendPics.value.push(file.data);
+  console.log(sendPics.value);
 };
 onMounted(() => {
   getArticle();
@@ -129,23 +168,23 @@ onMounted(() => {
   >
     <el-card>
       <el-form ref="ruleFormRef" :rules="rules" :model="ruleForm">
-        <el-form-item label="推文名称：" prop="articleName">
+        <el-form-item label="推文名称：" prop="name">
           <el-input
             placeholder="请输入"
             style="width: 300px"
-            v-model="ruleForm.articleName"
+            v-model="ruleForm.name"
           ></el-input>
         </el-form-item>
 
         <el-form-item
           label="图片添加："
           style="display: flex; flex-direction: column; align-items: start"
-          prop="fileList"
+          prop="pics"
         >
           <el-scrollbar>
             <div class="imgList">
               <el-upload
-                v-model:file-list="ruleForm.fileList"
+                v-model:file-list="ruleForm.pics"
                 action="http://localhost:8080/api/file/upload"
                 list-type="picture-card"
                 :on-success="handleFileChange"
@@ -163,11 +202,11 @@ onMounted(() => {
           </el-scrollbar>
         </el-form-item>
 
-        <el-form-item label="推文链接：" prop="articleLink">
+        <el-form-item label="推文链接：" prop="url">
           <el-input
             placeholder="请输入链接"
             style="width: 300px"
-            v-model="ruleForm.articleLink"
+            v-model="ruleForm.url"
           ></el-input>
         </el-form-item>
       </el-form>

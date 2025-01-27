@@ -2,6 +2,7 @@
 import { ref, onMounted, nextTick } from "vue";
 import team_com from "./teamCom.vue";
 import { getGroupList } from "@/api/group";
+import { ElMessage } from "element-plus";
 const tableData = ref([]);
 const dialogVisible = ref(false);
 const title = ref("");
@@ -9,17 +10,26 @@ const editGroup = ref();
 const teamEdit = (row) => {
   title.value = "编辑组别";
   dialogVisible.value = true;
-  console.log(row);
   nextTick(() => {
     editGroup.value.openEditGroup(row.id);
   });
 };
-const dialogChange = () => {
-  dialogVisible.value = !dialogVisible.value;
-};
 const renderGroupList = async () => {
   const res = await getGroupList();
   tableData.value = res.data || [];
+};
+const handleClose = () => {
+  dialogVisible.value = false;
+  editGroup.value.initForm();
+};
+const handleEdit = (e) => {
+  console.log(e);
+  if (e === 200) {
+    ElMessage.success("编辑成功");
+    dialogVisible.value = false;
+  } else {
+    ElMessage.warn("编辑失败");
+  }
 };
 onMounted(() => {
   renderGroupList();
@@ -54,7 +64,7 @@ onMounted(() => {
     :before-close="handleClose"
     align-center
   >
-    <team_com ref="editGroup"></team_com>
+    <team_com ref="editGroup" @handleTeam="handleEdit"></team_com>
   </el-dialog>
 </template>
 
