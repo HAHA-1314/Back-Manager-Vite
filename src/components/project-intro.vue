@@ -1,7 +1,8 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import group_com from "./groupCom.vue";
-import { getProjectList } from "../api/project";
+import { getProjectList, deleteProject } from "../api/project";
+import { ElMessage, ElMessageBox } from "element-plus";
 const tableData = ref([]);
 const dialogVisible = ref(false);
 const title = ref("");
@@ -15,11 +16,29 @@ const teamEdit = () => {
 };
 const renderData = async () => {
   const res = await getProjectList();
-  console.log(res);
-  
   tableData.value = res.data || [];
 };
-const teamDelete = () => {};
+const teamDelete = async (row) => {
+  ElMessageBox.confirm("是否删除项目", "Warning", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      await deleteProject(row.id);
+      renderData();
+      ElMessage({
+        type: "success",
+        message: "删除成功",
+      });
+    })
+    .catch(() => {
+      ElMessage({
+        type: "info",
+        message: "取消删除",
+      });
+    });
+};
 onMounted(() => {
   renderData();
 });
@@ -42,13 +61,13 @@ onMounted(() => {
           <el-button
             type="primary"
             style="margin-right: 50px; width: 120px"
-            @click="teamEdit(scope.$index, scope.row)"
+            @click="teamEdit(scope.row)"
             >编辑</el-button
           >
           <el-button
             type="danger"
             style="width: 80px"
-            @click="teamDelete(scope.$index, scope.row)"
+            @click="teamDelete(scope.row)"
             >删除</el-button
           >
         </template>

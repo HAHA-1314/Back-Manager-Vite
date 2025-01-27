@@ -7,3 +7,13 @@ export function getProjectList(params) {
     params,
   });
 }
+
+export function deleteProject(id) {
+  return request({
+    url: `/project`,
+    method: "delete",
+    params: {
+      id,
+    },
+  });
+}

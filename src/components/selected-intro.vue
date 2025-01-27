@@ -1,6 +1,10 @@
 <script lang="ts" setup>
 import { computed, ref, onMounted } from "vue";
-import { getArticleList } from "../api/article";
+import {
+  getArticleList,
+  getArticleDetail,
+  updateArticle,
+} from "../api/article";
 const dialogVisible = ref(false);
 const title = ref("");
 const search = ref("");
@@ -8,6 +12,7 @@ const imgArticle = ref("");
 const dialogImageUrl = ref("");
 const dialogSee = ref(false);
 const ruleFormRef = ref();
+const articleId = ref("");
 interface RuleForm {
   articleName: string;
   fileList: { url: string }[]; // fileList 应该是一个包含 { url: string } 对象的数组
@@ -20,7 +25,7 @@ const ruleForm = ref<RuleForm>({
 });
 const rules = {
   articleName: [{ required: true, message: "请输入推文名称", trigger: "blur" }],
-  fileList: [{ required: true, message: "请上传图片", trigger: "blur" }],
+  // fileList: [{ required: true, message: "请上传图片", trigger: "blur" }],
   articleLink: [{ required: true, message: "请输入推文链接", trigger: "blur" }],
 };
 
@@ -28,13 +33,15 @@ const handleAdd = () => {
   dialogVisible.value = true;
   title.value = "添加推文";
 };
-const handleEdit = (row) => {
+const handleEdit = async (row) => {
+  articleId.value = row.id;
   dialogVisible.value = true;
   title.value = "编辑推文";
   console.log(row);
-  ruleForm.value.articleName = row.name;
-  ruleForm.value.fileList = row.pics;
-  ruleForm.value.articleLink = row.url;
+  const { data } = await getArticleDetail(row.id);
+  ruleForm.value.articleName = data.name;
+  ruleForm.value.fileList = data.pics;
+  ruleForm.value.articleLink = data.url;
 };
 const handleDelete = (row) => {
   console.log(row);
@@ -54,6 +61,14 @@ const buttonConfirm = async () => {
   if (title.value === "添加推文") {
   } else {
     console.log(ruleForm.value.fileList);
+    await updateArticle({
+      id: articleId.value,
+      name: ruleForm.value.articleName,
+      pics: [
+        "https://sns-webpic-qc.xhscdn.com/202501261939/c2b4fb6913d00e4289683e8fc6235144/1040g00831c2e32vsgs605pqhg87i1359enn2550!nc_n_webp_mw_1",
+      ],
+      url: ruleForm.value.articleLink,
+    });
   }
 };
 

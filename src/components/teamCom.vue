@@ -1,18 +1,21 @@
 <script setup>
 import { onMounted, onBeforeUnmount, ref } from "vue";
 import extractTextFromHTML from "../utils/extractText";
-import { getGroupDetail } from "@/api/group";
+import { getGroupDetail, updateGroup } from "@/api/group";
 let markupStr1 = $("#summernote1").summernote("code");
 let markupStr2 = $("#summernote2").summernote("code");
+const id = ref(0);
+const setFont = () => {
+  $("#summernote1").summernote("fontName", "Helvetica");
+  $("#summernote2").summernote("fontName", "Helvetica");
+};
 const initSummernote = () => {
   // 初始化第一个编辑器
   $(document).ready(function () {
-    $("#summernote1").summernote("fontName", "Helvetica");
-    $("#summernote2").summernote("fontName", "Helvetica");
-
+    setFont();
     $("#summernote1").summernote("destroy"); // 确保之前的实例被销毁
     $("#summernote1").summernote({
-      height: 220,
+      height: 200,
       width: 1200,
       minHeight: null,
       maxHeight: null,
@@ -24,7 +27,7 @@ const initSummernote = () => {
     // 初始化第二个编辑器
     $("#summernote2").summernote("destroy"); // 确保之前的实例被销毁
     $("#summernote2").summernote({
-      height: 220,
+      height: 200,
       width: 1200,
       minHeight: null,
       maxHeight: null,
@@ -32,8 +35,7 @@ const initSummernote = () => {
       fontNamesIgnoreCheck: ["Helvetica"],
       fontNames: ["Helvetica"],
     });
-    $("#summernote1").summernote("fontName", "Helvetica");
-    $("#summernote2").summernote("fontName", "Helvetica");
+    setFont();
     // 设置字体样式
   });
 };
@@ -50,13 +52,13 @@ onBeforeUnmount(() => {
 
 const ruleFormRef = ref();
 const ruleForm = ref({
-  keyword: ["", "", ""],
-  teamIntro: "",
-  recruitNeed: "",
+  introduction: "",
+  requirement: "",
+  keywords: ["", "", ""],
 });
 const validateKeywords = (rule, value, callback) => {
   // 检查是否所有关键词均为空
-  const allEmpty = ruleForm.value.keyword.every((item) => !item.trim());
+  const allEmpty = ruleForm.value.keywords.every((item) => !item.trim());
   if (allEmpty) {
     callback(new Error("至少填写一个关键词"));
   } else {
@@ -64,7 +66,7 @@ const validateKeywords = (rule, value, callback) => {
   }
 };
 const rules = {
-  keyword: [
+  keywords: [
     { required: true, message: "请至少输入一个关键词", trigger: "blur" },
     {
       validator: validateKeywords,
@@ -72,28 +74,39 @@ const rules = {
       trigger: "blur",
     },
   ],
-  teamIntro: [{ required: true, message: "请输入介绍", trigger: "blur" }],
-  recruitNeed: [{ required: true, message: "请输入招新需求", trigger: "blur" }],
+  introduction: [{ required: true, message: "请输入介绍", trigger: "blur" }],
+  requirement: [{ required: true, message: "请输入招新需求", trigger: "blur" }],
 };
 const teamSave = async () => {
-  $("#summernote1").summernote("fontName", "Helvetica");
-  $("#summernote2").summernote("fontName", "Helvetica");
   markupStr1 = $("#summernote1").summernote("code");
   //console.log(markupStr1);
   markupStr2 = $("#summernote2").summernote("code");
   //console.log(markupStr2);
-  ruleForm.value.teamIntro = extractTextFromHTML(markupStr1);
-  ruleForm.value.recruitNeed = extractTextFromHTML(markupStr2);
+  ruleForm.value.introduction = extractTextFromHTML(markupStr1);
+  ruleForm.value.requirement = extractTextFromHTML(markupStr2);
   console.log(extractTextFromHTML(markupStr1));
   console.log(extractTextFromHTML(markupStr2));
-
   await ruleFormRef.value.validate();
-};
-const openEditGroup = async (id) => {
-  console.log(id);
 
-  const res = await getGroupDetail(id);
+  const dataToSend = {
+    id: id.value,
+    ...ruleForm.value,
+  };
+  const res = await updateGroup(dataToSend);
   console.log(res);
+};
+const openEditGroup = async (groupId) => {
+  console.log(groupId);
+
+  id.value = groupId;
+  const res = await getGroupDetail(groupId);
+  console.log(res);
+  ruleForm.value.keywords = res.data.keywords;
+  ruleForm.value.introduction = res.data.introduction;
+  ruleForm.value.requirement = res.data.requirement;
+  $("#summernote1").summernote("code", ruleForm.value.introduction);
+  $("#summernote2").summernote("code", ruleForm.value.requirement);
+  setFont();
 };
 defineExpose({
   openEditGroup,
@@ -102,7 +115,7 @@ defineExpose({
 <template>
   <el-form :model="ruleForm" ref="ruleFormRef" :rules="rules">
     <div class="divideBox">
-      <el-form-item label="关键词" prop="keyword" class="editStyle">
+      <el-form-item label="关键词" prop="keywords" class="editStyle">
         <el-text class="mx-1" type="primary"
           ><el-icon><Warning /></el-icon>单个关键词限制在10个字以内</el-text
         >
@@ -111,19 +124,19 @@ defineExpose({
             <el-form-item label="关键词1:"
               ><el-input
                 placeholder="请输入关键词1"
-                v-model="ruleForm.keyword[0]"
+                v-model="ruleForm.keywords[0]"
               ></el-input
             ></el-form-item>
             <el-form-item label="关键词2:"
               ><el-input
                 placeholder="请输入关键词2"
-                v-model="ruleForm.keyword[1]"
+                v-model="ruleForm.keywords[1]"
               ></el-input
             ></el-form-item>
             <el-form-item label="关键词3:"
               ><el-input
                 placeholder="请输入关键词3"
-                v-model="ruleForm.keyword[2]"
+                v-model="ruleForm.keywords[2]"
               ></el-input
             ></el-form-item>
           </el-form>
@@ -133,7 +146,7 @@ defineExpose({
     <div class="divideBox">
       <el-form-item
         label="组别介绍"
-        prop="teamIntro"
+        prop="introduction"
         style="display: block"
         class="editStyle"
       >
@@ -143,7 +156,7 @@ defineExpose({
     <div class="divideBox">
       <el-form-item
         label="招新需求"
-        prop="recruitNeed"
+        prop="requirement"
         style="display: block"
         class="editStyle"
       >
@@ -160,7 +173,7 @@ defineExpose({
 <style scoped>
 .divideBox {
   padding-top: 10px;
-  padding-bottom: 20px;
+  padding-bottom: 5px;
   border-bottom: 1px solid #dcdfe6;
 }
 .keyForm {

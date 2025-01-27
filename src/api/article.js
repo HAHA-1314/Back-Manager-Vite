@@ -8,3 +8,18 @@ export function getArticleList(params) {
   });
 }
 
+export function getArticleDetail(id) {
+  return request({
+    url: `/tweet/get/${id}`,
+    method: "get",
+  });
+}
+
+//修改推文
+export function updateArticle(data) {
+  return request({
+    url: "/tweet",
+    method: "put",
+    data,
+  });
+}

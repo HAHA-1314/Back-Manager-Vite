@@ -12,3 +12,11 @@ export function getGroupDetail(id) {
     method: "get",
   });
 }
+//修改组别信息
+export function updateGroup(data) {
+  return request({
+    url: "/clazz",
+    method: "put",
+    data,
+  });
+}
