@@ -18,29 +18,28 @@
           style="width: 120px"
           placeholder="第一次考核"
         >
-          <el-option label="第一次考核" value="第一次考核"></el-option>
-          <el-option label="第二次考核" value="第二次考核"></el-option>
-          <el-option label="第三次考核" value="第三次考核"></el-option>
+          <el-option label="第一次考核" value="1"></el-option>
+          <el-option label="第二次考核" value="2"></el-option>
+          <el-option label="第三次考核" value="3"></el-option>
         </el-select>
         <el-button @click="dialogVisible = true">添加预约</el-button>
       </div>
       <el-table :data="appointList">
-        <el-table-column
-          label="序号"
-          prop="number"
-          width="120"
-        ></el-table-column>
-        <el-table-column label="预约开启时间" prop="start"></el-table-column>
+        <el-table-column label="序号" prop="id" width="120"></el-table-column>
+        <el-table-column label="预约开启时间" prop="begin"></el-table-column>
         <el-table-column label="预约结束时间" prop="end"></el-table-column>
-        <el-table-column label="面试间隔时间" prop="gap"></el-table-column>
+        <el-table-column
+          label="面试间隔时间"
+          prop="intervals"
+        ></el-table-column>
         <el-table-column
           label="每个时间段可预约的人数"
-          prop="sum"
+          prop="num"
         ></el-table-column>
         <el-table-column label="面试间隔时间">
           <template #default>
             <el-button @click="changeAppoint">编辑</el-button>
-            <el-button @click="deleteFn">删除</el-button>
+            <el-button @click="deleteAppoint">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -90,9 +89,9 @@
                 style="margin-left: 30px"
                 placeholder="第一次考核"
               >
-                <el-option label="第一次考核" value="第一次考核"></el-option>
-                <el-option label="第二次考核" value="第二次考核"></el-option>
-                <el-option label="第三次考核" value="第三次考核"></el-option>
+                <el-option label="第一次考核" value="1"></el-option>
+                <el-option label="第二次考核" value="2"></el-option>
+                <el-option label="第三次考核" value="3"></el-option>
               </el-select>
             </el-form-item>
           </div>
@@ -106,7 +105,7 @@
               style="width: 800px; display: flex; align-items: center"
             >
               <el-date-picker
-                v-model="dateTime"
+                v-model="date"
                 format="YYYY-MM-DD HH:mm"
                 type="datetimerange"
                 start-placeholder="Start Date"
@@ -129,7 +128,7 @@
             ></i>
             <el-form-item label="面试间隔时间" style="width: 300px">
               <el-select
-                v-model="gap"
+                v-model="intervals"
                 style="margin-left: 30px"
                 placeholder="30分钟"
               >
@@ -148,7 +147,7 @@
               style="width: 300px"
               placeholder="请输入"
             >
-              <el-input v-model="sum" style="margin-left: 30px"></el-input>
+              <el-input v-model="num" style="margin-left: 30px"></el-input>
             </el-form-item>
           </div>
         </el-form>
@@ -263,6 +262,12 @@ import { ref } from 'vue'
 import router from '../routes'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
+import { allAppointReq, addAppointReq } from '../api/appoint'
+
+import { onMounted } from 'vue'
+import dayjs from 'dayjs'
+dayjs().format()
+
 const store = useStore()
 const newPage = ref('page2')
 const process = ref('')
@@ -270,26 +275,20 @@ const dialogVisible = ref(false)
 const id = ref('')
 const name = ref('')
 const grade = ref('')
+const begin = ref('')
+const end = ref('')
+const date = ref('')
 const appointId = ref('')
-const dateTime = ref('')
-
-const gap = ref('')
-const sum = ref('')
-
+const intervals = ref('')
+const num = ref('')
+const testId = ref('')
+const lastFather = ref('')
 const goToPerson = () => {
   router.push({ name: 'person-management' })
   store.dispatch('updatePage', String(newPage.value))
 }
 
-const appointList = [
-  {
-    number: '1',
-    start: '2024-07-19 15:00',
-    end: '2024-07-22 15:00',
-    gap: '1小时',
-    sum: '3',
-  },
-]
+const appointList = ref([])
 
 const studentList = [
   {
@@ -302,47 +301,87 @@ const studentList = [
   },
 ]
 
+const getAppointList = async () => {
+  await allAppointReq().then((res) => {
+    appointList.value = res.data || []
+  })
+}
+//请求获取预约信息
+
+onMounted(() => {
+  getAppointList()
+})
+//获取预约信息
+
 const disabledDate = (time) => {
   const currentTime = Date.now() // 获取当前时间戳
   return time.getTime() < currentTime - 8.64e7
 }
 
 const confirmDate = () => {
-  let startTime = new Date(dateTime.value[0]).getTime()
-  let endTime = new Date(dateTime.value[1]).getTime()
-  let startMinute = new Date(dateTime.value[0]).getMinutes()
-  let endMinute = new Date(dateTime.value[1]).getMinutes()
-  if (endTime - startTime > 14400000) {
+  let startTime = new Date(date.value[0]).getTime()
+  let endTime = new Date(date.value[1]).getTime()
+  let startMinute = new Date(date.value[0]).getMinutes()
+  let endMinute = new Date(date.value[1]).getMinutes()
+  // console.log(startMinute, endMinute)
+  let timeDifference = endTime - startTime
+  // console.log(timeDifference)
+  if (timeDifference > 14500000) {
     alert('单次预约时间不能超过4小时！')
-    dateTime.value = []
+    date.value = []
   } else if (
     (startMinute !== 0 && startMinute !== 30) ||
     (endMinute !== 0 && endMinute !== 30)
   ) {
     alert('预约时间必须为整点或者半整点！')
-    dateTime.value = []
+    date.value = []
   }
 }
 
+const addAppointData = async () => {
+  const res = await addAppointReq({
+    // process: process.value,
+    begin: begin.value,
+    end: end.value,
+    intervals: intervals.value,
+    num: num.value,
+    testId: 14,
+    lastFather: 1,
+  })
+  if (res.code == 200) {
+    ElMessage({
+      type: 'success',
+      message: '添加成功',
+    })
+    dialogVisible.value = false
+  } else {
+    ElMessage({
+      type: 'error',
+      message: '添加失败',
+    })
+  }
+}
+//请求添加预约信息
+
 const addAppoint = () => {
-  if (process.value == '' || gap.value == '' || sum.value == '') {
+  if (process.value == '' || intervals.value == '' || num.value == '') {
     ElMessage({
       type: 'warning',
       message: '请完善信息',
     })
     return
   }
+  begin.value = dayjs(date.value[0]).format('YYYY-MM-DD HH:mm')
+  end.value = dayjs(date.value[1]).format('YYYY-MM-DD HH:mm')
+  console.log(begin.value, end.value)
   ElMessageBox.confirm('您确定要添加/修改吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
   }).then(() => {
-    ElMessage({
-      type: 'success',
-      message: '添加/修改成功',
-    })
-    dialogVisible.value = false
+    addAppointData()
   })
 }
+//添加预约
 
 const changeAppoint = () => {
   dialogVisible.value = true
@@ -356,7 +395,7 @@ const clear = () => {
   process.value = ''
 }
 
-const deleteFn = () => {
+const deleteAppoint = () => {
   ElMessageBox.confirm('您确定要删除吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
