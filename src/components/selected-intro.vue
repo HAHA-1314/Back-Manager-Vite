@@ -1,5 +1,5 @@
-<script lang="ts" setup>
-import { computed, ref, onMounted } from "vue";
+<script setup>
+import { ref, onMounted } from "vue";
 import {
   getArticleList,
   getArticleDetail,
@@ -11,23 +11,13 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { toRaw } from "vue";
 const dialogVisible = ref(false);
 const title = ref("");
-const search = ref("");
-const imgArticle = ref("");
 const dialogImageUrl = ref("");
 const dialogSee = ref(false);
 const ruleFormRef = ref();
 const articleId = ref("");
-const sendPics = ref<{ url: string }[]>([]);
-interface ApiResponse {
-  code: number;
-  // 你可以在这里添加更多字段
-}
-interface RuleForm {
-  name: string;
-  pics: { url: string }[]; // pics 应该是一个包含 { url: string } 对象的数组
-  url: string;
-}
-const ruleForm = ref<RuleForm>({
+const sendPics = ref([]);
+
+const ruleForm = ref({
   name: "",
   pics: [],
   url: "",
@@ -36,6 +26,12 @@ const defaultForm = {
   name: "",
   pics: [],
   url: "",
+};
+const clearForm = () => {
+  ruleForm.value.name = "";
+  ruleForm.value.pics = [];
+  ruleForm.value.url = "";
+  sendPics.value = [];
 };
 const rules = {
   name: [{ required: true, message: "请输入推文名称", trigger: "blur" }],
@@ -65,7 +61,6 @@ const handleEdit = async (row) => {
   });
   sendPics.value = data.pic;
   console.log(ruleForm.value.pics);
-
   dialogVisible.value = true;
 };
 const handleDelete = async (row) => {
@@ -92,10 +87,7 @@ const handleDelete = async (row) => {
 };
 const handleClose = () => {
   dialogVisible.value = false;
-  ruleForm.value.name = "";
-  ruleForm.value.pics = [];
-  ruleForm.value.url = "";
-  sendPics.value = [];
+  clearForm();
   ruleFormRef.value.clearValidate();
 };
 
@@ -103,7 +95,7 @@ const tableData = ref([]);
 const buttonConfirm = async () => {
   await ruleFormRef.value.validate();
   const rawData = toRaw(sendPics.value);
-  console.log(ruleForm.value.name, rawData, ruleForm.value.url);
+
   if (title.value === "添加推文") {
     const res = await addArticle({
       name: ruleForm.value.name,
@@ -129,23 +121,19 @@ const buttonConfirm = async () => {
       ElMessage.error("编辑失败");
     }
   }
-  ruleForm.value.name = "";
-  ruleForm.value.pics = [];
-  ruleForm.value.url = "";
-  sendPics.value = [];
+  clearForm();
   dialogVisible.value = false;
   getArticle();
 };
 
-const handleRemove = (uploadFile, uploadFiles) => {
-  console.log(uploadFile, uploadFiles);
+const handleRemove = (uploadFile) => {
+  sendPics.value = sendPics.value.filter((item) => item !== uploadFile.url);
 };
 const handlePictureCardPreview = (uploadFile) => {
   dialogImageUrl.value = uploadFile.url;
   dialogSee.value = true;
 };
 const handleFileChange = (file) => {
-  console.log(file);
   sendPics.value.push(file.data);
   console.log(sendPics.value);
 };
