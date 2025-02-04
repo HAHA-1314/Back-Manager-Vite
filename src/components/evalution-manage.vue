@@ -353,7 +353,7 @@ const deleteFn = async (e) => {
       type: 'success',
       message: '删除成功',
     })
-    getTestData()
+    getAllTestData()
   } else {
     ElMessage({
       type: 'error',

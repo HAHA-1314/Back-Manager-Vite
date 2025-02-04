@@ -129,7 +129,7 @@
               type="primary"
               style="margin-right: 10px"
               v-model="changeId"
-              @click="changeUser(changeId)"
+              @click="save(changeId)"
             >
               保存
             </el-button>
@@ -338,9 +338,9 @@ const pass = () => {
 
 const clear = () => {
   ;(year.value = ''),
-    (name.value = ''),
-    (id.value = ''),
-    (academy.value = ''),
+    (nickname.value = ''),
+    (stuId.value = ''),
+    (collegeId.value = ''),
     (process.value = '')
 }
 
@@ -352,8 +352,6 @@ const change = () => {
 }
 
 const changeUser = async (changeId) => {
-  console.log(changeId)
-
   const res = await changeUserReq({
     id: changeId,
     nickname: nickname.value,
@@ -365,11 +363,18 @@ const changeUser = async (changeId) => {
     majorClass: majorClass.value,
     selfIntroduction: selfIntroduction.value,
   })
+
+  if (res.code == 200) {
+    ElMessage({
+      type: 'success',
+      message: '修改成功',
+    })
+  }
+  getAllUser()
   console.log(res)
 }
 
-const save = () => {
-  changeUser(id.value)
+const save = (changeId) => {
   const changeBtn = document.querySelector('.changeBtn')
   const chooseBtn = document.querySelector('.chooseBtn')
   ElMessageBox.confirm('您确定修改信息吗？', '提示', {
@@ -377,10 +382,8 @@ const save = () => {
     cancelButtonText: '取消',
     type: 'warning',
   }).then(() => {
-    ElMessage({
-      type: 'success',
-      message: '修改成功',
-    })
+    changeUser(changeId)
+
     changeBtn.style.display = 'flex'
     chooseBtn.style.display = 'none'
   })
