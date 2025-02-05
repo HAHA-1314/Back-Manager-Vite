@@ -48,7 +48,7 @@
     class="addBox"
     v-model="addBoxVisible"
     :show-close="false"
-    style="width: 800px; height: 500px; position: relative"
+    style="width: 800px; position: relative"
   >
     <div
       style="
@@ -69,7 +69,7 @@
         ><CloseBold
       /></el-icon>
     </div>
-    <div style="margin-top: 30px; margin-left: 30px">
+    <div style="margin-top: 30px; margin-left: 30px; height: 470px">
       <el-form>
         <div style="display: flex; align-content: center; margin-left: -11px">
           <i
@@ -107,10 +107,23 @@
         </el-form-item>
 
         <el-form-item label="文件上传">
-          <el-button
+          <!-- <el-button
             ><i class="iconfont icon-shangchuan" style="margin-right: 8px"></i
             >上传文件</el-button
+          > -->
+          <el-upload
+            ref="upload"
+            class="upload-demo"
+            action="https://smalla.cosh.fun/file/upload"
+            :limit="1"
+            :on-exceed="handleExceed"
+            :on-change="handleFileChange"
+            :auto-upload="false"
           >
+            <template #trigger>
+              <el-button type="primary">上传文件</el-button>
+            </template>
+          </el-upload>
         </el-form-item>
       </el-form>
     </div>
@@ -232,7 +245,9 @@
 <script setup>
 import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { genFileId } from 'element-plus'
 import { onMounted } from 'vue'
+import FormData from 'form-data'
 
 import {
   getAllTestReq,
@@ -240,6 +255,7 @@ import {
   delTestReq,
   getTestReq,
   changeTestReq,
+  uploadFileReq,
 } from '@/api/test.js'
 
 import dayjs from 'dayjs'
@@ -254,6 +270,7 @@ const end = ref('')
 const id = ref('')
 const addBoxVisible = ref(false)
 const changeBoxVisible = ref(false)
+const upload = ref()
 
 const getAllTestData = async () => {
   const res = await getAllTestReq()
@@ -414,6 +431,49 @@ const changeTestData = async (id) => {
     })
   }
 }
+
+const uploadFile = async (file) => {
+  console.log(file)
+  const formData = new FormData() // 创建 FormData 对象
+  formData.append('file', file) // 添加文件到 FormData
+
+  formData.forEach((value, key) => {
+    console.log(key, value)
+  })
+  const res = await uploadFileReq(formData)
+  console.log(res)
+  if (res.code == 200) {
+    d
+    ElMessage({
+      type: 'success',
+      message: '上传成功',
+    })
+  }
+}
+
+const handleExceed = (files) => {
+  upload.value.clearFiles()
+  const file = files[0]
+  file.uid = genFileId()
+  upload.value.handleStart(file)
+  // console.log(file)
+}
+
+const handleFileChange = async (file) => {
+  if (!file) {
+    return
+  }
+  const formData = new FormData() // 创建 FormData 对象
+  formData.append('file', file) // 添加文件到 FormData
+  const res = await uploadFileReq(formData)
+  console.log(res)
+  if (res.code == 200) {
+    ElMessage({
+      type: 'success',
+      message: '上传成功',
+    })
+  }
+}
 </script>
 
 <style scoped>
@@ -434,7 +494,7 @@ const changeTestData = async (id) => {
 .addBox {
   border: 1px solid #e2e2e2;
   width: 800px;
-  height: 470px;
+
   display: flex;
   margin: 70px auto;
   flex-wrap: wrap;
