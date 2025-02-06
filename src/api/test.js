@@ -37,13 +37,11 @@ export function addTestReq(params) {
   })
 }
 
-export function uploadFileReq(formData) {
+export function uploadFileReq(params) {
+  // console.log(formData)
   return request({
     url: '/file/upload',
     method: 'post',
-    data: formData,
-    headers: {
-      'Content-Type': 'multipart/form-data', // 设置正确的 Content-Type
-    },
+    params,
   })
 }

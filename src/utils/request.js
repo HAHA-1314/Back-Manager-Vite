@@ -35,10 +35,10 @@ service.interceptors.request.use(
       !isRepeatSubmit &&
       (config.method === 'post' || config.method === 'put')
     ) {
-       let url = config.url + "?" + tansParams(config.params);
-       url = url.slice(0, -1);
-       config.params = {};
-       config.url = url;
+      let url = config.url + '?' + tansParams(config.params)
+      url = url.slice(0, -1)
+      config.params = {}
+      config.url = url
       const requestObj = {
         url: config.url,
         data:

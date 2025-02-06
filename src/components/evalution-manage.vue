@@ -48,12 +48,13 @@
     class="addBox"
     v-model="addBoxVisible"
     :show-close="false"
-    style="width: 800px; position: relative"
+    style="width: 800px; height: 570px; position: relative"
   >
     <div
       style="
         background-color: #f8f8f8;
         width: 100%;
+
         position: absolute;
         top: 0;
         left: 0;
@@ -107,18 +108,15 @@
         </el-form-item>
 
         <el-form-item label="文件上传">
-          <!-- <el-button
-            ><i class="iconfont icon-shangchuan" style="margin-right: 8px"></i
-            >上传文件</el-button
-          > -->
           <el-upload
             ref="upload"
+            v-model="file"
             class="upload-demo"
-            action="https://smalla.cosh.fun/file/upload"
-            :limit="1"
+            action="http://localhost:8080/api/file/upload"
+            :on-success="handleFileChange"
+            :auto-upload="true"
             :on-exceed="handleExceed"
-            :on-change="handleFileChange"
-            :auto-upload="false"
+            :limit="1"
           >
             <template #trigger>
               <el-button type="primary">上传文件</el-button>
@@ -152,7 +150,7 @@
     class="changeBox"
     v-model="changeBoxVisible"
     :show-close="false"
-    style="width: 800px; height: 500px; position: relative"
+    style="width: 800px; height: 570px; position: relative"
   >
     <div
       style="
@@ -211,10 +209,20 @@
         </el-form-item>
 
         <el-form-item label="文件上传">
-          <el-button
-            ><i class="iconfont icon-shangchuan" style="margin-right: 8px"></i
-            >上传文件</el-button
+          <el-upload
+            ref="upload"
+            v-model="file"
+            class="upload-demo"
+            action="http://localhost:8080/api/file/upload"
+            :on-success="handleFileChange"
+            :auto-upload="true"
+            :on-exceed="handleExceed"
+            :limit="1"
           >
+            <template #trigger>
+              <el-button type="primary">上传文件</el-button>
+            </template>
+          </el-upload>
         </el-form-item>
       </el-form>
     </div>
@@ -245,9 +253,7 @@
 <script setup>
 import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { genFileId } from 'element-plus'
 import { onMounted } from 'vue'
-import FormData from 'form-data'
 
 import {
   getAllTestReq,
@@ -255,7 +261,6 @@ import {
   delTestReq,
   getTestReq,
   changeTestReq,
-  uploadFileReq,
 } from '@/api/test.js'
 
 import dayjs from 'dayjs'
@@ -271,6 +276,7 @@ const id = ref('')
 const addBoxVisible = ref(false)
 const changeBoxVisible = ref(false)
 const upload = ref()
+const file = ref('')
 
 const getAllTestData = async () => {
   const res = await getAllTestReq()
@@ -299,8 +305,9 @@ const addTestData = async () => {
   const res = await addTestReq({
     name: name.value,
     content: content.value,
-    begin: begin.value,
-    end: end.value,
+    begin: begin.value + '00:00:00',
+    end: end.value + '00:00:00',
+    fileList: file.value,
   })
   if (res.code == 200) {
     ElMessage({
@@ -308,6 +315,8 @@ const addTestData = async () => {
       message: '添加成功',
     })
     addBoxVisible.value = false
+    file.value = ''
+    getAllTestData()
   } else {
     ElMessage({
       type: 'error',
@@ -398,6 +407,7 @@ const getTestData = async (e) => {
     name.value = res.data.name
     content.value = res.data.content
     id.value = res.data.id
+    file.value = res.data.fileList
     let startDate = formatDate(dayjs(res.data.begin).format('YYYY-MM-DD'))
     let endDate = formatDate(dayjs(res.data.end).format('YYYY-MM-DD'))
     date.value = [startDate, endDate]
@@ -416,6 +426,7 @@ const changeTestData = async (id) => {
     begin: begin.value,
     end: end.value,
     id: id,
+    fileList: file.value,
   })
   if (res.code == 200) {
     ElMessage({
@@ -432,46 +443,18 @@ const changeTestData = async (id) => {
   }
 }
 
-const uploadFile = async (file) => {
-  console.log(file)
-  const formData = new FormData() // 创建 FormData 对象
-  formData.append('file', file) // 添加文件到 FormData
-
-  formData.forEach((value, key) => {
-    console.log(key, value)
+const handleExceed = () => {
+  ElMessage({
+    type: 'error',
+    message: '文件数量不能超过1个',
   })
-  const res = await uploadFileReq(formData)
-  console.log(res)
-  if (res.code == 200) {
-    d
-    ElMessage({
-      type: 'success',
-      message: '上传成功',
-    })
-  }
 }
+//限制文件数量
 
-const handleExceed = (files) => {
-  upload.value.clearFiles()
-  const file = files[0]
-  file.uid = genFileId()
-  upload.value.handleStart(file)
-  // console.log(file)
-}
-
-const handleFileChange = async (file) => {
-  if (!file) {
-    return
-  }
-  const formData = new FormData() // 创建 FormData 对象
-  formData.append('file', file) // 添加文件到 FormData
-  const res = await uploadFileReq(formData)
-  console.log(res)
+const handleFileChange = (res) => {
   if (res.code == 200) {
-    ElMessage({
-      type: 'success',
-      message: '上传成功',
-    })
+    file.value = res.data
+    console.log(file.value)
   }
 }
 </script>
