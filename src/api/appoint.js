@@ -14,3 +14,26 @@ export function addAppointReq(params) {
     params: params,
   })
 }
+
+export function deleteAppointReq(params) {
+  return request({
+    url: '/appointment',
+    method: 'delete',
+    params: params,
+  })
+}
+
+export function changeAppointReq(params) {
+  return request({
+    url: '/appointment',
+    method: 'put',
+    params: params,
+  })
+}
+
+export function getAppointReq(appointId) {
+  return request({
+    url: `/appointment/get/${appointId}`,
+    method: 'get',
+  })
+}

@@ -7,6 +7,14 @@ export function getAllTestReq() {
   })
 }
 
+export function getGroupTestReq(params) {
+  return request({
+    url: '/appointment/get/tests',
+    method: 'get',
+    params,
+  })
+}
+
 export function getTestReq(id) {
   return request({
     url: `/test/get/${id}`,
@@ -32,15 +40,6 @@ export function delTestReq(id) {
 export function addTestReq(params) {
   return request({
     url: '/test',
-    method: 'post',
-    params,
-  })
-}
-
-export function uploadFileReq(params) {
-  // console.log(formData)
-  return request({
-    url: '/file/upload',
     method: 'post',
     params,
   })

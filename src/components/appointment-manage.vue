@@ -22,7 +22,7 @@
           <el-option label="第二次考核" value="2"></el-option>
           <el-option label="第三次考核" value="3"></el-option>
         </el-select>
-        <el-button @click="dialogVisible = true">添加预约</el-button>
+        <el-button @click="addBox = true">添加预约</el-button>
       </div>
       <el-table :data="appointList">
         <el-table-column label="序号" prop="id" width="120"></el-table-column>
@@ -36,10 +36,10 @@
           label="每个时间段可预约的人数"
           prop="num"
         ></el-table-column>
-        <el-table-column label="面试间隔时间">
-          <template #default>
-            <el-button @click="changeAppoint">编辑</el-button>
-            <el-button @click="deleteAppoint">删除</el-button>
+        <el-table-column label="操作" prop="id">
+          <template #default="{ row }">
+            <el-button @click="getAppointData(row.id)">编辑</el-button>
+            <el-button @click="deleteAppoint(row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -52,7 +52,7 @@
       />
     </el-card>
     <el-dialog
-      v-model="dialogVisible"
+      v-model="addBox"
       :show-close="false"
       style="width: 800px; height: 400px; color: black"
     >
@@ -71,7 +71,7 @@
       >
         <p style="display: inline-block; margin-left: 20px">预约开启</p>
         <el-icon
-          @click="dialogVisible = false"
+          @click="addBox = false"
           style="display: inline-block; margin-right: 20px; font-size: 16px"
           ><CloseBold
         /></el-icon>
@@ -178,6 +178,134 @@
         </el-button>
       </div>
     </el-dialog>
+    <el-dialog
+      v-model="changeBox"
+      :show-close="false"
+      style="width: 800px; height: 400px; color: black"
+    >
+      <div
+        style="
+          height: 55px;
+          background-color: #f8f8f8;
+          width: 100%;
+          position: absolute;
+          top: 0;
+          left: 0;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        "
+      >
+        <p style="display: inline-block; margin-left: 20px">预约修改</p>
+        <el-icon
+          @click="changeBox = false"
+          style="display: inline-block; margin-right: 20px; font-size: 16px"
+          ><CloseBold
+        /></el-icon>
+      </div>
+      <div style="margin-top: 40px">
+        <el-form style="margin-left: 30px">
+          <div style="display: flex; align-content: center; margin-left: -11px">
+            <i
+              class="iconfont icon-bitian"
+              style="color: red; margin-right: -3px; margin-top: 5px"
+            ></i>
+            <el-form-item label="考核轮次" style="width: 240px">
+              <el-select
+                v-model="process"
+                style="margin-left: 30px"
+                placeholder="第一次考核"
+              >
+                <el-option label="第一次考核" value="1"></el-option>
+                <el-option label="第二次考核" value="2"></el-option>
+                <el-option label="第三次考核" value="3"></el-option>
+              </el-select>
+            </el-form-item>
+          </div>
+          <div style="display: flex; align-content: center; margin-left: -11px">
+            <i
+              class="iconfont icon-bitian"
+              style="color: red; margin-right: -3px; margin-top: 12px"
+            ></i>
+            <el-form-item
+              label="预约开启时间"
+              style="width: 800px; display: flex; align-items: center"
+            >
+              <el-date-picker
+                v-model="date"
+                format="YYYY-MM-DD HH:mm"
+                type="datetimerange"
+                start-placeholder="Start Date"
+                end-placeholder="End Date"
+                :disabled-date="disabledDate"
+                @change="confirmDate"
+              >
+              </el-date-picker>
+              <el-icon
+                style="color: #45a5ff; font-size: 20px; margin: 0 4px 0 8px"
+                ><Warning
+              /></el-icon>
+              <p style="color: #45a5ff; font-size: 10px">单次最多预约4小时</p>
+            </el-form-item>
+          </div>
+          <div style="display: flex; align-content: center; margin-left: -11px">
+            <i
+              class="iconfont icon-bitian"
+              style="color: red; margin-right: -3px; margin-top: 5px"
+            ></i>
+            <el-form-item label="面试间隔时间" style="width: 300px">
+              <el-select
+                v-model="intervals"
+                style="margin-left: 30px"
+                placeholder="30分钟"
+              >
+                <el-option label="30分钟" value="30分钟"></el-option>
+                <el-option label="1小时" value="1小时"></el-option>
+              </el-select>
+            </el-form-item>
+          </div>
+          <div style="display: flex; align-content: center; margin-left: -11px">
+            <i
+              class="iconfont icon-bitian"
+              style="color: red; margin-right: -3px; margin-top: 5px"
+            ></i>
+            <el-form-item
+              label="每个时间段可预约人数"
+              style="width: 300px"
+              placeholder="请输入"
+            >
+              <el-input v-model="num" style="margin-left: 30px"></el-input>
+            </el-form-item>
+          </div>
+        </el-form>
+      </div>
+      <div
+        style="
+          height: 55px;
+          background-color: #f8f8f8;
+          width: 100%;
+          position: absolute;
+          bottom: 0;
+          right: 0;
+          display: flex;
+          flex-direction: row-reverse;
+          align-items: center;
+        "
+      >
+        <el-button
+          v-model="currentAppointId"
+          @click="changeAppoint(currentAppointId)"
+          style="
+            width: 120px;
+            background-color: blue;
+            color: white;
+            margin-right: 20px;
+            font-size: 16px;
+          "
+          >确定
+        </el-button>
+      </div>
+    </el-dialog>
     <el-card class="bottom-box" style="position: relative">
       <div>
         <el-form inline style="display: flex; justify-content: space-around">
@@ -262,7 +390,13 @@ import { ref } from 'vue'
 import router from '../routes'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
-import { allAppointReq, addAppointReq } from '../api/appoint'
+import {
+  allAppointReq,
+  addAppointReq,
+  deleteAppointReq,
+  changeAppointReq,
+  getAppointReq,
+} from '../api/appoint'
 
 import { onMounted } from 'vue'
 import dayjs from 'dayjs'
@@ -271,7 +405,8 @@ dayjs().format()
 const store = useStore()
 const newPage = ref('page2')
 const process = ref('')
-const dialogVisible = ref(false)
+const addBox = ref(false)
+const changeBox = ref(false)
 const id = ref('')
 const name = ref('')
 const grade = ref('')
@@ -283,23 +418,17 @@ const intervals = ref('')
 const num = ref('')
 const testId = ref('')
 const lastFather = ref('')
+const father = ref('')
+const currentAppointId = ref('')
+
 const goToPerson = () => {
   router.push({ name: 'person-management' })
-  store.dispatch('updatePage', String(newPage.value))
+  store.dispatch('changePage', String(newPage.value))
 }
 
 const appointList = ref([])
 
-const studentList = [
-  {
-    appointId: '1',
-    name: '嘻嘻',
-    id: '123345',
-    grade: '大二',
-    telephone: '1235490896',
-    time: '2024-09-18 14:00-15:00',
-  },
-]
+const studentList = ref([])
 
 const getAppointList = async () => {
   await allAppointReq().then((res) => {
@@ -337,6 +466,7 @@ const confirmDate = () => {
     date.value = []
   }
 }
+//限制预约时间
 
 const addAppointData = async () => {
   const res = await addAppointReq({
@@ -353,7 +483,7 @@ const addAppointData = async () => {
       type: 'success',
       message: '添加成功',
     })
-    dialogVisible.value = false
+    addBox.value = false
   } else {
     ElMessage({
       type: 'error',
@@ -383,10 +513,6 @@ const addAppoint = () => {
 }
 //添加预约
 
-const changeAppoint = () => {
-  dialogVisible.value = true
-}
-
 const clear = () => {
   id.value = ''
   name.value = ''
@@ -395,18 +521,74 @@ const clear = () => {
   process.value = ''
 }
 
-const deleteAppoint = () => {
+const deleteAppointData = async (id) => {
+  const res = await deleteAppointReq({
+    id: id,
+    father: 1,
+  })
+  if (res.code == 200) {
+    ElMessage({
+      type: 'success',
+      message: '删除成功',
+    })
+    getAppointList()
+  } else {
+    ElMessage({
+      type: 'error',
+      message: '删除失败',
+    })
+  }
+}
+//请求删除预约信息
+
+const deleteAppoint = (id) => {
+  console.log(id)
   ElMessageBox.confirm('您确定要删除吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning',
   }).then(() => {
-    ElMessage({
-      type: 'success',
-      message: '删除成功',
-    })
+    deleteAppointData(id)
   })
 }
+//删除预约
+
+const getAppointData = async (appointId) => {
+  console.log(appointId)
+  changeBox.value = true
+  const res = await getAppointReq(appointId)
+  if (res.code == 200) {
+    intervals.value = res.data.intervals
+    num.value = res.data.num
+    date.value = [res.data.begin, res.data.end]
+  }
+  currentAppointId.value = appointId
+}
+//获取单个预约信息
+
+const changeAppointData = async () => {
+  const res = await changeAppointReq({
+    id: currentAppointId.value,
+    begin: begin.value,
+    end: end.value,
+    intervals: intervals.value,
+    num: num.value,
+    testId: 14,
+  })
+}
+//请求修改预约信息
+
+const changeAppoint = (currentAppiontId) => {
+  console.log(currentAppiontId)
+  ElMessageBox.confirm('您确定要修改吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    changeAppointData()
+  })
+}
+//修改预约
 </script>
 
 <style scoped>
