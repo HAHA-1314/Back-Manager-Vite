@@ -1,18 +1,32 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted,nextTick } from "vue";
 import group_com from "./groupCom.vue";
-import { getProjectList, deleteProject } from "../api/project";
+import {
+  getProjectList,
+  deleteProject,
+  getProjectById,
+  editProject,
+} from "../api/project";
 import { ElMessage, ElMessageBox } from "element-plus";
 const tableData = ref([]);
 const dialogVisible = ref(false);
+const projectRef = ref();
 const title = ref("");
 const teamAdd = () => {
   title.value = "添加项目";
   dialogVisible.value = true;
+  nextTick(() => {
+   projectRef.value.clearForm()
+  });
 };
-const teamEdit = () => {
+const teamEdit = async (row) => {
   title.value = "编辑项目";
+  const res = await getProjectById(row.id);
   dialogVisible.value = true;
+  console.log(res);
+  nextTick(() => {
+   projectRef.value.renderProject(res.data,title.value,row.id);
+  });
 };
 const renderData = async () => {
   const res = await getProjectList();
@@ -39,6 +53,20 @@ const teamDelete = async (row) => {
       });
     });
 };
+const handleProject = (res,state) => {
+  if(res.code === 200){
+     ElMessage.success(`${state}成功`);
+    dialogVisible.value = false;
+    renderData();
+  }else{
+    ElMessage.error(`${state}失败`);
+  }
+}
+const handleClose = () => {
+  dialogVisible.value = false;
+  projectRef.value.clearForm()
+  projectRef.value.clearValidate()
+}
 onMounted(() => {
   renderData();
 });
@@ -81,7 +109,7 @@ onMounted(() => {
     :before-close="handleClose"
     align-center
   >
-    <group_com></group_com>
+    <group_com ref="projectRef" :show="true" @handlePro="handleProject"></group_com>
   </el-dialog>
 </template>
 
