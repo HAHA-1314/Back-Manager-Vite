@@ -140,13 +140,25 @@
         </div>
         <el-form style="margin-left: 20px">
           <el-form-item label="姓名：">
-            <el-input placeholder="请输入" v-model="nickname"></el-input>
+            <el-input
+              placeholder="请输入"
+              v-model="nickname"
+              :disabled="isDisabled"
+            ></el-input>
           </el-form-item>
           <el-form-item label="学号：">
-            <el-input placeholder="请输入" v-model="stuId"></el-input>
+            <el-input
+              placeholder="请输入"
+              v-model="stuId"
+              :disabled="isDisabled"
+            ></el-input>
           </el-form-item>
           <el-form-item label="方向：">
-            <el-select v-model="groupOp" placeholder="请选择">
+            <el-select
+              v-model="groupOp"
+              placeholder="请选择"
+              :disabled="isDisabled"
+            >
               <el-option label="前端组" value="1"></el-option>
               <el-option label="后端组" value="2"></el-option>
               <el-option label="运营组" value="3"></el-option>
@@ -156,13 +168,25 @@
             </el-select>
           </el-form-item>
           <el-form-item label="联系方式：">
-            <el-input placeholder="请输入" v-model="telephone"></el-input>
+            <el-input
+              placeholder="请输入"
+              v-model="telephone"
+              :disabled="isDisabled"
+            ></el-input>
           </el-form-item>
           <el-form-item label="年级：">
-            <el-input placeholder="请输入" v-model="year"></el-input>
+            <el-input
+              placeholder="请输入"
+              v-model="year"
+              :disabled="isDisabled"
+            ></el-input>
           </el-form-item>
           <el-form-item label="学院：">
-            <el-select v-model="collegeId" placeholder="请选择">
+            <el-select
+              v-model="collegeId"
+              placeholder="请选择"
+              :disabled="isDisabled"
+            >
               <el-option label="信息工程学院" value="1"></el-option>
               <el-option label="计算机学院" value="2"></el-option>
               <el-option label="机电学院" value="3"></el-option>
@@ -172,10 +196,15 @@
             </el-select>
           </el-form-item>
           <el-form-item label="专业班级：">
-            <el-input placeholder="请输入" v-model="majorClass"></el-input>
+            <el-input
+              placeholder="请输入"
+              v-model="majorClass"
+              :disabled="isDisabled"
+            ></el-input>
           </el-form-item>
           <el-form-item label="个人简介：">
             <el-input
+              :disabled="isDisabled"
               v-model="selfIntroduction"
               placeholder="请输入"
               style="width: 250px; height: 130px"
@@ -192,7 +221,15 @@
                 :key="index"
                 :size="large"
                 :icon="icon"
-                :type="item.testName ? 'primary' : ''"
+                :type="
+                  item.status === 1
+                    ? 'primary'
+                    : item.status === 0
+                    ? ''
+                    : item.status === 2
+                    ? 'primary'
+                    : ''
+                "
                 :hollow="item.status === 1"
                 :timestamp="
                   item.status === 1
@@ -220,21 +257,21 @@
                 <el-button
                   type="primary"
                   style="float: right; margin-top: -34px; margin-bottom: 10px"
-                  @click="pass"
+                  @click="passUser"
                   >确定</el-button
                 ><el-input
                   style="width: 270px; height: 150px"
-                  v-model="assess"
+                  v-model="comment"
                 ></el-input>
                 <template #reference>
                   <el-button type="success">通过</el-button>
                 </template>
               </el-popover>
 
-              <el-button type="danger">未通过</el-button>
+              <el-button type="danger" @click="failUser">未通过</el-button>
             </div>
 
-            <el-button type="plain" @click="returnFn">回退</el-button>
+            <el-button type="plain" @click="returnUser">回退</el-button>
           </div>
         </div>
       </el-card>
@@ -257,6 +294,9 @@ import {
   getUserReq,
   changeUserReq,
   getUserProcessReq,
+  passUserReq,
+  failUserReq,
+  returnUserReq,
 } from '../api/student'
 
 const year = ref('')
@@ -271,7 +311,7 @@ const process = ref('')
 const groupName = ref('')
 const groupOp = ref('')
 const changeId = ref('')
-const assess = ref('')
+const comment = ref('')
 const page = ref(1)
 const pageSize = ref(6)
 const page1 = ref('page1')
@@ -279,6 +319,9 @@ const page2 = ref('page2')
 const showPage = computed(() => store.state.showPage)
 const studentList = ref([])
 const processList = ref([])
+const currentTestId = ref('')
+const currentUserId = ref('')
+const isDisabled = ref(true)
 
 const goToPage1 = () => {
   store.dispatch('updatePage', String(page1.value))
@@ -303,10 +346,15 @@ onMounted(() => {
 //获取所有用户
 
 const getUserProcess = async (id) => {
-  console.log(id)
+  currentUserId.value = id
+  console.log(currentUserId.value)
   const res = await getUserProcessReq(id)
   processList.value = res.data
   console.log(processList.value)
+  const targetObject = processList.value.find((item) => item.status === 1)
+  if (targetObject) {
+    currentTestId.value = targetObject.testId
+  }
 }
 //获取用户的考核进度
 
@@ -343,20 +391,6 @@ const searchUser = async (stuId) => {
 }
 //搜索用户
 
-const pass = () => {
-  console.log(assess.value)
-  ElMessageBox.confirm('您确定提交该评价吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning',
-  }).then(() => {
-    ElMessage({
-      type: 'success',
-      message: '评价成功',
-    })
-  })
-}
-
 const clear = () => {
   ;(year.value = ''),
     (nickname.value = ''),
@@ -364,13 +398,16 @@ const clear = () => {
     (collegeId.value = ''),
     (process.value = '')
 }
+//重置
 
 const change = () => {
   const changeBtn = document.querySelector('.changeBtn')
   const chooseBtn = document.querySelector('.chooseBtn')
   changeBtn.style.display = 'none'
   chooseBtn.style.display = 'flex'
+  isDisabled.value = false
 }
+//修改前提
 
 const changeUser = async (changeId) => {
   const res = await changeUserReq({
@@ -405,7 +442,7 @@ const save = (changeId) => {
     type: 'warning',
   }).then(() => {
     changeUser(changeId)
-
+    isDisabled.value = true
     changeBtn.style.display = 'flex'
     chooseBtn.style.display = 'none'
   })
@@ -417,20 +454,108 @@ const cancel = () => {
   const chooseBtn = document.querySelector('.chooseBtn')
   changeBtn.style.display = 'flex'
   chooseBtn.style.display = 'none'
+  isDisabled.value = true
 }
+//取消修改用户信息
 
-const returnFn = () => {
-  ElMessageBox.confirm('您确定要回退吗？', '提示', {
+const pass = () => {
+  console.log(comment.value)
+  ElMessageBox.confirm('您确定提交该评价吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning',
   }).then(() => {
     ElMessage({
       type: 'success',
-      message: '已回退',
+      message: '评价成功',
     })
   })
 }
+//通过用户前提
+
+const passUser = async () => {
+  const res = await passUserReq({
+    testId: currentTestId.value,
+    userId: currentUserId.value,
+    status: 2,
+    nextId: 3,
+  })
+  if (res.code == 200) {
+    ElMessage({
+      type: 'success',
+      message: '通过',
+    })
+    getUserProcess(currentUserId.value)
+    console.log(currentUserId.value)
+  }
+  console.log(res)
+}
+//通过用户
+
+const failFn = async () => {
+  const res = await failUserReq({
+    testId: currentTestId.value,
+    userId: currentUserId.value,
+    status: 0,
+  })
+  if (res.code == 200) {
+    ElMessage({
+      type: 'success',
+      message: '未通过',
+    })
+    getUserProcess(currentUserId.value)
+  } else {
+    ElMessage({
+      type: 'error',
+      message: res.msg,
+    })
+  }
+}
+//未通过用户
+
+const failUser = () => {
+  ElMessageBox.confirm('您确定要未通过吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    failFn()
+  })
+}
+
+const returnFn = async () => {
+  console.log(currentTestId.value)
+  const res = await returnUserReq({
+    testId: currentTestId.value,
+    userId: currentUserId.value,
+    lastId: 1,
+  })
+  if (res.code == 200) {
+    ElMessage({
+      type: 'success',
+      message: '已回退',
+    })
+    getUserProcess(currentUserId.value)
+  } else {
+    ElMessage({
+      type: 'error',
+      message: res.msg,
+    })
+  }
+  console.log(res)
+}
+//请求回退用户
+
+const returnUser = () => {
+  ElMessageBox.confirm('您确定要回退吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    returnFn()
+  })
+}
+//回退用户
 </script>
 
 <style scoped>

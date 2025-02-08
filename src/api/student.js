@@ -36,3 +36,30 @@ export function getUserProcessReq(id) {
   })
 }
 //获取用户进度
+
+export function passUserReq(params) {
+  return request({
+    url: '/test/status',
+    method: 'put',
+    params,
+  })
+}
+//通过考核
+
+export function failUserReq(params) {
+  return request({
+    url: '/test/status',
+    method: 'put',
+    params,
+  })
+}
+//不通过考核
+
+export function returnUserReq(params) {
+  return request({
+    url: '/test/rollback',
+    method: 'put',
+    params,
+  })
+}
+//回退考核
