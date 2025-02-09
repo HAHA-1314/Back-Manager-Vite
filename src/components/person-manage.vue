@@ -241,7 +241,7 @@
                     : ''
                 "
               >
-                {{ item.testName || '未进行的考核' }}
+                {{ item.name || '未进行的考核' }}
               </el-timeline-item>
             </el-timeline>
           </div>
@@ -297,6 +297,7 @@ import {
   passUserReq,
   failUserReq,
   returnUserReq,
+  getAllTestReq,
 } from '../api/student'
 
 const year = ref('')
@@ -320,11 +321,16 @@ const showPage = computed(() => store.state.showPage)
 const studentList = ref([])
 const processList = ref([])
 const currentTestId = ref('')
+const lastId = ref('')
+const nextId = ref('')
 const currentUserId = ref('')
 const isDisabled = ref(true)
+const testList = ref([])
+const newArray = ref([])
 
 const goToPage1 = () => {
   store.dispatch('updatePage', String(page1.value))
+  // processList.value = []
 }
 const goToPage2 = () => {
   store.dispatch('updatePage', String(page2.value))
@@ -342,19 +348,56 @@ const getAllUser = async () => {
 
 onMounted(() => {
   getAllUser()
+  getAllTest()
 })
 //获取所有用户
 
+const getAllTest = async () => {
+  const res = await getAllTestReq()
+  console.log(res)
+  testList.value = res.data
+  // console.log(testList.value)
+}
+//获取所有考核
+
 const getUserProcess = async (id) => {
+  processList.value = []
   currentUserId.value = id
-  console.log(currentUserId.value)
+  // console.log(currentUserId.value)
   const res = await getUserProcessReq(id)
-  processList.value = res.data
-  console.log(processList.value)
+  newArray.value = res.data
+  // console.log(newArray.value)
+
+  const maxLength = Math.max(newArray.value.length, testList.value.length)
+  for (let i = 0; i < maxLength; i++) {
+    const newArrayItem = newArray.value[i] || {}
+    const testListItem = testList.value[i] || {}
+    processList.value.push({ ...newArrayItem, ...testListItem })
+  }
   const targetObject = processList.value.find((item) => item.status === 1)
   if (targetObject) {
-    currentTestId.value = targetObject.testId
+    currentTestId.value = targetObject.id
+    // console.log(currentTestId.value)
+    const currentIndex = processList.value.findIndex(
+      (item) => item.testId === currentTestId.value
+    )
+    console.log(currentIndex)
+    // 获取上一个元素的 testId
+    if (currentIndex > 0) {
+      lastId.value = processList.value[currentIndex - 1].id
+    } else {
+      lastId.value = null // 如果没有上一个元素，将 lastId 设为 null
+    }
+
+    // 获取下一个元素的 testId
+    if (currentIndex < processList.value.length - 1) {
+      nextId.value = processList.value[currentIndex + 1].id
+    } else {
+      nextId.value = null // 如果没有下一个元素，将 nextId 设为 null
+    }
+    // console.log(lastId.value, nextId.value)
   }
+  console.log(processList.value)
 }
 //获取用户的考核进度
 
@@ -478,13 +521,14 @@ const passUser = async () => {
     testId: currentTestId.value,
     userId: currentUserId.value,
     status: 2,
-    nextId: 3,
+    nextId: nextId.value,
   })
   if (res.code == 200) {
     ElMessage({
       type: 'success',
       message: '通过',
     })
+
     getUserProcess(currentUserId.value)
     console.log(currentUserId.value)
   }
@@ -528,7 +572,7 @@ const returnFn = async () => {
   const res = await returnUserReq({
     testId: currentTestId.value,
     userId: currentUserId.value,
-    lastId: 1,
+    lastId: lastId.value,
   })
   if (res.code == 200) {
     ElMessage({
@@ -619,11 +663,12 @@ const returnUser = () => {
 }
 
 .left {
-  margin-top: 80px;
+  margin-top: 50px;
   margin-left: -18px;
 }
 
 .right {
+  margin-top: -100px;
   width: 200px;
   display: flex;
   flex-wrap: wrap;
@@ -633,6 +678,7 @@ const returnUser = () => {
   width: 100px;
   margin-top: 30px;
 }
+
 .card2 {
   display: flex;
   align-items: center;

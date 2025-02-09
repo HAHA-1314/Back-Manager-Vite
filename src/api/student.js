@@ -63,3 +63,11 @@ export function returnUserReq(params) {
   })
 }
 //回退考核
+
+export function getAllTestReq() {
+  return request({
+    url: '/appointment/get/tests',
+    method: 'get',
+  })
+}
+//获取所有考核
