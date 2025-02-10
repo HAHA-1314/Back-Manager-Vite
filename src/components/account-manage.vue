@@ -74,7 +74,7 @@
             type="password"
             v-model="editForm.password"
             autocomplete="off"
-            placeholder="请输入密码"></el-input>
+            placeholder="置空不修改密码"></el-input>
         </el-form-item>
       </el-form>
     </span>
@@ -182,6 +182,7 @@ const editForm = ref({
   username: "",
   groupId: "",
   password: "",
+  rawpwd: "",
 });
 const tableData = ref([]);
 
@@ -198,6 +199,19 @@ var validatePass = (rule, value, callback) => {
   if (value === "") {
     callback(new Error("请输入密码"));
   } else if (value.length < 6 || value.length > 12) {
+    callback(new Error("密码长度不得小于6位大于12位"));
+  } else if (value.indexOf(" ") != -1) {
+    callback(new Error("密码不得包含空格"));
+  }
+  callback();
+};
+
+var EditPass = (rule, value, callback) => {
+  if (value === "") {
+    callback();
+    return;
+  }
+  if (value.length < 6 || value.length > 12) {
     callback(new Error("密码长度不得小于6位大于12位"));
   } else if (value.indexOf(" ") != -1) {
     callback(new Error("密码不得包含空格"));
@@ -244,8 +258,7 @@ const editRules = ref({
   ],
   password: [
     {
-      required: true,
-      // validator: validatePass,
+      validator: EditPass,
       trigger: "change",
     },
   ],
@@ -281,8 +294,6 @@ const addItem = async (formName) => {
 };
 
 const editItem = async (formName) => {
-  console.log(editForm.value);
-  console.log(proxy);
   proxy.$refs[formName].validate((valid) => {
     if (valid) {
       api.updateAccount(editForm.value).then((res) => {
@@ -319,6 +330,8 @@ const editAccount = async (id) => {
   const res = await api.getAccountById(id);
   if (res.code === 200) {
     editForm.value = res.data;
+    editForm.value.rawpwd = editForm.value.password;
+    editForm.value.password = "";
     editVisible.value = true;
     editForm.value.groupId = parseInt(editForm.value.groupId);
   } else {

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, reactive, watch, onMounted } from "vue";
-import { useRouter,useRoute } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { useStore } from "vuex";
 import { SwitchButton } from "@element-plus/icons";
 import * as userApi from "@/api/user";
@@ -8,7 +8,7 @@ import { ElMessage } from "element-plus";
 import Cookies from "js-cookie";
 
 // 获取当前的路由对象
-const route = useRoute()
+const route = useRoute();
 const router = useRouter();
 const store = useStore();
 const goRouter = ref("");
@@ -172,10 +172,6 @@ const signOut = () => {
     if (res.code == 200) {
       ElMessage.success("退出成功");
       store.commit("logout");
-      Cookies.remove("username");
-      Cookies.remove("password");
-      Cookies.remove("satoken");
-      router.push(`/login?redirect=${router.currentRoute.value.path}`);
     } else {
       ElMessage.error(res.msg);
     }

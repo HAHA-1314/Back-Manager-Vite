@@ -1,47 +1,54 @@
-import request from '../utils/request'
+import request from "../utils/request";
+
+export function getCurrentReq() {
+  return request({
+    url: "/test/get/current",
+    method: "get",
+  });
+}
 
 export function getAllTestReq() {
   return request({
-    url: '/test/get/all',
-    method: 'get',
-  })
+    url: "/test/get/all",
+    method: "get",
+  });
 }
 
 export function getTestReq(id) {
   return request({
     url: `/test/get/${id}`,
-    method: 'get',
-  })
+    method: "get",
+  });
 }
 
 export function changeTestReq(params) {
   return request({
-    url: '/test',
-    method: 'put',
+    url: "/test",
+    method: "put",
     params: params,
-  })
+  });
 }
 
 export function delTestReq(id) {
   return request({
     url: `/test/delete/${id}`,
-    method: 'delete',
-  })
+    method: "delete",
+  });
 }
 
 export function addTestReq(params) {
   return request({
-    url: '/test',
-    method: 'post',
+    url: "/test",
+    method: "post",
     params,
-  })
+  });
 }
 
 export function uploadFileReq(params) {
   // console.log(formData)
   return request({
-    url: '/file/upload',
-    method: 'post',
+    url: "/file/upload",
+    method: "post",
     params,
-  })
+  });
 }

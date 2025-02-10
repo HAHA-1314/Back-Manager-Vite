@@ -3,6 +3,8 @@ import * as userApi from "../api/user";
 import { ElMessage } from "element-plus";
 import Setting from "./modules/setting";
 import Dict from "./modules/dict";
+import Cookies from "js-cookie";
+import router from "@/routes";
 
 const state = sessionStorage.getItem("state")
   ? JSON.parse(sessionStorage.getItem("state"))
@@ -35,6 +37,10 @@ const mutations = {
     state.permissionList = [];
     state.showPage = "page1";
     sessionStorage.clear();
+    Cookies.remove("username");
+    Cookies.remove("password");
+    Cookies.remove("satoken");
+    router.push(`/login?redirect=${router.currentRoute.value.path}`);
   },
   // 添加 tabs
   addTab(state, data) {
