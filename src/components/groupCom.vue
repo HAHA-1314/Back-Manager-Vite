@@ -4,13 +4,13 @@ import { ref, onMounted, onBeforeUnmount } from "vue";
 import extractTextFromHTML from "../utils/extractText";
 import { getDetail, updateInfo } from "../api/object";
 import { useRoute } from "vue-router";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { editProject, addProject } from "../api/project";
 const route = useRoute();
 const listImages = ref([]);
 const state = ref("");
 const id = ref("");
-const nameShow = ref(false);
+const proData = ref([]);
 const props = defineProps({
   show: {
     type: Boolean,
@@ -44,13 +44,38 @@ const renderDetail = async () => {
   $("#summernote").summernote("code", ruleForm.value.introduction);
   $("#summernote").summernote("blur");
 };
+//蒙层处理
+const singleBox = ref(null);
+const overlay = ref(null);
+const singleBox2 = ref(null);
+const overlay2 = ref(null);
+const handleMouseEnter = (box, overlay, index) => {
+  box.addEventListener("mouseenter", () => {
+    if (sendPics.value[index]) {
+      overlay.style.display = "flex";
+    }
+  });
+};
+
+const handleMouseLeave = (box, overlay) => {
+  box.addEventListener("mouseleave", () => {
+    overlay.style.display = "none";
+  });
+};
+
 onMounted(() => {
   if (route.name === "group-intro") {
     renderDetail();
   } else {
     initSummernote();
   }
+  handleMouseEnter(singleBox.value, overlay.value, 0);
+  handleMouseLeave(singleBox.value, overlay.value);
+
+  handleMouseEnter(singleBox2.value, overlay2.value, 1);
+  handleMouseLeave(singleBox2.value, overlay2.value);
 });
+
 onBeforeUnmount(() => {
   $("#summernote").summernote("destroy");
 });
@@ -61,7 +86,10 @@ const dialogVisible = ref(false);
 const handleRemove = (uploadFile) => {
   sendPics.value = sendPics.value.filter((item) => item !== uploadFile.url);
 };
-
+const checkPic = (index) => {
+  dialogImageUrl.value = sendPics.value[index];
+  dialogVisible.value = true;
+};
 const handlePictureCardPreview = (uploadFile) => {
   dialogImageUrl.value = uploadFile.url;
   dialogVisible.value = true;
@@ -109,6 +137,10 @@ const rules = ref({
     },
   ],
 });
+const setPics = () => {
+  sendPics.value = sendPics.value.filter((item) => item.trim() !== "");
+  listImages.value = sendPics.value.slice(2).map((item) => ({ url: item }));
+};
 const handleFileChange = (file, index) => {
   console.log(index);
   console.log(file.data);
@@ -133,37 +165,73 @@ const buttonConfirm = async () => {
   ruleForm.value.introduction = extractTextFromHTML(markupStr);
 
   ruleForm.value.pic = sendPics.value;
-    console.log(ruleForm.value.pic);
+  console.log(ruleForm.value.pic);
   await ruleFormRef.value.validate();
 
   if (route.name === "group-intro") {
-    const res = await updateInfo({
-      id: 1,
-      pic: sendPics.value,
-      introduction: ruleForm.value.introduction,
-    });
-    console.log(res);
-    if (res.code === 200) {
-      ElMessage.success("修改成功");
-    } else {
-      ElMessage.error("修改失败");
-    }
+    ElMessageBox.confirm("是否确定修改团队信息", "注意", {
+      type: "warning",
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+    })
+      .then(async () => {
+        setPics();
+        const res = await updateInfo({
+          id: 1,
+          pic: sendPics.value,
+          introduction: ruleForm.value.introduction,
+        });
+        console.log(res);
+        if (res.code === 200) {
+          ElMessage.success("修改成功");
+        } else {
+          ElMessage.error("修改失败");
+        }
+      })
+      .catch(() => {
+        ElMessage.info("取消修改");
+      });
   } else {
     if (state.value === "编辑项目") {
-      const res = await editProject({
-        id: id.value,
-        name: ruleForm.value.name,
-        pic: sendPics.value,
-        introduction: ruleForm.value.introduction,
-      });
-      emit("handlePro", res, "编辑");
+      ElMessageBox.confirm("是否确定编辑项目信息", "注意", {
+        type: "warning",
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+      })
+        .then(async () => {
+          setPics()
+            .slice(2)
+            .map((item) => ({ url: item }));
+          const res = await editProject({
+            id: id.value,
+            name: ruleForm.value.name,
+            pic: sendPics.value,
+            introduction: ruleForm.value.introduction,
+          });
+          console.log(id.value);
+          emit("handlePro", res, "编辑");
+        })
+        .catch(() => {
+          ElMessage.info("取消编辑");
+        });
     } else {
-      const res = await addProject({
-        name: ruleForm.value.name,
-        pic: sendPics.value,
-        introduction: ruleForm.value.introduction,
-      });
-      emit("handlePro", res, "添加");
+      ElMessageBox.confirm("是否确定添加项目信息", "注意", {
+        type: "warning",
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+      })
+        .then(async () => {
+          setPics();
+          const res = await addProject({
+            name: ruleForm.value.name,
+            pic: sendPics.value,
+            introduction: ruleForm.value.introduction,
+          });
+          emit("handlePro", res, "添加");
+        })
+        .catch(() => {
+          ElMessage.info("取消添加");
+        });
     }
   }
   console.log(listImages.value);
@@ -172,9 +240,16 @@ const buttonConfirm = async () => {
 
   console.log(ruleForm.value.pic);
 };
-
+const delPic = (index) => {
+  if (index === 0) {
+    sendPics.value[0] = "";
+  } else {
+    sendPics.value[1] = "";
+  }
+};
 const renderProject = (data, title, rowId) => {
   state.value = title;
+  proData.value = data;
   id.value = rowId;
   ruleForm.value.name = data.name;
   $("#summernote").summernote("code", data.introduction);
@@ -186,7 +261,7 @@ const clearForm = () => {
   ruleForm.value.pic = [];
   ruleForm.value.introduction = "";
   sendPics.value = [];
-  $("#summernote").summernote("code","");
+  $("#summernote").summernote("code", "");
 };
 const clearValidate = () => {
   ruleFormRef.value.clearValidate();
@@ -195,6 +270,7 @@ defineExpose({
   renderProject,
   clearForm,
   clearValidate,
+  renderDetail,
 });
 </script>
 <template>
@@ -210,41 +286,59 @@ defineExpose({
         <el-form-item label="轮播图图片：" prop="pic" style="display: block">
           <el-scrollbar>
             <div class="imgList">
-              <el-upload
-                v-model="ruleForm.pic"
-                action="http://localhost:8080/api/file/upload"
-                list-type="picture"
-                :on-success="(file) => handleFileChange(file, 0)"
-                :show-file-list="false"
-                style="margin-right: 8px"
-              >
-                <img :src="sendPics[0]" v-if="sendPics[0]" class="imgFirst" />
-                <el-image v-else>
-                  <template #error>
-                    <div class="image-slot" style="background-color: #e5e5e5">
-                      <el-icon><icon-picture /></el-icon>
-                    </div>
-                  </template>
-                </el-image>
-              </el-upload>
-
-              <el-upload
-                v-model="ruleForm.pic"
-                action="http://localhost:8080/api/file/upload"
-                list-type="picture"
-                :on-success="(file) => handleFileChange(file, 1)"
-                :show-file-list="false"
-                style="margin-right: 8px"
-              >
-                <img :src="sendPics[1]" v-if="sendPics[1]" class="imgFirst" />
-                <el-image v-else>
-                  <template #error>
-                    <div class="image-slot" style="background-color: #e5e5e5">
-                      <el-icon><icon-picture /></el-icon>
-                    </div>
-                  </template>
-                </el-image>
-              </el-upload>
+              <div class="singleBox" ref="singleBox">
+                <el-upload
+                  v-model="ruleForm.pic"
+                  action="http://localhost:8080/api/file/upload"
+                  list-type="picture"
+                  :on-success="(file) => handleFileChange(file, 0)"
+                  :show-file-list="false"
+                >
+                  <img :src="sendPics[0]" v-if="sendPics[0]" class="imgFirst" />
+                  <el-image v-else>
+                    <template #error>
+                      <div class="image-slot" style="background-color: #e5e5e5">
+                        <el-icon><icon-picture /></el-icon>
+                      </div>
+                    </template>
+                  </el-image>
+                </el-upload>
+                <div class="overlay" ref="overlay">
+                  <el-icon class="hoverIcon" @click="checkPic(0)"
+                    ><ZoomIn
+                  /></el-icon>
+                  <el-icon class="hoverIcon" @click="delPic(0)"
+                    ><Delete
+                  /></el-icon>
+                </div>
+              </div>
+              <div class="singleBox" ref="singleBox2">
+                <el-upload
+                  v-model="ruleForm.pic"
+                  action="http://localhost:8080/api/file/upload"
+                  list-type="picture"
+                  :on-success="(file) => handleFileChange(file, 1)"
+                  :show-file-list="false"
+                  style="margin-right: 8px"
+                >
+                  <img :src="sendPics[1]" v-if="sendPics[1]" class="imgFirst" />
+                  <el-image v-else>
+                    <template #error>
+                      <div class="image-slot" style="background-color: #e5e5e5">
+                        <el-icon><icon-picture /></el-icon>
+                      </div>
+                    </template>
+                  </el-image>
+                </el-upload>
+                <div class="overlay" ref="overlay2">
+                  <el-icon class="hoverIcon" @click="checkPic(1)"
+                    ><ZoomIn
+                  /></el-icon>
+                  <el-icon class="hoverIcon" @click="delPic(1)"
+                    ><Delete
+                  /></el-icon>
+                </div>
+              </div>
               <el-upload
                 v-model:file-list="listImages"
                 action="http://localhost:8080/api/file/upload"
@@ -258,7 +352,7 @@ defineExpose({
               </el-upload>
 
               <el-dialog v-model="dialogVisible">
-                <img w-full :src="dialogImageUrl" alt="Preview Image" />
+                <img  :src="dialogImageUrl" alt="Preview Image" class="previewImg"/>
               </el-dialog>
             </div>
           </el-scrollbar>
@@ -314,7 +408,7 @@ defineExpose({
   width: 240px;
   height: 135px;
   border: 1px solid #dcdfe6;
-  border-radius: 3px;
+  border-radius: 6px;
 }
 :deep(.avatar-uploader .el-upload) {
   box-sizing: border-box;
@@ -344,5 +438,33 @@ defineExpose({
   font-size: 45px;
   color: #101010;
   text-align: center;
+}
+.singleBox {
+  position: relative;
+  width: 240px;
+  height: 135px;
+  margin-right: 8px;
+}
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* 半透明蒙层 */
+  justify-content: center;
+  align-items: center;
+  gap: 20px; /* 图标之间的间距 */
+  color: white;
+  font-size: 30px;
+  border-radius: 6px;
+  display: none; /* 默认情况下，蒙层不可见 */
+}
+.hoverIcon {
+  font-size: 20px;
+}
+.previewImg{
+  width: 100%;
+  height: 100%;
 }
 </style>
