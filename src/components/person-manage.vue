@@ -33,9 +33,12 @@
         <div style="display: flex; justify-content: space-between">
           <el-form-item label="当前考核流程">
             <el-select v-model="process" placeholder="请选择考核流程">
-              <el-option label="第一次考核" value="第一次考核"></el-option>
-              <el-option label="第二次考核" value="第二次考核"></el-option>
-              <el-option label="第三次考核" value="第三次考核"></el-option>
+              <el-option
+                v-for="test in testList"
+                :key="test.id"
+                :label="test.name"
+                :value="test.name"
+              ></el-option>
             </el-select>
           </el-form-item>
           <el-form-item></el-form-item>
@@ -94,7 +97,7 @@
         ></el-table-column>
         <el-table-column label="操作">
           <template #default="{ row }">
-            <el-button @click="getUser(row.id)">查看</el-button>
+            <el-button @click="goToPage2(row.id)">查看</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -280,12 +283,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-
-import router from '../routes'
+// import { useStore } from 'vuex'
 import { computed } from 'vue'
-import { useStore } from 'vuex'
+
+import { useRoute } from 'vue-router'
 import store from '../store'
 import { onMounted } from 'vue'
 
@@ -300,6 +303,8 @@ import {
   getAllTestReq,
 } from '../api/student'
 
+// const store = useStore()
+const route = useRoute()
 const year = ref('')
 const nickname = ref('')
 const telephone = ref('')
@@ -330,10 +335,10 @@ const newArray = ref([])
 
 const goToPage1 = () => {
   store.dispatch('updatePage', String(page1.value))
-  // processList.value = []
 }
-const goToPage2 = () => {
+const goToPage2 = async (id) => {
   store.dispatch('updatePage', String(page2.value))
+  await getUser(id)
 }
 
 const getAllUser = async () => {
@@ -349,6 +354,10 @@ const getAllUser = async () => {
 onMounted(() => {
   getAllUser()
   getAllTest()
+  console.log(store.state.showPage)
+  currentUserId.value = route.query.stuId
+  getUser(currentUserId.value)
+  // console.log(currentUserId.value)
 })
 //获取所有用户
 
@@ -402,7 +411,6 @@ const getUserProcess = async (id) => {
 //获取用户的考核进度
 
 const getUser = async (id) => {
-  goToPage2()
   const res = await getUserReq(id)
   getUserProcess(id)
   console.log(res)

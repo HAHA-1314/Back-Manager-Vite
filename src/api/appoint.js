@@ -39,3 +39,20 @@ export function getAppointReq(appointId) {
   })
 }
 //获取单个预约
+
+export function getAllTestReq() {
+  return request({
+    url: '/appointment/get/tests',
+    method: 'get',
+  })
+}
+//获取所有考核
+
+export function getAllUserReq(params) {
+  return request({
+    url: '/appointment/get/users',
+    method: 'get',
+    params: params,
+  })
+}
+//获取所有用户

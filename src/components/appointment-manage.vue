@@ -18,9 +18,12 @@
           style="width: 120px"
           placeholder="第一次考核"
         >
-          <el-option label="第一次考核" value="1"></el-option>
-          <el-option label="第二次考核" value="2"></el-option>
-          <el-option label="第三次考核" value="3"></el-option>
+          <el-option
+            v-for="test in testList"
+            :key="test.id"
+            :label="test.name"
+            :value="test.name"
+          ></el-option>
         </el-select>
         <el-button @click="addBox = true">添加预约</el-button>
       </div>
@@ -361,16 +364,24 @@
           ></el-table-column>
           <el-table-column
             label="姓名"
-            prop="name"
+            prop="nickname"
             width="120"
           ></el-table-column>
-          <el-table-column label="学号" prop="id" width="130"></el-table-column>
-          <el-table-column label="年级" prop="grade"></el-table-column>
+          <el-table-column
+            label="学号"
+            prop="stuId"
+            width="130"
+          ></el-table-column>
+          <el-table-column label="年级" prop="year"></el-table-column>
           <el-table-column label="联系方式" prop="telephone"></el-table-column>
-          <el-table-column label="预约时间" prop="time"></el-table-column>
+          <el-table-column label="预约时间" prop="time" width="350">
+            <template #default="scope">
+              {{ scope.row.begin }} - {{ scope.row.end }}
+            </template>
+          </el-table-column>
           <el-table-column label="操作">
-            <template #default>
-              <el-button @click="goToPerson">查看</el-button>
+            <template #default="{ row }">
+              <el-button @click="goToPerson(row.stuId)">查看</el-button>
             </template>
           </el-table-column> </el-table
         ><el-pagination
@@ -385,9 +396,9 @@
 </template>
 
 <script setup>
-import { useStore } from 'vuex'
 import { ref } from 'vue'
 import router from '../routes'
+import store from '../store'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 import {
@@ -396,13 +407,15 @@ import {
   deleteAppointReq,
   changeAppointReq,
   getAppointReq,
+  getAllTestReq,
+  getAllUserReq,
 } from '../api/appoint'
 
 import { onMounted } from 'vue'
 import dayjs from 'dayjs'
 dayjs().format()
 
-const store = useStore()
+// const store = useStore()
 const newPage = ref('page2')
 const process = ref('')
 const addBox = ref(false)
@@ -420,10 +433,18 @@ const testId = ref('')
 const lastFather = ref('')
 const father = ref('')
 const currentAppointId = ref('')
+const testList = ref([])
 
-const goToPerson = () => {
-  router.push({ name: 'person-management' })
-  store.dispatch('changePage', String(newPage.value))
+const goToPerson = (stuId) => {
+  router.push({
+    path: 'person-management',
+    query: {
+      stuId: stuId,
+    },
+  })
+  store.dispatch('updatePage', String(newPage.value))
+
+  console.log(stuId)
 }
 
 const appointList = ref([])
@@ -437,10 +458,33 @@ const getAppointList = async () => {
 }
 //请求获取预约信息
 
+const getTestList = async () => {
+  await getAllTestReq().then((res) => {
+    testList.value = res.data || []
+  })
+}
+//请求获取考核信息
+
 onMounted(() => {
   getAppointList()
+  getTestList()
+  getAllUser()
 })
 //获取预约信息
+
+const getAllUser = async () => {
+  await getAllUserReq({
+    page: 1,
+    pageSize: 10,
+  }).then((res) => {
+    studentList.value = res.data.records || []
+    studentList.value.forEach((item) => {
+      item.begin = dayjs(item.begin).format('YYYY-MM-DD HH:mm')
+      item.end = dayjs(item.end).format('YYYY-MM-DD HH:mm')
+    })
+  })
+  console.log(studentList.value)
+}
 
 const disabledDate = (time) => {
   const currentTime = Date.now() // 获取当前时间戳
@@ -607,7 +651,7 @@ const changeAppoint = (currentAppiontId) => {
 
 :deep(.cell) {
   font-weight: 400;
-  height: 30px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
