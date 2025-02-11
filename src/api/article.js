@@ -25,11 +25,11 @@ export function addArticle(params) {
 }
 
 //修改推文
-export function updateArticle(params) {
+export function updateArticle(data) {
   return request({
     url: "/tweet",
     method: "put",
-    params,
+    data,
   });
 }
 

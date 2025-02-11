@@ -10,10 +10,10 @@ export function getDetail(params) {
 }
 
 //修改信息
-export function updateInfo(params) {
+export function updateInfo(data) {
   return request({
     url: "/object",
     method: "put",
-    params,
+    data,
   });
 }
