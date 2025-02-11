@@ -1,6 +1,6 @@
 import request from '@/utils/request'
 
-export function getAdminMsgReq(params) {
+export function getMsgReq(params) {
   return request({
     url: '/meassage/showAll',
     method: 'post',
@@ -8,15 +8,6 @@ export function getAdminMsgReq(params) {
   })
 }
 //管理员查看发布的公告
-
-export function getUserMsgReq(params) {
-  return request({
-    url: '/meassage/show',
-    method: 'post',
-    params,
-  })
-}
-//用户查看自己的公告
 
 export function addMsgReq(params) {
   return request({

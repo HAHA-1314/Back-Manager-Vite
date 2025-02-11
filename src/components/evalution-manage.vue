@@ -286,6 +286,7 @@ const getAllTestData = async () => {
       (item.end = dayjs(item.end).format('YYYY-MM-DD'))
   })
   testList.value = res.data || []
+  newestTest.value = res.data[res.data.length - 1].id
 }
 //请求获取考核信息
 

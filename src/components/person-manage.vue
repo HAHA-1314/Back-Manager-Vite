@@ -217,7 +217,7 @@
       </el-card>
       <el-card>
         <div class="card2">
-          <div class="left">
+          <div class="left" style="height: 400px">
             <el-timeline>
               <el-timeline-item
                 v-for="(item, index) in processList"
@@ -301,6 +301,7 @@ import {
   failUserReq,
   returnUserReq,
   getAllTestReq,
+  putCommentReq,
 } from '../api/student'
 
 // const store = useStore()
@@ -509,22 +510,20 @@ const cancel = () => {
 }
 //取消修改用户信息
 
-const pass = () => {
-  console.log(comment.value)
-  ElMessageBox.confirm('您确定提交该评价吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning',
-  }).then(() => {
-    ElMessage({
-      type: 'success',
-      message: '评价成功',
-    })
+const putComment = async () => {
+  const res = await putCommentReq({
+    testId: currentTestId.value,
+    userId: currentUserId.value,
+    comment: comment.value,
   })
+  console.log(res)
 }
-//通过用户前提
+//请求提交评价
+
+//提交评价前提
 
 const passUser = async () => {
+  putComment()
   const res = await passUserReq({
     testId: currentTestId.value,
     userId: currentUserId.value,
@@ -542,7 +541,7 @@ const passUser = async () => {
   }
   console.log(res)
 }
-//通过用户
+//请求通过用户
 
 const failFn = async () => {
   const res = await failUserReq({
@@ -563,7 +562,7 @@ const failFn = async () => {
     })
   }
 }
-//未通过用户
+//请求未通过用户
 
 const failUser = () => {
   ElMessageBox.confirm('您确定要未通过吗？', '提示', {
@@ -574,6 +573,7 @@ const failUser = () => {
     failFn()
   })
 }
+//未通过用户前提
 
 const returnFn = async () => {
   console.log(currentTestId.value)
@@ -671,7 +671,7 @@ const returnUser = () => {
 }
 
 .left {
-  margin-top: 50px;
+  margin-top: 30px;
   margin-left: -18px;
 }
 
@@ -691,5 +691,9 @@ const returnUser = () => {
   display: flex;
   align-items: center;
   justify-content: space-around;
+}
+
+.el-timeline-item {
+  height: 100px;
 }
 </style>

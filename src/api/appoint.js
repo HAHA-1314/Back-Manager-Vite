@@ -1,9 +1,10 @@
 import request from '@/utils/request'
 
-export function allAppointReq() {
+export function allAppointReq(params) {
   return request({
-    url: '/appointment/get/tests',
+    url: '/appointment/get/availability',
     method: 'get',
+    params: params,
   })
 }
 //获取所有预约

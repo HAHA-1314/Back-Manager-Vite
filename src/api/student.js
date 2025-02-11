@@ -71,3 +71,11 @@ export function getAllTestReq() {
   })
 }
 //获取所有考核
+
+export function putCommentReq(params) {
+  return request({
+    url: '/test/comment',
+    method: 'put',
+    params,
+  })
+}
