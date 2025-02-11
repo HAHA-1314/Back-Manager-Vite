@@ -73,7 +73,7 @@
       <el-button style="width: 80px; margin-right: 20px" @click="page = 'page3'"
         >取消</el-button
       >
-      <el-button type="primary" style="width: 80px" @click="addAnnoucement"
+      <el-button type="primary" style="width: 80px" @click="addMsg"
         >确认</el-button
       >
     </div>
@@ -83,7 +83,7 @@
 <script setup>
 import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getMsgReq } from '../api/message'
+import { getMsgReq, addMsgReq } from '../api/message'
 import { onMounted } from 'vue'
 
 const page = ref('page3')
@@ -106,25 +106,40 @@ const options = ref([
   },
 ])
 
-const msgList = [
-  {
-    title: '我是公告标题',
-    time: '2024-09-27',
-    author: '嘻嘻',
-  },
-]
+const msgList = ref([])
 
 const getAllMsg = async () => {
   const res = await getMsgReq()
   console.log(res)
-  msgList.value = res.data.records
+  msgList.value = res.data
 }
 
 onMounted(() => {
   getAllMsg()
 })
 
-const addAnnoucement = () => {
+const addMsgFn = async () => {
+  const res = await addMsgReq({
+    title: title.value,
+    content: content.value,
+  })
+  console.log(res)
+  if (res.code == 200) {
+    ElMessage({
+      type: 'success',
+      message: '添加成功',
+    })
+    getAllMsg()
+    page.value = 'page3'
+  } else {
+    ElMessage({
+      type: 'error',
+      message: res.msg,
+    })
+  }
+}
+
+const addMsg = () => {
   if (title.value == '' || content.value == '') {
     ElMessage({
       type: 'warning',
@@ -136,11 +151,7 @@ const addAnnoucement = () => {
       cancelButtonText: '取消',
       type: 'warning',
     }).then(() => {
-      ElMessage({
-        type: 'success',
-        message: '添加成功',
-      })
-      page.value = 'page3'
+      addMsgFn()
     })
   }
 }

@@ -4,7 +4,7 @@ export function getMsgReq(params) {
   return request({
     url: '/meassage/showAll',
     method: 'post',
-    params,
+    data: params,
   })
 }
 //管理员查看发布的公告
