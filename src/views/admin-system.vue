@@ -82,8 +82,7 @@ const handleMenuOpen = (keyPath) => {
       menuTitle.value = "账号管理";
       break;
     default:
-      menuTitle.value = keyPath; // Fallback to keyPath if not matched
-      break;
+      return;
   }
 
   editableTabs.value.push({
@@ -95,9 +94,6 @@ const handleMenuOpen = (keyPath) => {
   activeMenu.value = keyPath;
 };
 
-const handleMenuClose = (key, keyPath) => {
-  console.log(key, keyPath);
-};
 
 const clickTab = (key) => {
   goRouter.value = key.props.name;
@@ -162,7 +158,18 @@ watch(
   },
   { deep: true }
 );
-
+watch(
+  () => route.path,
+  (newValue) => {
+    if (newValue !== "/login") {
+      if (newValue !== "/") {
+        if(newValue.split('/')[2]){
+          handleMenuOpen(newValue.split('/')[2]);
+        }
+      }
+    }
+  }
+);
 onMounted(() => {
   activeMenu.value = "home";
 });
