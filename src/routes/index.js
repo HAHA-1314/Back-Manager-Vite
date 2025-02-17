@@ -80,7 +80,6 @@ const routes = [
       //     title: "团队介绍",
       //   },
       // },
-
       {
         path: 'team-intro', //信息管理-组别介绍
         component: teamIntro,
@@ -108,24 +107,6 @@ const routes = [
       //     title: "精选推文",
       //   },
       // },
-      {
-        path: 'project-intro', //信息管理-项目介绍
-        component: projectIntro,
-        name: 'project-intro',
-        meta: {
-          activeMenu: '项目介绍',
-          title: '项目介绍',
-        },
-      },
-      {
-        path: 'selected-post', //信息管理-精选推文
-        component: selectedIntro,
-        name: 'selected-post',
-        meta: {
-          activeMenu: '精选推文',
-          title: '精选推文',
-        },
-      },
       {
         path: 'account-management', //账号管理
         component: accountManage,

@@ -5,11 +5,6 @@ import Setting from "./modules/setting";
 import Dict from "./modules/dict";
 import Cookies from "js-cookie";
 import router from "@/routes";
-import { createStore } from 'vuex'
-import * as userApi from '../api/user'
-import { ElMessage } from 'element-plus'
-import Setting from './modules/setting'
-import Dict from './modules/dict'
 
 const state = sessionStorage.getItem('state')
   ? JSON.parse(sessionStorage.getItem('state'))
