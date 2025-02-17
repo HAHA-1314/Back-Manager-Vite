@@ -14,6 +14,14 @@ export function getAllTestReq() {
   });
 }
 
+export function getGroupTestReq(params) {
+  return request({
+    url: '/appointment/get/tests',
+    method: 'get',
+    params,
+  })
+}
+
 export function getTestReq(id) {
   return request({
     url: `/test/get/${id}`,

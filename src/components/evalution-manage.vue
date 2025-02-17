@@ -164,7 +164,7 @@
         align-items: center;
       "
     >
-      <p style="display: inline-block; margin-left: 20px">添加考核</p>
+      <p style="display: inline-block; margin-left: 20px">编辑考核</p>
       <el-icon
         @click="changeBoxVisible = false"
         style="display: inline-block; margin-right: 20px"
@@ -261,6 +261,7 @@ import {
   delTestReq,
   getTestReq,
   changeTestReq,
+  getGroupTestReq,
 } from '@/api/test.js'
 
 import dayjs from 'dayjs'
@@ -288,8 +289,19 @@ const getAllTestData = async () => {
 }
 //请求获取考核信息
 
+const getGroupTestData = async () => {
+  const res = await getGroupTestReq()
+  // res.data.forEach((item) => {
+  //   ;(item.begin = dayjs(item.begin).format('YYYY-MM-DD')),
+  //     (item.end = dayjs(item.end).format('YYYY-MM-DD'))
+  // })
+  processList.value = res.data || []
+}
+//请求获取本组考核信息
+
 onMounted(() => {
   getAllTestData()
+  getGroupTestData()
 })
 //获取考核信息
 
@@ -317,10 +329,11 @@ const addTestData = async () => {
     addBoxVisible.value = false
     file.value = ''
     getAllTestData()
+    getGroupTestData()
   } else {
     ElMessage({
       type: 'error',
-      message: '添加失败',
+      message: res.msg,
     })
   }
 }
@@ -380,16 +393,18 @@ const deleteFn = async (e) => {
       message: '删除成功',
     })
     getAllTestData()
+    getGroupTestData()
   } else {
     ElMessage({
       type: 'error',
-      message: '删除失败',
+      message: res.msg,
     })
   }
 }
 //请求删除考核信息
 
 const deleteTest = (e) => {
+  console.log(e)
   ElMessageBox.confirm('您确定要删除吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
@@ -423,8 +438,8 @@ const changeTestData = async (id) => {
   const res = await changeTestReq({
     name: name.value,
     content: content.value,
-    begin: begin.value,
-    end: end.value,
+    begin: begin.value + '00:00:00',
+    end: end.value + '00:00:00',
     id: id,
     fileList: file.value,
   })
@@ -435,10 +450,11 @@ const changeTestData = async (id) => {
     })
     changeBoxVisible.value = false
     getAllTestData()
+    getGroupTestData()
   } else {
     ElMessage({
       type: 'error',
-      message: '修改失败',
+      message: res.msg,
     })
   }
 }
@@ -457,6 +473,7 @@ const handleFileChange = (res) => {
     console.log(file.value)
   }
 }
+//上传文件
 </script>
 
 <style scoped>

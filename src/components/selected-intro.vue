@@ -34,13 +34,27 @@ const clearForm = () => {
   sendPics.value = [];
 };
 const rules = {
-  name: [{ required: true, message: "请输入推文名称", trigger: "blur" }],
+  name: [
+    { required: true, message: "请输入推文名称", trigger: "blur" },
+    { max: 50, message: "名称长度不能超过50个字符", trigger: "blur" },
+  ],
   pics: [{ required: true, message: "请上传图片", trigger: "blur" }],
   url: [{ required: true, message: "请输入推文链接", trigger: "blur" }],
 };
 const getArticle = async () => {
   const res = await getArticleList();
-  tableData.value = res.data || [];
+  console.log(res.data);
+  const truncatedData = res.data.map(item => {
+  // 检查 name 属性的长度，如果超过 15，进行截取
+  const truncatedName = item.name.length > 15 ? item.name.slice(0, 15) + '...' : item.name;
+
+  // 返回一个新的对象，替换 name 属性
+  return {
+    ...item, // 保留其他属性
+    name: truncatedName // 更新 name 属性
+  };
+});
+  tableData.value = truncatedData || [];
 };
 const handleAdd = () => {
   ruleForm.value = defaultForm;
@@ -51,20 +65,15 @@ const handleEdit = async (row) => {
   articleId.value = row.id;
   title.value = "编辑推文";
   const { data } = await getArticleDetail(row.id);
-  console.log(data);
   ruleForm.value.name = data.name;
   ruleForm.value.url = data.url;
-  console.log(ruleForm.value.pics);
-  console.log(data.pic);
   data.pic.forEach((item) => {
     ruleForm.value.pics.push({ url: item });
   });
   sendPics.value = data.pic;
-  console.log(ruleForm.value.pics);
   dialogVisible.value = true;
 };
 const handleDelete = async (row) => {
-  console.log(row);
   ElMessageBox.confirm("是否删除项目", "Warning", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
@@ -97,33 +106,55 @@ const buttonConfirm = async () => {
   const rawData = toRaw(sendPics.value);
 
   if (title.value === "添加推文") {
-    const res = await addArticle({
-      name: ruleForm.value.name,
-      pics: rawData,
-      url: ruleForm.value.url,
-    });
-    if (res.code === 200) {
-      ElMessage.success("添加成功");
-    } else {
-      ElMessage.error("添加失败");
-    }
+    ElMessageBox.confirm("是否确定添加推文", "注意", {
+      type: "warning",
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+    })
+      .then(async () => {
+        const res = await addArticle({
+          name: ruleForm.value.name,
+          pics: rawData,
+          url: ruleForm.value.url,
+        });
+        if (res.code === 200) {
+          ElMessage.success("添加成功");
+        } else {
+          ElMessage.error("添加失败");
+        }
+        clearForm();
+        dialogVisible.value = false;
+        getArticle();
+      })
+      .catch(() => {
+        ElMessage.info("取消添加");
+      });
   } else {
-    console.log(ruleForm.value.pics);
-    const res = await updateArticle({
-      id: articleId.value,
-      name: ruleForm.value.name,
-      pics: rawData,
-      url: ruleForm.value.url,
-    });
-    if (res.code === 200) {
-      ElMessage.success("编辑成功");
-    } else {
-      ElMessage.error("编辑失败");
-    }
+    ElMessageBox.confirm("是否确定编辑推文", "注意", {
+      type: "warning",
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+    })
+      .then(async () => {
+        const res = await updateArticle({
+          id: articleId.value,
+          name: ruleForm.value.name,
+          pics: rawData,
+          url: ruleForm.value.url,
+        });
+        if (res.code === 200) {
+          ElMessage.success("编辑成功");
+        } else {
+          ElMessage.error("编辑失败");
+        }
+        clearForm();
+        dialogVisible.value = false;
+        getArticle();
+      })
+      .catch(() => {
+        ElMessage.info("取消编辑");
+      });
   }
-  clearForm();
-  dialogVisible.value = false;
-  getArticle();
 };
 
 const handleRemove = (uploadFile) => {

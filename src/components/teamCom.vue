@@ -69,7 +69,13 @@ const validateKeywords = (rule, value, callback) => {
   if (allEmpty) {
     callback(new Error("至少填写一个关键词"));
   } else {
-    callback();
+     // 检查每个关键词是否超过10个字符
+    const tooLongKeyword = ruleForm.value.keywords.find((item) => item.trim().length > 10);
+    if (tooLongKeyword) {
+      callback(new Error("每个关键词不能多于10个字"));
+    } else {
+      callback();
+    }
   }
 };
 const rules = {

@@ -188,15 +188,23 @@
           <div class="left">
             <el-timeline>
               <el-timeline-item
-                v-for="(activity, index) in activities"
+                v-for="(item, index) in processList"
                 :key="index"
-                :size="size"
+                :size="large"
                 :icon="icon"
-                :type="activity.type"
-                :hollow="activity.hollow"
-                :timestamp="activity.timestamp"
+                :type="item.testName ? 'primary' : ''"
+                :hollow="item.status === 1"
+                :timestamp="
+                  item.status === 1
+                    ? '正在进行'
+                    : item.status === 0
+                    ? '未通过'
+                    : item.status === 2
+                    ? '已通过'
+                    : ''
+                "
               >
-                {{ activity.content }}
+                {{ item.testName || '未进行的考核' }}
               </el-timeline-item>
             </el-timeline>
           </div>
@@ -244,7 +252,12 @@ import { useStore } from 'vuex'
 import store from '../store'
 import { onMounted } from 'vue'
 
-import { getAllUserReq, getUserReq, changeUserReq } from '../api/student'
+import {
+  getAllUserReq,
+  getUserReq,
+  changeUserReq,
+  getUserProcessReq,
+} from '../api/student'
 
 const year = ref('')
 const nickname = ref('')
@@ -264,8 +277,8 @@ const pageSize = ref(6)
 const page1 = ref('page1')
 const page2 = ref('page2')
 const showPage = computed(() => store.state.showPage)
-
 const studentList = ref([])
+const processList = ref([])
 
 const goToPage1 = () => {
   store.dispatch('updatePage', String(page1.value))
@@ -289,10 +302,18 @@ onMounted(() => {
 })
 //获取所有用户
 
+const getUserProcess = async (id) => {
+  console.log(id)
+  const res = await getUserProcessReq(id)
+  processList.value = res.data
+  console.log(processList.value)
+}
+//获取用户的考核进度
+
 const getUser = async (id) => {
   goToPage2()
-  console.log(id)
   const res = await getUserReq(id)
+  getUserProcess(id)
   console.log(res)
   const data = res.data
   changeId.value = id
@@ -373,6 +394,7 @@ const changeUser = async (changeId) => {
   getAllUser()
   console.log(res)
 }
+//请求修改用户信息
 
 const save = (changeId) => {
   const changeBtn = document.querySelector('.changeBtn')
@@ -388,6 +410,7 @@ const save = (changeId) => {
     chooseBtn.style.display = 'none'
   })
 }
+//保存修改
 
 const cancel = () => {
   const changeBtn = document.querySelector('.changeBtn')
@@ -408,28 +431,6 @@ const returnFn = () => {
     })
   })
 }
-
-const activities = [
-  {
-    content: '已完成步骤',
-    timestamp: '这里是提示文字',
-    type: 'primary',
-    hollow: true,
-    size: 'large',
-  },
-  {
-    content: '进行中的步骤',
-    timestamp: '这里是提示文字',
-    type: 'primary',
-    size: 'large',
-  },
-  {
-    content: '未进行的步骤',
-    timestamp: '这里是提示文字',
-    hollow: true,
-    size: 'large',
-  },
-]
 </script>
 
 <style scoped>
@@ -473,7 +474,7 @@ const activities = [
 .detailMain {
   margin-top: 15px;
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
 }
 
 .detailMain .el-card {
