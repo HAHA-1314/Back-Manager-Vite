@@ -228,7 +228,7 @@ const today_enroll = ref(0);
 const cumulation_num = ref(null);
 const current_step = ref(null);
 const current_num = ref(null);
-const month = ref("2024-09");
+const month = ref(dayjs().startOf('month').format("YYYY-MM"));
 const up = ref(true); //较昨日新增人数 上涨
 const down = ref(false); //较昨日新增人数 下调
 
@@ -246,7 +246,7 @@ class Adder {
 }
 
 const personPage = new Adder();
-const testPage = new Adder();
+// const testPage = new Adder();
 // const announcePage = new Adder();
 
 const announce_click = (row, column, event) => {
@@ -333,7 +333,7 @@ const option = ref({
     {
       data: [],
       type: "line",
-      name: "Tempature",
+      name: "报名人数",
     },
   ],
 });
