@@ -9,7 +9,7 @@
       @click="openAddBox"
       >+添加</el-button
     >
-    <el-table :data="processList">
+    <el-table :data="testList">
       <el-table-column
         label="考核名称"
         prop="name"
@@ -261,13 +261,12 @@ import {
   delTestReq,
   getTestReq,
   changeTestReq,
-  getGroupTestReq,
 } from '@/api/test.js'
 
 import dayjs from 'dayjs'
 dayjs().format()
-const processList = ref([])
 
+const testList = ref([])
 const name = ref('')
 const content = ref('')
 const date = ref('')
@@ -278,6 +277,7 @@ const addBoxVisible = ref(false)
 const changeBoxVisible = ref(false)
 const upload = ref()
 const file = ref('')
+const newestTest = ref('')
 
 const getAllTestData = async () => {
   const res = await getAllTestReq()
@@ -285,23 +285,13 @@ const getAllTestData = async () => {
     ;(item.begin = dayjs(item.begin).format('YYYY-MM-DD')),
       (item.end = dayjs(item.end).format('YYYY-MM-DD'))
   })
-  processList.value = res.data || []
+  testList.value = res.data || []
+  newestTest.value = res.data[res.data.length - 1].id
 }
 //请求获取考核信息
 
-const getGroupTestData = async () => {
-  const res = await getGroupTestReq()
-  // res.data.forEach((item) => {
-  //   ;(item.begin = dayjs(item.begin).format('YYYY-MM-DD')),
-  //     (item.end = dayjs(item.end).format('YYYY-MM-DD'))
-  // })
-  processList.value = res.data || []
-}
-//请求获取本组考核信息
-
 onMounted(() => {
   getAllTestData()
-  getGroupTestData()
 })
 //获取考核信息
 
@@ -320,6 +310,7 @@ const addTestData = async () => {
     begin: begin.value + '00:00:00',
     end: end.value + '00:00:00',
     fileList: file.value,
+    parent: newestTest.value,
   })
   if (res.code == 200) {
     ElMessage({
@@ -329,7 +320,6 @@ const addTestData = async () => {
     addBoxVisible.value = false
     file.value = ''
     getAllTestData()
-    getGroupTestData()
   } else {
     ElMessage({
       type: 'error',
@@ -393,7 +383,6 @@ const deleteFn = async (e) => {
       message: '删除成功',
     })
     getAllTestData()
-    getGroupTestData()
   } else {
     ElMessage({
       type: 'error',
@@ -450,7 +439,6 @@ const changeTestData = async (id) => {
     })
     changeBoxVisible.value = false
     getAllTestData()
-    getGroupTestData()
   } else {
     ElMessage({
       type: 'error',

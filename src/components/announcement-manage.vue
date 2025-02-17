@@ -11,14 +11,14 @@
       <el-button style="width: 80px" @click="page = 'page4'">+添加</el-button>
     </div>
     <div style="margin-top: 25px">
-      <el-table :data="annouceList">
+      <el-table :data="msgList">
         <el-table-column label="标题" prop="title"></el-table-column>
         <el-table-column label="发布时间" prop="time"></el-table-column>
-        <el-table-column label="发布人员" prop="author"></el-table-column>
+        <el-table-column label="发布人员" prop="groupOp"></el-table-column>
         <el-table-column label="操作" width="380">
-          <template #default>
-            <el-button @click="change"> 编辑 </el-button>
-            <el-button @click="deleteFn"> 删除 </el-button>
+          <template #default="{ row }">
+            <el-button @click="change(row.id)"> 编辑 </el-button>
+            <el-button @click="deleteFn(row.id)"> 删除 </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -83,6 +83,8 @@
 <script setup>
 import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { getMsgReq } from '../api/message'
+import { onMounted } from 'vue'
 
 const page = ref('page3')
 const title = ref('')
@@ -103,13 +105,24 @@ const options = ref([
     value: '芳',
   },
 ])
-const annouceList = [
+
+const msgList = [
   {
     title: '我是公告标题',
     time: '2024-09-27',
     author: '嘻嘻',
   },
 ]
+
+const getAllMsg = async () => {
+  const res = await getMsgReq()
+  console.log(res)
+  msgList.value = res.data.records
+}
+
+onMounted(() => {
+  getAllMsg()
+})
 
 const addAnnoucement = () => {
   if (title.value == '' || content.value == '') {
