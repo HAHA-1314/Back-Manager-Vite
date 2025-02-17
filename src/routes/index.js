@@ -24,62 +24,62 @@ const routes = [
   {
     path: "/superadmin-system",
     component: AdminSystemView, //首页导航组件
-    redirect: "/superadmin-system/home",
+    redirect: "/superadmin-system/team-intro",
     children: [
-      {
-        path: "home", //首页
-        component: HomeView,
-        name: "home",
-        meta: {
-          activeMenu: "首页",
-          title: "首页",
-        },
-      },
-      {
-        path: "person-management", //考核管理-人员管理
-        component: personManage,
-        name: "person-management",
-        meta: {
-          activeMenu: "人员管理",
-          title: "人员管理",
-        },
-      },
-      {
-        path: "evalution-management", //考核管理-考核管理
-        component: evalutionManage,
-        name: "evalution-management",
-        meta: {
-          activeMenu: "考核管理",
-          title: "考核管理",
-        },
-      },
-      {
-        path: "appointment-management", // 考核管理-预约管理
-        component: appointmentManage,
-        name: "appointment-management",
-        meta: {
-          activeMenu: "预约管理",
-          title: "预约管理",
-        },
-      },
-      {
-        path: "announcement-management", //考核管理-公告设置
-        component: announcementManage,
-        name: "announcement-management",
-        meta: {
-          activeMenu: "公告设置",
-          title: "公告设置",
-        },
-      },
-      {
-        path: "group-intro", //信息管理-团队介绍
-        component: groupIntro,
-        name: "group-intro",
-        meta: {
-          activeMenu: "团队介绍",
-          title: "团队介绍",
-        },
-      },
+      // {
+      //   path: "home", //首页
+      //   component: HomeView,
+      //   name: "home",
+      //   meta: {
+      //     activeMenu: "首页",
+      //     title: "首页",
+      //   },
+      // },
+      // {
+      //   path: "person-management", //考核管理-人员管理
+      //   component: personManage,
+      //   name: "person-management",
+      //   meta: {
+      //     activeMenu: "人员管理",
+      //     title: "人员管理",
+      //   },
+      // },
+      // {
+      //   path: "evalution-management", //考核管理-考核管理
+      //   component: evalutionManage,
+      //   name: "evalution-management",
+      //   meta: {
+      //     activeMenu: "考核管理",
+      //     title: "考核管理",
+      //   },
+      // },
+      // {
+      //   path: "appointment-management", // 考核管理-预约管理
+      //   component: appointmentManage,
+      //   name: "appointment-management",
+      //   meta: {
+      //     activeMenu: "预约管理",
+      //     title: "预约管理",
+      //   },
+      // },
+      // {
+      //   path: "announcement-management", //考核管理-公告设置
+      //   component: announcementManage,
+      //   name: "announcement-management",
+      //   meta: {
+      //     activeMenu: "公告设置",
+      //     title: "公告设置",
+      //   },
+      // },
+      // {
+      //   path: "group-intro", //信息管理-团队介绍
+      //   component: groupIntro,
+      //   name: "group-intro",
+      //   meta: {
+      //     activeMenu: "团队介绍",
+      //     title: "团队介绍",
+      //   },
+      // },
       {
         path: "team-intro", //信息管理-组别介绍
         component: teamIntro,
@@ -89,24 +89,24 @@ const routes = [
           title: "组别介绍",
         },
       },
-      {
-        path: "project-intro", //信息管理-项目介绍
-        component: projectIntro,
-        name: "project-intro",
-        meta: {
-          activeMenu: "项目介绍",
-          title: "项目介绍",
-        },
-      },
-      {
-        path: "selected-post", //信息管理-精选推文
-        component: selectedIntro,
-        name: "selected-post",
-        meta: {
-          activeMenu: "精选推文",
-          title: "精选推文",
-        },
-      },
+      // {
+      //   path: "project-intro", //信息管理-项目介绍
+      //   component: projectIntro,
+      //   name: "project-intro",
+      //   meta: {
+      //     activeMenu: "项目介绍",
+      //     title: "项目介绍",
+      //   },
+      // },
+      // {
+      //   path: "selected-post", //信息管理-精选推文
+      //   component: selectedIntro,
+      //   name: "selected-post",
+      //   meta: {
+      //     activeMenu: "精选推文",
+      //     title: "精选推文",
+      //   },
+      // },
       {
         path: "account-management", //账号管理
         component: accountManage,

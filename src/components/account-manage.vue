@@ -294,9 +294,15 @@ const addItem = async (formName) => {
 };
 
 const editItem = async (formName) => {
+  const form = {
+    // ...editForm.value,
+    id: editForm.value.id,
+    password: editForm.value.password,
+    groupOp: editForm.value.groupId
+  }
   proxy.$refs[formName].validate((valid) => {
     if (valid) {
-      api.updateAccount(editForm.value).then((res) => {
+      api.updateAccount(form).then((res) => {
         if (res.code === 200) {
           ElMessage({
             type: "success",
