@@ -6,7 +6,12 @@ import {
   ElLoading,
 } from "element-plus";
 import { tansParams } from "@/utils/tansParams";
+import store from "@/store";
 axios.defaults.headers["Content-Type"] = "application/json;charset=utf-8";
+
+var isRelogin = {
+  show: false,
+};
 
 const service = axios.create({
   baseURL: import.meta.env.VITE_APP_URL, //请求URL = baseURL + apiURL
@@ -72,9 +77,9 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   (res) => {
     //如果响应成功(2xx内响应码)
-    const code = res.code || 200;
+    const code = res.data.code || 200;
     // 获取错误信息
-    const msg = res.msg;
+    const msg = res.data.msg;
     // 二进制数据则直接返回
     if (
       res.request.responseType === "blob" ||
@@ -95,12 +100,9 @@ service.interceptors.response.use(
           }
         )
           .then(() => {
+            console.log("router", router, store);
             isRelogin.show = false;
-            useUserStore()
-              .logOut()
-              .then(() => {
-                location.href = "/index";
-              });
+            store.commit("logout");
           })
           .catch(() => {
             isRelogin.show = false;

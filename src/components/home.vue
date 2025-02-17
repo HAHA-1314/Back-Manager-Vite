@@ -17,7 +17,7 @@
             ">
             <div class="msg-title">今日新增报名</div>
             <div class="msg-num">
-              {{ increase_num }}
+              {{ today_enroll }}
             </div>
             <span
               style="display: inline-block; font-size: 12px; margin-top: 10px">
@@ -26,7 +26,7 @@
             <span
               style="
                 position: relative;
-                margin-left: 10px;
+                margin-left: 2px;
                 top: 5px;
                 font-size: 18px;
               ">
@@ -70,7 +70,7 @@
               );
             ">
             <div class="msg-title">当前正在进行流程</div>
-            <div class="msg-num">
+            <div class="msg-step">
               {{ current_step }}
             </div>
           </el-card>
@@ -126,6 +126,7 @@
             :data="Person_tableData"
             class="table"
             max-height="160"
+            v-loadMore="loadMorePerson"
             :header-cell-style="{ background: '#5793df', color: '#fff' }"
             border
             @row-click="test_click">
@@ -153,6 +154,7 @@
               :data="Announce_tableData"
               class="table"
               max-height="180"
+              v-loadMore="loadMoreAnnounce"
               :header-cell-style="{ background: '#5793df', color: '#fff' }"
               border
               @row-click="announce_click">
@@ -176,6 +178,7 @@
               :data="Test_tableData"
               class="table"
               max-height="180"
+              v-loadMore="loadMoreTest"
               :header-cell-style="{ background: '#5793df', color: '#fff' }"
               border
               @row-click="test_click">
@@ -198,7 +201,8 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
+import * as api from "@/api/home";
 import { use } from "echarts/core";
 import { LineChart } from "echarts/charts";
 import { GridComponent, TooltipComponent } from "echarts/components";
@@ -206,6 +210,8 @@ import { CanvasRenderer } from "echarts/renderers";
 import { UniversalTransition } from "echarts/features";
 import { GaugeChart } from "echarts/charts";
 import VChart from "vue-echarts"; //按需引入
+import dayjs from "dayjs";
+
 use([
   GridComponent,
   LineChart,
@@ -214,6 +220,100 @@ use([
   UniversalTransition,
   GaugeChart,
 ]);
+
+const Announce_tableData = ref([]); //公告列表
+const Test_tableData = ref([]); //考核列表
+const Person_tableData = ref([]); //人员列表
+const today_enroll = ref(0);
+const cumulation_num = ref(null);
+const current_step = ref(null);
+const current_num = ref(null);
+const month = ref("2024-09");
+const up = ref(true); //较昨日新增人数 上涨
+const down = ref(false); //较昨日新增人数 下调
+
+class Adder {
+  page = 1;
+  pageSize = 5;
+  full = false;
+  increase() {
+    if (this.full) return;
+    this.page++;
+  }
+  stop() {
+    this.full = true;
+  }
+}
+
+const personPage = new Adder();
+const testPage = new Adder();
+// const announcePage = new Adder();
+
+const announce_click = (row, column, event) => {
+  console.log(row, column, event);
+};
+
+onMounted(() => {
+  getHeaderList();
+  getPersonTable({ page: personPage.page, pageSize: personPage.pageSize });
+  getTestTable();
+  getAnnounceTable();
+  changeMonth();
+});
+
+const getHeaderList = async () => {
+  var res = await api.getTodayEnroll();
+  today_enroll.value = res.data.todayNum;
+  if (res.data.addNum > 0) {
+    up.value = true;
+    down.value = false;
+  } else {
+    up.value = false;
+    down.value = true;
+  }
+  res = await api.getCurrentStep();
+  if (res.code === 200) current_step.value = res.data;
+};
+
+const getPersonTable = async (form) => {
+  const res = await api.getPersonList(form);
+  res.data.records.map((item) => {
+    Person_tableData.value.push({
+      name: item.nickname,
+      no: item.stuId,
+      step: item.test,
+    });
+    if (personPage.page === res.data.total) personPage.stop();
+  });
+};
+
+const getTestTable = async () => {
+  const res = await api.getTestList();
+  // const res = await api.getTestList(form);
+  if (!res.data.records) return;
+  res.data.records.map((item) => {
+    Test_tableData.value.push({
+      title: item.title,
+      date: item.createTime,
+    });
+    // if (testPage.page === res.data.total) testPage.stop();
+  });
+};
+
+const getAnnounceTable = async () => {
+  // const res = await api.getAnnounceList(form);
+  const res = await api.getAnnounceList();
+  // console.log(res)
+  if (!res.data.records) return;
+  res.data.records.map((item) => {
+    Announce_tableData.value.push({
+      title: item.title,
+      date: item.createTime,
+    });
+    // if (announcePage.page === res.data.total) announcePage.stop();
+  });
+};
+
 const option = ref({
   tooltip: {
     trigger: "axis",
@@ -221,7 +321,7 @@ const option = ref({
   xAxis: {
     type: "category",
     boundaryGap: false, //x轴文本置中
-    data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    data: [],
   },
   yAxis: {
     type: "value",
@@ -231,79 +331,53 @@ const option = ref({
   },
   series: [
     {
-      data: [150, 230, 224, 218, 135, 147, 260],
+      data: [],
       type: "line",
       name: "Tempature",
     },
   ],
 });
-const Announce_tableData = [
-  {
-    date: "2016-05-03",
-    title: "Tom",
-  },
-  {
-    date: "2016-05-02",
-    title: "Tom",
-  },
-  {
-    date: "2016-05-04",
-    title: "Tom",
-  },
-  {
-    date: "2016-05-01",
-    title: "Tom",
-  },
-];
-const Test_tableData = [
-  {
-    date: "2016-05-03",
-    title: "Tom",
-  },
-  {
-    date: "2016-05-02",
-    title: "Tom",
-  },
-  {
-    date: "2016-05-04",
-    title: "Tom",
-  },
-  {
-    date: "2016-05-01",
-    title: "Tom",
-  },
-];
-const Person_tableData = [
-  {
-    no: "3123004419",
-    name: "Tom",
-    step: "一面",
-  },
-  {
-    no: "3123004419",
-    name: "Tom",
-    step: "一面",
-  },
-  {
-    no: "3123004419",
-    name: "Tom",
-    step: "一面",
-  },
-  {
-    no: "3123004419",
-    name: "Tom",
-    step: "一面",
-  },
-];
-const increase_num = ref(1111);
-const cumulation_num = ref(1212);
-const current_step = ref("一面");
-const current_num = ref(1212);
-const month = ref("2024-09");
-const up = ref(true); //较昨日新增人数 上涨
-const down = ref(false); //较昨日新增人数 下调
-const announce_click = (row, column, event) => {
-  console.log(row, column, event);
+
+const loadMorePerson = () => {
+  personPage.increase();
+  if (personPage.full) return;
+  getPersonTable({ page: personPage.page, pageSize: personPage.pageSize });
+};
+
+const loadMoreTest = () => {
+  // testPage.increase();
+  // if (testPage.full) return;
+  // getTestTable({ page: testPage.page, pageSize: testPage.pageSize });
+};
+
+const loadMoreAnnounce = () => {
+  // announcePage.increase();
+  // if (announcePage.full) return;
+  // getAnnounceTable({
+  //   page: announcePage.page,
+  //   pageSize: announcePage.pageSize,
+  // });
+};
+
+const changeMonth = (value) => {
+  // console.log(value);
+  const form = {
+    begin: dayjs(value).startOf("month").format("YYYY-MM-DD"),
+    end: dayjs(value).endOf("month").format("YYYY-MM-DD"),
+  };
+  api.getMonthEnroll(form).then((res) => {
+    console.log(res.data.dateList.split(","));
+    const xAxis = [];
+    res.data.dateList.split(",").map((item) => {
+      xAxis.push(dayjs(item).format("D"));
+    });
+
+    const series = res.data.applicantsStatics.split(",");
+
+    option.value.xAxis.data = xAxis;
+    option.value.series[0].data = series;
+  });
+  // console.log(form);
 };
 </script>
 
@@ -334,7 +408,16 @@ const announce_click = (row, column, event) => {
   font-size: 20px;
   font-weight: 500;
   margin-top: 20px;
-  margin-left: 10px;
+  margin-left: -10px;
+  text-align: center;
+}
+
+.msg-step {
+  font-size: 16px;
+  font-weight: 500;
+  margin-top: 20px;
+  /* margin-left: -10px; */
+  text-align: center;
 }
 
 .el-row {

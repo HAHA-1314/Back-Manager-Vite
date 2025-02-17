@@ -1,6 +1,6 @@
 <script setup>
 import { ref, reactive, watch, onMounted } from "vue";
-import { useRouter,useRoute } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { useStore } from "vuex";
 import { SwitchButton } from "@element-plus/icons";
 import * as userApi from "@/api/user";
@@ -8,7 +8,7 @@ import { ElMessage } from "element-plus";
 import Cookies from "js-cookie";
 
 // 获取当前的路由对象
-const route = useRoute()
+const route = useRoute();
 const router = useRouter();
 const store = useStore();
 const goRouter = ref("");
@@ -17,19 +17,22 @@ const menuTitle = ref("");
 
 const tabIndex = ref(1);
 const editableTabsValue = ref(
-  JSON.parse(sessionStorage.getItem("editableTabsValue")) || "home"
+  JSON.parse(sessionStorage.getItem("editableTabsValue")) || "team-intro"
 );
 const editableTabs = ref(
   JSON.parse(sessionStorage.getItem("editableTabs")) || [
     {
-      title: "首页",
-      name: "home",
+      // title: "首页",
+      // name: "home",
+      // content: "",
+      title: "组别介绍",
+      name: "team-intro",
       content: "",
     },
   ]
 );
 
-const activeMenu = ref("home");
+const activeMenu = ref("team-intro");
 const handleMenuOpen = (keyPath) => {
   isCommen.value = false;
   let activeName = editableTabsValue.value;
@@ -171,7 +174,7 @@ watch(
   }
 );
 onMounted(() => {
-  activeMenu.value = "home";
+  activeMenu.value = "team-intro";
 });
 
 const signOut = () => {
@@ -179,10 +182,6 @@ const signOut = () => {
     if (res.code == 200) {
       ElMessage.success("退出成功");
       store.commit("logout");
-      Cookies.remove("username");
-      Cookies.remove("password");
-      Cookies.remove("satoken");
-      router.push(`/login?redirect=${router.currentRoute.value.path}`);
     } else {
       ElMessage.error(res.msg);
     }
@@ -200,7 +199,7 @@ const signOut = () => {
           <span class="circle">
             <el-icon><Monitor /></el-icon>
           </span>
-          <h5 class="nav-header">运营组</h5>
+          <h5 class="nav-header">超级管理员</h5>
         </div>
         <!-- 侧边==导航栏 -->
         <el-menu
@@ -210,11 +209,11 @@ const signOut = () => {
           style="user-select: none"
           router>
           <!-- (index) 首页 1  || 考核管理 2 -> 人员管理 2-1 | 考核管理 2-2 | 预约管理 2-3 | 公告设置 2-4 || 信息管理 3 -> 团队管理 3-1 | 组别管理 3-2 | 项目介绍 3-3 | 精选推文 3-4 || -->
-          <el-menu-item index="home">
+          <!-- <el-menu-item index="home">
             <el-icon><House /></el-icon>
             <span>首页</span>
-          </el-menu-item>
-          <el-sub-menu index="2">
+          </el-menu-item> -->
+          <!-- <el-sub-menu index="2">
             <template #title>
               <el-icon><User /></el-icon>
               <span>考核管理</span>
@@ -231,25 +230,25 @@ const signOut = () => {
             <el-menu-item class="menu-item" index="announcement-management"
               >公告设置</el-menu-item
             >
-          </el-sub-menu>
+          </el-sub-menu> -->
           <el-sub-menu index="3">
             <template #title>
               <el-icon><Message /></el-icon>
               <span>信息管理</span>
             </template>
 
-            <el-menu-item class="menu-item" index="group-intro"
+            <!-- <el-menu-item class="menu-item" index="group-intro"
               >团队介绍</el-menu-item
-            >
+            > -->
             <el-menu-item class="menu-item" index="team-intro"
               >组别介绍</el-menu-item
             >
-            <el-menu-item class="menu-item" index="project-intro"
+            <!-- <el-menu-item class="menu-item" index="project-intro"
               >项目介绍</el-menu-item
             >
             <el-menu-item class="menu-item" index="selected-post"
               >精选推文</el-menu-item
-            >
+            > -->
           </el-sub-menu>
           <el-menu-item index="account-management">
             <el-icon><User /></el-icon>
@@ -344,7 +343,7 @@ const signOut = () => {
 
 .header {
   margin-left: 20px;
-  width: 100px;
+  width: 130px;
   height: 60px;
   display: flex;
   align-items: center;
@@ -352,6 +351,7 @@ const signOut = () => {
 }
 
 .nav-header {
+  margin-left: 10px;
   font-size: 18px;
   font-weight: 400;
   color: #006eff;

@@ -1,3 +1,10 @@
+import { createStore } from "vuex";
+import * as userApi from "../api/user";
+import { ElMessage } from "element-plus";
+import Setting from "./modules/setting";
+import Dict from "./modules/dict";
+import Cookies from "js-cookie";
+import router from "@/routes";
 import { createStore } from 'vuex'
 import * as userApi from '../api/user'
 import { ElMessage } from 'element-plus'
@@ -26,15 +33,19 @@ const mutations = {
     state.permissionList.push('admin')
   },
   logout(state) {
-    state.islogin = false
-    state.rule = ''
-    state.username = ''
-    state.openTab = [] // 所有打开的路由
-    state.activeIndex = '' //激活状态
-    state.whiteList = ['/login']
-    state.permissionList = []
-    state.showPage = 'page1'
-    sessionStorage.clear()
+    state.islogin = false;
+    state.rule = "";
+    state.username = "";
+    state.openTab = []; // 所有打开的路由
+    state.activeIndex = ""; //激活状态
+    state.whiteList = ["/login"];
+    state.permissionList = [];
+    state.showPage = "page1";
+    sessionStorage.clear();
+    Cookies.remove("username");
+    Cookies.remove("password");
+    Cookies.remove("satoken");
+    router.push(`/login?redirect=${router.currentRoute.value.path}`);
   },
   // 添加 tabs
   addTab(state, data) {
