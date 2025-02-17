@@ -1,8 +1,10 @@
 <script setup>
 import { ref, onMounted, nextTick } from "vue";
 import team_com from "./teamCom.vue";
-import { getGroupList } from "@/api/group";
+import { getGroupList, getOneGroup } from "@/api/group";
 import { ElMessage } from "element-plus";
+import { useStore } from "vuex";
+const store = useStore();
 const tableData = ref([]);
 const dialogVisible = ref(false);
 const title = ref("");
@@ -15,13 +17,19 @@ const teamEdit = (row) => {
   });
 };
 const renderGroupList = async () => {
-  const res = await getGroupList();
-  tableData.value = res.data || [];
+  const rule = store.state.rule;
+  if (rule === "普通用户") {
+    const res = await getOneGroup();
+    tableData.value[0] = res.data;
+  } else {
+    const res = await getGroupList();
+    tableData.value = res.data || [];
+  }
 };
 const handleClose = () => {
   dialogVisible.value = false;
   editGroup.value.initForm();
-  editGroup.value.clearValidate()
+  editGroup.value.clearValidate();
 };
 const handleEdit = (e) => {
   console.log(e);

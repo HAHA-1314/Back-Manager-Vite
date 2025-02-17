@@ -64,7 +64,9 @@ const handleMouseLeave = (box, overlay) => {
 };
 
 onMounted(() => {
-  if (route.name === "group-intro") {
+  console.log(route.name);
+  
+  if (route.name === "u-group-intro") {
     renderDetail();
   } else {
     initSummernote();
