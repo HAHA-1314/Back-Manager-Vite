@@ -200,8 +200,6 @@ const buttonConfirm = async () => {
       })
         .then(async () => {
           setPics()
-            .slice(2)
-            .map((item) => ({ url: item }));
           const res = await editProject({
             id: id.value,
             name: ruleForm.value.name,
@@ -261,6 +259,7 @@ const clearForm = () => {
   ruleForm.value.pic = [];
   ruleForm.value.introduction = "";
   sendPics.value = [];
+  state.value = "添加项目";
   $("#summernote").summernote("code", "");
 };
 const clearValidate = () => {
@@ -352,7 +351,11 @@ defineExpose({
               </el-upload>
 
               <el-dialog v-model="dialogVisible">
-                <img  :src="dialogImageUrl" alt="Preview Image" class="previewImg"/>
+                <img
+                  :src="dialogImageUrl"
+                  alt="Preview Image"
+                  class="previewImg"
+                />
               </el-dialog>
             </div>
           </el-scrollbar>
@@ -463,7 +466,7 @@ defineExpose({
 .hoverIcon {
   font-size: 20px;
 }
-.previewImg{
+.previewImg {
   width: 100%;
   height: 100%;
 }

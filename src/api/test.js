@@ -13,14 +13,7 @@ export function getAllTestReq() {
     method: "get",
   });
 }
-
-export function getGroupTestReq(params) {
-  return request({
-    url: '/appointment/get/tests',
-    method: 'get',
-    params,
-  })
-}
+//获取组内所有考核
 
 export function getTestReq(id) {
   return request({
@@ -28,6 +21,7 @@ export function getTestReq(id) {
     method: "get",
   });
 }
+//获取单个考核
 
 export function changeTestReq(params) {
   return request({
@@ -36,6 +30,7 @@ export function changeTestReq(params) {
     params: params,
   });
 }
+//修改考核
 
 export function delTestReq(id) {
   return request({
@@ -43,7 +38,7 @@ export function delTestReq(id) {
     method: "delete",
   });
 }
-
+//删除考核
 export function addTestReq(params) {
   return request({
     url: "/test",
@@ -60,3 +55,4 @@ export function uploadFileReq(params) {
     params,
   });
 }
+//添加考核

@@ -5,7 +5,7 @@
   />
 
   <div>
-    <el-card class="top-box" style="position: relative">
+    <el-card class="top-box" style="position: relative; height: 300px">
       <div
         style="
           display: flex;
@@ -14,13 +14,17 @@
         "
       >
         <el-select
-          v-model="process"
+          v-model="name"
           style="width: 120px"
           placeholder="第一次考核"
+          @change="handleChange"
         >
-          <el-option label="第一次考核" value="1"></el-option>
-          <el-option label="第二次考核" value="2"></el-option>
-          <el-option label="第三次考核" value="3"></el-option>
+          <el-option
+            v-for="test in testList"
+            :key="test.id"
+            :label="test.name"
+            :value="test.id"
+          ></el-option>
         </el-select>
         <el-button @click="addBox = true">添加预约</el-button>
       </div>
@@ -39,16 +43,21 @@
         <el-table-column label="操作" prop="id">
           <template #default="{ row }">
             <el-button @click="getAppointData(row.id)">编辑</el-button>
-            <el-button @click="deleteAppoint(row.id)">删除</el-button>
+            <el-button @click="deleteAppoint(row.id, row.father)"
+              >删除</el-button
+            >
           </template>
         </el-table-column>
       </el-table>
 
       <el-pagination
+        v-model:current-page="appointPage"
+        page-size="2"
         background
         layout="prev, pager, next"
-        :total="50"
+        :total="appointList.length"
         style="position: absolute; bottom: 15px; right: 20px"
+        @current-change="handleAppointChange"
       />
     </el-card>
     <el-dialog
@@ -89,9 +98,12 @@
                 style="margin-left: 30px"
                 placeholder="第一次考核"
               >
-                <el-option label="第一次考核" value="1"></el-option>
-                <el-option label="第二次考核" value="2"></el-option>
-                <el-option label="第三次考核" value="3"></el-option>
+                <el-option
+                  v-for="test in testList"
+                  :key="test.id"
+                  :label="test.name"
+                  :value="test.id"
+                ></el-option>
               </el-select>
             </el-form-item>
           </div>
@@ -216,9 +228,12 @@
                 style="margin-left: 30px"
                 placeholder="第一次考核"
               >
-                <el-option label="第一次考核" value="1"></el-option>
-                <el-option label="第二次考核" value="2"></el-option>
-                <el-option label="第三次考核" value="3"></el-option>
+                <el-option
+                  v-for="test in testList"
+                  :key="test.id"
+                  :label="test.name"
+                  :value="test.id"
+                ></el-option>
               </el-select>
             </el-form-item>
           </div>
@@ -312,7 +327,7 @@
           <el-form-item label="姓名">
             <el-input
               placeholder="请输入名字"
-              v-model="name"
+              v-model="nickname"
               style="width: 120px"
             ></el-input>
           </el-form-item>
@@ -324,10 +339,10 @@
             ></el-input>
           </el-form-item>
           <el-form-item label="年级">
-            <el-select v-model="grade" style="width: 120px" placeholder="大一">
-              <el-option label="大一" value="大一"></el-option>
-              <el-option label="大二" value="大二"></el-option>
-              <el-option label="大三" value="大三"></el-option>
+            <el-select v-model="grade" style="width: 120px" placeholder="2024">
+              <el-option label="2024" value="2024"></el-option>
+              <el-option label="2023" value="2023"></el-option>
+              <el-option label="2022" value="2022"></el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="考核轮次">
@@ -361,23 +376,34 @@
           ></el-table-column>
           <el-table-column
             label="姓名"
-            prop="name"
+            prop="nickname"
             width="120"
           ></el-table-column>
-          <el-table-column label="学号" prop="id" width="130"></el-table-column>
-          <el-table-column label="年级" prop="grade"></el-table-column>
+          <el-table-column
+            label="学号"
+            prop="stuId"
+            width="130"
+          ></el-table-column>
+          <el-table-column label="年级" prop="year"></el-table-column>
           <el-table-column label="联系方式" prop="telephone"></el-table-column>
-          <el-table-column label="预约时间" prop="time"></el-table-column>
+          <el-table-column label="预约时间" prop="time" width="350">
+            <template #default="scope">
+              {{ scope.row.begin }} - {{ scope.row.end }}
+            </template>
+          </el-table-column>
           <el-table-column label="操作">
-            <template #default>
-              <el-button @click="goToPerson">查看</el-button>
+            <template #default="{ row }">
+              <el-button @click="goToPerson(row.stuId)">查看</el-button>
             </template>
           </el-table-column> </el-table
         ><el-pagination
+          v-model:current-page="studentPage"
+          page-size="4"
           background
           layout="prev, pager, next"
-          :total="50"
+          :total="studentList.length"
           style="position: absolute; bottom: 15px; right: 20px"
+          @current-change="handleStudentChange"
         />
       </div>
     </el-card>
@@ -385,9 +411,9 @@
 </template>
 
 <script setup>
-import { useStore } from 'vuex'
 import { ref } from 'vue'
 import router from '../routes'
+import store from '../store'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 import {
@@ -396,13 +422,15 @@ import {
   deleteAppointReq,
   changeAppointReq,
   getAppointReq,
+  getAllTestReq,
+  getAllUserReq,
 } from '../api/appoint'
 
 import { onMounted } from 'vue'
 import dayjs from 'dayjs'
 dayjs().format()
 
-const store = useStore()
+// const store = useStore()
 const newPage = ref('page2')
 const process = ref('')
 const addBox = ref(false)
@@ -420,27 +448,107 @@ const testId = ref('')
 const lastFather = ref('')
 const father = ref('')
 const currentAppointId = ref('')
+const currentTestId = ref('')
+const testList = ref([])
+const appointPage = ref(1)
+const studentPage = ref(1)
 
-const goToPerson = () => {
-  router.push({ name: 'person-management' })
-  store.dispatch('changePage', String(newPage.value))
+const goToPerson = (stuId) => {
+  router.push({
+    path: 'person-management',
+    query: {
+      stuId: stuId,
+    },
+  })
+  store.dispatch('updatePage', String(newPage.value))
+  // console.log(stuId)
 }
 
 const appointList = ref([])
 
 const studentList = ref([])
 
-const getAppointList = async () => {
-  await allAppointReq().then((res) => {
-    appointList.value = res.data || []
+const handleChange = async (selected) => {
+  currentTestId.value = selected
+  console.log(currentTestId.value)
+  getTestAppoint()
+}
+//改变当前考核轮次
+
+const getTestAppoint = async () => {
+  await allAppointReq({
+    page: appointPage.value,
+    pageSize: 2,
+    testId: currentTestId.value,
+  }).then((res) => {
+    appointList.value = res.data.records || []
+    currentAppointId.value = appointList.value[appointList.value.length - 1].id
+    // console.log(currentAppointId.value)
+    appointList.value.forEach((item) => {
+      item.begin = dayjs(item.begin).format('YYYY-MM-DD HH:mm')
+      item.end = dayjs(item.end).format('YYYY-MM-DD HH:mm')
+      item.intervals = item.intervals === '00:30:00' ? '30分钟' : '1小时'
+    })
   })
 }
-//请求获取预约信息
+//筛选预约信息
+
+const getAppointList = async () => {
+  await allAppointReq({
+    page: appointPage.value,
+    pageSize: 2,
+  }).then((res) => {
+    appointList.value = res.data.records || []
+    currentAppointId.value = appointList.value[appointList.value.length - 1].id
+    console.log(currentAppointId.value)
+    appointList.value.forEach((item) => {
+      item.begin = dayjs(item.begin).format('YYYY-MM-DD HH:mm')
+      item.end = dayjs(item.end).format('YYYY-MM-DD HH:mm')
+      item.intervals = item.intervals === '00:30:00' ? '30分钟' : '1小时'
+    })
+  })
+}
+//请求获取全部预约信息
+
+const handleAppointChange = (val) => {
+  appointPage.value = val
+  getAppointList()
+}
+//预约分页
+const getTestList = async () => {
+  await getAllTestReq().then((res) => {
+    testList.value = res.data || []
+  })
+}
+//请求获取考核信息
 
 onMounted(() => {
   getAppointList()
+  getTestList()
+  getAllUser()
 })
 //获取预约信息
+
+const getAllUser = async () => {
+  await getAllUserReq({
+    page: studentPage.value,
+    pageSize: 4,
+  }).then((res) => {
+    studentList.value = res.data.records || []
+    studentList.value.forEach((item) => {
+      item.begin = dayjs(item.begin).format('YYYY-MM-DD HH:mm')
+      item.end = dayjs(item.end).format('YYYY-MM-DD HH:mm')
+    })
+  })
+  console.log(studentList.value)
+}
+//获取所有用户信息
+
+const handleStudentChange = (val) => {
+  studentPage.value = val
+  getAllUser() 
+}
+//用户分页
 
 const disabledDate = (time) => {
   const currentTime = Date.now() // 获取当前时间戳
@@ -471,12 +579,12 @@ const confirmDate = () => {
 const addAppointData = async () => {
   const res = await addAppointReq({
     // process: process.value,
-    begin: begin.value,
-    end: end.value,
-    intervals: intervals.value,
+    testId: process.value,
+    begin: begin.value + ':00',
+    end: end.value + ':00',
+    intervals: intervals.value === '30分钟' ? '00:30:00' : '01:00:00',
     num: num.value,
-    testId: 14,
-    lastFather: 1,
+    lastFather: currentAppointId.value,
   })
   if (res.code == 200) {
     ElMessage({
@@ -484,16 +592,18 @@ const addAppointData = async () => {
       message: '添加成功',
     })
     addBox.value = false
+    getTestAppoint()
   } else {
     ElMessage({
       type: 'error',
-      message: '添加失败',
+      message: res.msg,
     })
   }
 }
 //请求添加预约信息
 
 const addAppoint = () => {
+  // console.log(process.value, intervals.value, num.value)
   if (process.value == '' || intervals.value == '' || num.value == '') {
     ElMessage({
       type: 'warning',
@@ -521,17 +631,18 @@ const clear = () => {
   process.value = ''
 }
 
-const deleteAppointData = async (id) => {
+const deleteAppointData = async (id, father) => {
+  console.log(id, father)
   const res = await deleteAppointReq({
     id: id,
-    father: 1,
+    father: father,
   })
   if (res.code == 200) {
     ElMessage({
       type: 'success',
       message: '删除成功',
     })
-    getAppointList()
+    getTestAppoint()
   } else {
     ElMessage({
       type: 'error',
@@ -541,14 +652,14 @@ const deleteAppointData = async (id) => {
 }
 //请求删除预约信息
 
-const deleteAppoint = (id) => {
-  console.log(id)
+const deleteAppoint = (id, father) => {
+  console.log(id, father)
   ElMessageBox.confirm('您确定要删除吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning',
   }).then(() => {
-    deleteAppointData(id)
+    deleteAppointData(id, father)
   })
 }
 //删除预约
@@ -558,9 +669,10 @@ const getAppointData = async (appointId) => {
   changeBox.value = true
   const res = await getAppointReq(appointId)
   if (res.code == 200) {
-    intervals.value = res.data.intervals
+    intervals.value = res.data.intervals === '00:30:00' ? '30分钟' : '1小时'
     num.value = res.data.num
     date.value = [res.data.begin, res.data.end]
+    name.value = res.data.name
   }
   currentAppointId.value = appointId
 }
@@ -607,7 +719,7 @@ const changeAppoint = (currentAppiontId) => {
 
 :deep(.cell) {
   font-weight: 400;
-  height: 30px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -1,12 +1,13 @@
 import request from '@/utils/request'
 
-export function allAppointReq() {
+export function allAppointReq(params) {
   return request({
-    url: '/appointment/get/tests',
+    url: '/appointment/get/availability',
     method: 'get',
+    params: params,
   })
 }
-
+//获取所有预约
 export function addAppointReq(params) {
   return request({
     url: '/appointment',
@@ -14,6 +15,7 @@ export function addAppointReq(params) {
     params: params,
   })
 }
+//添加预约
 
 export function deleteAppointReq(params) {
   return request({
@@ -22,7 +24,7 @@ export function deleteAppointReq(params) {
     params: params,
   })
 }
-
+//删除预约
 export function changeAppointReq(params) {
   return request({
     url: '/appointment',
@@ -30,10 +32,28 @@ export function changeAppointReq(params) {
     params: params,
   })
 }
-
+//修改预约
 export function getAppointReq(appointId) {
   return request({
     url: `/appointment/get/${appointId}`,
     method: 'get',
   })
 }
+//获取单个预约
+
+export function getAllTestReq() {
+  return request({
+    url: '/appointment/get/tests',
+    method: 'get',
+  })
+}
+//获取所有考核
+
+export function getAllUserReq(params) {
+  return request({
+    url: '/appointment/get/users',
+    method: 'get',
+    params: params,
+  })
+}
+//获取所有用户

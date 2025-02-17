@@ -33,9 +33,12 @@
         <div style="display: flex; justify-content: space-between">
           <el-form-item label="当前考核流程">
             <el-select v-model="process" placeholder="请选择考核流程">
-              <el-option label="第一次考核" value="第一次考核"></el-option>
-              <el-option label="第二次考核" value="第二次考核"></el-option>
-              <el-option label="第三次考核" value="第三次考核"></el-option>
+              <el-option
+                v-for="test in testList"
+                :key="test.id"
+                :label="test.name"
+                :value="test.name"
+              ></el-option>
             </el-select>
           </el-form-item>
           <el-form-item></el-form-item>
@@ -94,15 +97,18 @@
         ></el-table-column>
         <el-table-column label="操作">
           <template #default="{ row }">
-            <el-button @click="getUser(row.id)">查看</el-button>
+            <el-button @click="goToPage2(row.id)">查看</el-button>
           </template>
         </el-table-column>
       </el-table>
       <el-pagination
+        v-model:current-page="page"
+        v-model:page-size="pageSize"
         layout="prev, pager, next"
-        :total="5"
+        :total="studentList.length"
         style="float: right"
-        size="2"
+        :background="true"
+        @current-change="handleCurrentChange"
       ></el-pagination>
     </el-card>
   </div>
@@ -140,13 +146,25 @@
         </div>
         <el-form style="margin-left: 20px">
           <el-form-item label="姓名：">
-            <el-input placeholder="请输入" v-model="nickname"></el-input>
+            <el-input
+              placeholder="请输入"
+              v-model="nickname"
+              :disabled="isDisabled"
+            ></el-input>
           </el-form-item>
           <el-form-item label="学号：">
-            <el-input placeholder="请输入" v-model="stuId"></el-input>
+            <el-input
+              placeholder="请输入"
+              v-model="stuId"
+              :disabled="isDisabled"
+            ></el-input>
           </el-form-item>
           <el-form-item label="方向：">
-            <el-select v-model="groupOp" placeholder="请选择">
+            <el-select
+              v-model="groupOp"
+              placeholder="请选择"
+              :disabled="isDisabled"
+            >
               <el-option label="前端组" value="1"></el-option>
               <el-option label="后端组" value="2"></el-option>
               <el-option label="运营组" value="3"></el-option>
@@ -156,13 +174,25 @@
             </el-select>
           </el-form-item>
           <el-form-item label="联系方式：">
-            <el-input placeholder="请输入" v-model="telephone"></el-input>
+            <el-input
+              placeholder="请输入"
+              v-model="telephone"
+              :disabled="isDisabled"
+            ></el-input>
           </el-form-item>
           <el-form-item label="年级：">
-            <el-input placeholder="请输入" v-model="year"></el-input>
+            <el-input
+              placeholder="请输入"
+              v-model="year"
+              :disabled="isDisabled"
+            ></el-input>
           </el-form-item>
           <el-form-item label="学院：">
-            <el-select v-model="collegeId" placeholder="请选择">
+            <el-select
+              v-model="collegeId"
+              placeholder="请选择"
+              :disabled="isDisabled"
+            >
               <el-option label="信息工程学院" value="1"></el-option>
               <el-option label="计算机学院" value="2"></el-option>
               <el-option label="机电学院" value="3"></el-option>
@@ -172,10 +202,15 @@
             </el-select>
           </el-form-item>
           <el-form-item label="专业班级：">
-            <el-input placeholder="请输入" v-model="majorClass"></el-input>
+            <el-input
+              placeholder="请输入"
+              v-model="majorClass"
+              :disabled="isDisabled"
+            ></el-input>
           </el-form-item>
           <el-form-item label="个人简介：">
             <el-input
+              :disabled="isDisabled"
               v-model="selfIntroduction"
               placeholder="请输入"
               style="width: 250px; height: 130px"
@@ -185,14 +220,22 @@
       </el-card>
       <el-card>
         <div class="card2">
-          <div class="left">
+          <div class="left" style="height: 400px">
             <el-timeline>
               <el-timeline-item
                 v-for="(item, index) in processList"
                 :key="index"
                 :size="large"
                 :icon="icon"
-                :type="item.testName ? 'primary' : ''"
+                :type="
+                  item.status === 1
+                    ? 'primary'
+                    : item.status === 0
+                    ? ''
+                    : item.status === 2
+                    ? 'primary'
+                    : ''
+                "
                 :hollow="item.status === 1"
                 :timestamp="
                   item.status === 1
@@ -204,7 +247,7 @@
                     : ''
                 "
               >
-                {{ item.testName || '未进行的考核' }}
+                {{ item.name || '未进行的考核' }}
               </el-timeline-item>
             </el-timeline>
           </div>
@@ -220,21 +263,21 @@
                 <el-button
                   type="primary"
                   style="float: right; margin-top: -34px; margin-bottom: 10px"
-                  @click="pass"
+                  @click="passUser"
                   >确定</el-button
                 ><el-input
                   style="width: 270px; height: 150px"
-                  v-model="assess"
+                  v-model="comment"
                 ></el-input>
                 <template #reference>
                   <el-button type="success">通过</el-button>
                 </template>
               </el-popover>
 
-              <el-button type="danger">未通过</el-button>
+              <el-button type="danger" @click="failUser">未通过</el-button>
             </div>
 
-            <el-button type="plain" @click="returnFn">回退</el-button>
+            <el-button type="plain" @click="returnUser">回退</el-button>
           </div>
         </div>
       </el-card>
@@ -243,12 +286,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-
-import router from '../routes'
+// import { useStore } from 'vuex'
 import { computed } from 'vue'
-import { useStore } from 'vuex'
+
+import { useRoute } from 'vue-router'
 import store from '../store'
 import { onMounted } from 'vue'
 
@@ -257,8 +300,15 @@ import {
   getUserReq,
   changeUserReq,
   getUserProcessReq,
+  passUserReq,
+  failUserReq,
+  returnUserReq,
+  getAllTestReq,
+  putCommentReq,
 } from '../api/student'
 
+// const store = useStore()
+const route = useRoute()
 const year = ref('')
 const nickname = ref('')
 const telephone = ref('')
@@ -271,7 +321,7 @@ const process = ref('')
 const groupName = ref('')
 const groupOp = ref('')
 const changeId = ref('')
-const assess = ref('')
+const comment = ref('')
 const page = ref(1)
 const pageSize = ref(6)
 const page1 = ref('page1')
@@ -279,12 +329,20 @@ const page2 = ref('page2')
 const showPage = computed(() => store.state.showPage)
 const studentList = ref([])
 const processList = ref([])
+const currentTestId = ref('')
+const lastId = ref('')
+const nextId = ref('')
+const currentUserId = ref('')
+const isDisabled = ref(true)
+const testList = ref([])
+const newArray = ref([])
 
 const goToPage1 = () => {
   store.dispatch('updatePage', String(page1.value))
 }
-const goToPage2 = () => {
+const goToPage2 = async (id) => {
   store.dispatch('updatePage', String(page2.value))
+  await getUser(id)
 }
 
 const getAllUser = async () => {
@@ -292,26 +350,77 @@ const getAllUser = async () => {
     page: page.value,
     pageSize: pageSize.value,
   })
-
+  console.log(res);
   studentList.value = res.data.records || []
 }
 //请求获取所有用户
+//分页请求
+const handleCurrentChange = (val) => {
+ page.value = val
+ getAllUser()
+}
 
 onMounted(() => {
   getAllUser()
+  getAllTest()
+  console.log(store.state.showPage)
+  currentUserId.value = route.query.stuId
+  getUser(currentUserId.value)
+  
+  // console.log(currentUserId.value)
 })
 //获取所有用户
 
+const getAllTest = async () => {
+  const res = await getAllTestReq()
+  console.log(res)
+  testList.value = res.data
+  // console.log(testList.value)
+}
+//获取所有考核
+
 const getUserProcess = async (id) => {
-  console.log(id)
+  processList.value = []
+  currentUserId.value = id
+  // console.log(currentUserId.value)
   const res = await getUserProcessReq(id)
-  processList.value = res.data
+  newArray.value = res.data
+  // console.log(newArray.value)
+
+  const maxLength = Math.max(newArray.value.length, testList.value.length)
+  for (let i = 0; i < maxLength; i++) {
+    const newArrayItem = newArray.value[i] || {}
+    const testListItem = testList.value[i] || {}
+    processList.value.push({ ...newArrayItem, ...testListItem })
+  }
+  const targetObject = processList.value.find((item) => item.status === 1)
+  if (targetObject) {
+    currentTestId.value = targetObject.id
+    // console.log(currentTestId.value)
+    const currentIndex = processList.value.findIndex(
+      (item) => item.testId === currentTestId.value
+    )
+    console.log(currentIndex)
+    // 获取上一个元素的 testId
+    if (currentIndex > 0) {
+      lastId.value = processList.value[currentIndex - 1].id
+    } else {
+      lastId.value = null // 如果没有上一个元素，将 lastId 设为 null
+    }
+
+    // 获取下一个元素的 testId
+    if (currentIndex < processList.value.length - 1) {
+      nextId.value = processList.value[currentIndex + 1].id
+    } else {
+      nextId.value = null // 如果没有下一个元素，将 nextId 设为 null
+    }
+    // console.log(lastId.value, nextId.value)
+  }
   console.log(processList.value)
 }
 //获取用户的考核进度
 
 const getUser = async (id) => {
-  goToPage2()
   const res = await getUserReq(id)
   getUserProcess(id)
   console.log(res)
@@ -343,20 +452,6 @@ const searchUser = async (stuId) => {
 }
 //搜索用户
 
-const pass = () => {
-  console.log(assess.value)
-  ElMessageBox.confirm('您确定提交该评价吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning',
-  }).then(() => {
-    ElMessage({
-      type: 'success',
-      message: '评价成功',
-    })
-  })
-}
-
 const clear = () => {
   ;(year.value = ''),
     (nickname.value = ''),
@@ -364,13 +459,16 @@ const clear = () => {
     (collegeId.value = ''),
     (process.value = '')
 }
+//重置
 
 const change = () => {
   const changeBtn = document.querySelector('.changeBtn')
   const chooseBtn = document.querySelector('.chooseBtn')
   changeBtn.style.display = 'none'
   chooseBtn.style.display = 'flex'
+  isDisabled.value = false
 }
+//修改前提
 
 const changeUser = async (changeId) => {
   const res = await changeUserReq({
@@ -405,7 +503,7 @@ const save = (changeId) => {
     type: 'warning',
   }).then(() => {
     changeUser(changeId)
-
+    isDisabled.value = true
     changeBtn.style.display = 'flex'
     chooseBtn.style.display = 'none'
   })
@@ -417,20 +515,109 @@ const cancel = () => {
   const chooseBtn = document.querySelector('.chooseBtn')
   changeBtn.style.display = 'flex'
   chooseBtn.style.display = 'none'
+  isDisabled.value = true
 }
+//取消修改用户信息
 
-const returnFn = () => {
+const putComment = async () => {
+  const res = await putCommentReq({
+    testId: currentTestId.value,
+    userId: currentUserId.value,
+    comment: comment.value,
+  })
+  console.log(res)
+}
+//请求提交评价
+
+//提交评价前提
+
+const passUser = async () => {
+  putComment()
+  const res = await passUserReq({
+    testId: currentTestId.value,
+    userId: currentUserId.value,
+    status: 2,
+    nextId: nextId.value,
+  })
+  if (res.code == 200) {
+    ElMessage({
+      type: 'success',
+      message: '通过',
+    })
+
+    getUserProcess(currentUserId.value)
+    console.log(currentUserId.value)
+  }
+  console.log(res)
+}
+//请求通过用户
+
+const failFn = async () => {
+  const res = await failUserReq({
+    testId: currentTestId.value,
+    userId: currentUserId.value,
+    status: 0,
+  })
+  if (res.code == 200) {
+    ElMessage({
+      type: 'success',
+      message: '未通过',
+    })
+    getUserProcess(currentUserId.value)
+  } else {
+    ElMessage({
+      type: 'error',
+      message: res.msg,
+    })
+  }
+}
+//请求未通过用户
+
+const failUser = () => {
+  ElMessageBox.confirm('您确定要未通过吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    failFn()
+  })
+}
+//未通过用户前提
+
+const returnFn = async () => {
+  console.log(currentTestId.value)
+  const res = await returnUserReq({
+    testId: currentTestId.value,
+    userId: currentUserId.value,
+    lastId: lastId.value,
+  })
+  if (res.code == 200) {
+    ElMessage({
+      type: 'success',
+      message: '已回退',
+    })
+    getUserProcess(currentUserId.value)
+  } else {
+    ElMessage({
+      type: 'error',
+      message: res.msg,
+    })
+  }
+  console.log(res)
+}
+//请求回退用户
+
+const returnUser = () => {
   ElMessageBox.confirm('您确定要回退吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning',
   }).then(() => {
-    ElMessage({
-      type: 'success',
-      message: '已回退',
-    })
+    returnFn()
   })
 }
+//回退用户
+
 </script>
 
 <style scoped>
@@ -494,11 +681,12 @@ const returnFn = () => {
 }
 
 .left {
-  margin-top: 80px;
+  margin-top: 30px;
   margin-left: -18px;
 }
 
 .right {
+  margin-top: -100px;
   width: 200px;
   display: flex;
   flex-wrap: wrap;
@@ -508,9 +696,14 @@ const returnFn = () => {
   width: 100px;
   margin-top: 30px;
 }
+
 .card2 {
   display: flex;
   align-items: center;
   justify-content: space-around;
+}
+
+.el-timeline-item {
+  height: 100px;
 }
 </style>
