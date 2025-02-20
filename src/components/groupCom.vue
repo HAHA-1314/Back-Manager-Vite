@@ -403,6 +403,7 @@ defineExpose({
   height: 135px;
   border: 1px solid #dcdfe6;
   border-radius: 6px;
+  overflow: hidden;
 }
 :deep(.avatar-uploader .el-upload) {
   box-sizing: border-box;
@@ -418,6 +419,7 @@ defineExpose({
 }
 
 .imgList .imgFirst {
+  max-width: 100%;
   height: 135px;
 }
 :deep(.el-upload-list--picture-card .el-upload-list__item) {
