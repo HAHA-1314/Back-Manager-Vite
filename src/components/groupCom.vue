@@ -64,8 +64,6 @@ const handleMouseLeave = (box, overlay) => {
 };
 
 onMounted(() => {
-  console.log(route.name);
-  
   if (route.name === "u-group-intro") {
     renderDetail();
   } else {
@@ -96,7 +94,6 @@ const handlePictureCardPreview = (uploadFile) => {
   dialogImageUrl.value = uploadFile.url;
   dialogVisible.value = true;
 };
-const isUploaded = ref(false);
 //处理表单校验
 const sendPics = ref([]);
 const ruleFormRef = ref();
@@ -140,7 +137,6 @@ const rules = ref({
   ],
 });
 const setPics = () => {
-  sendPics.value = sendPics.value.filter((item) => item.trim() !== "");
   listImages.value = sendPics.value.slice(2).map((item) => ({ url: item }));
 };
 const handleFileChange = (file, index) => {
@@ -165,12 +161,11 @@ const buttonConfirm = async () => {
   $("#summernote").summernote("fontName", "Helvetica");
   const markupStr = $("#summernote").summernote("code");
   ruleForm.value.introduction = extractTextFromHTML(markupStr);
-
+  sendPics.value = sendPics.value.filter((item) => item.trim() !== "");
   ruleForm.value.pic = sendPics.value;
-  console.log(ruleForm.value.pic);
   await ruleFormRef.value.validate();
 
-  if (route.name === "group-intro") {
+  if (route.name === "u-group-intro") {
     ElMessageBox.confirm("是否确定修改团队信息", "注意", {
       type: "warning",
       confirmButtonText: "确定",
@@ -208,7 +203,6 @@ const buttonConfirm = async () => {
             pic: sendPics.value,
             introduction: ruleForm.value.introduction,
           });
-          console.log(id.value);
           emit("handlePro", res, "编辑");
         })
         .catch(() => {
@@ -234,11 +228,6 @@ const buttonConfirm = async () => {
         });
     }
   }
-  console.log(listImages.value);
-
-  console.log(listImages.value);
-
-  console.log(ruleForm.value.pic);
 };
 const delPic = (index) => {
   if (index === 0) {
