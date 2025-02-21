@@ -102,10 +102,13 @@
         </el-table-column>
       </el-table>
       <el-pagination
+        v-model:current-page="page"
+        v-model:page-size="pageSize"
         layout="prev, pager, next"
-        :total="5"
+        :total="studentList.length"
         style="float: right"
-        size="2"
+        :background="true"
+        @current-change="handleCurrentChange"
       ></el-pagination>
     </el-card>
   </div>
@@ -347,10 +350,15 @@ const getAllUser = async () => {
     page: page.value,
     pageSize: pageSize.value,
   })
-
+  console.log(res);
   studentList.value = res.data.records || []
 }
 //请求获取所有用户
+//分页请求
+const handleCurrentChange = (val) => {
+ page.value = val
+ getAllUser()
+}
 
 onMounted(() => {
   getAllUser()
@@ -358,6 +366,7 @@ onMounted(() => {
   console.log(store.state.showPage)
   currentUserId.value = route.query.stuId
   getUser(currentUserId.value)
+  
   // console.log(currentUserId.value)
 })
 //获取所有用户
@@ -608,6 +617,7 @@ const returnUser = () => {
   })
 }
 //回退用户
+
 </script>
 
 <style scoped>

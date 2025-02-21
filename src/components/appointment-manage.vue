@@ -51,10 +51,13 @@
       </el-table>
 
       <el-pagination
+        v-model:current-page="appointPage"
+        page-size="2"
         background
         layout="prev, pager, next"
-        :total="50"
+        :total="appointList.length"
         style="position: absolute; bottom: 15px; right: 20px"
+        @current-change="handleAppointChange"
       />
     </el-card>
     <el-dialog
@@ -394,10 +397,13 @@
             </template>
           </el-table-column> </el-table
         ><el-pagination
+          v-model:current-page="studentPage"
+          page-size="4"
           background
           layout="prev, pager, next"
-          :total="50"
+          :total="studentList.length"
           style="position: absolute; bottom: 15px; right: 20px"
+          @current-change="handleStudentChange"
         />
       </div>
     </el-card>
@@ -444,6 +450,8 @@ const father = ref('')
 const currentAppointId = ref('')
 const currentTestId = ref('')
 const testList = ref([])
+const appointPage = ref(1)
+const studentPage = ref(1)
 
 const goToPerson = (stuId) => {
   router.push({
@@ -469,7 +477,7 @@ const handleChange = async (selected) => {
 
 const getTestAppoint = async () => {
   await allAppointReq({
-    page: 1,
+    page: appointPage.value,
     pageSize: 2,
     testId: currentTestId.value,
   }).then((res) => {
@@ -487,7 +495,7 @@ const getTestAppoint = async () => {
 
 const getAppointList = async () => {
   await allAppointReq({
-    page: 1,
+    page: appointPage.value,
     pageSize: 2,
   }).then((res) => {
     appointList.value = res.data.records || []
@@ -502,6 +510,11 @@ const getAppointList = async () => {
 }
 //请求获取全部预约信息
 
+const handleAppointChange = (val) => {
+  appointPage.value = val
+  getAppointList()
+}
+//预约分页
 const getTestList = async () => {
   await getAllTestReq().then((res) => {
     testList.value = res.data || []
@@ -518,7 +531,7 @@ onMounted(() => {
 
 const getAllUser = async () => {
   await getAllUserReq({
-    page: 1,
+    page: studentPage.value,
     pageSize: 4,
   }).then((res) => {
     studentList.value = res.data.records || []
@@ -530,6 +543,12 @@ const getAllUser = async () => {
   console.log(studentList.value)
 }
 //获取所有用户信息
+
+const handleStudentChange = (val) => {
+  studentPage.value = val
+  getAllUser() 
+}
+//用户分页
 
 const disabledDate = (time) => {
   const currentTime = Date.now() // 获取当前时间戳
