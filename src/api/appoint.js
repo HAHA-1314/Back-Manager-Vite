@@ -57,3 +57,11 @@ export function getAllUserReq(params) {
   })
 }
 //获取所有用户
+
+export function getUserReq() {
+  return request({
+    url: `/appointment/get/users`,
+    method: 'get',
+  })
+}
+//获取用户

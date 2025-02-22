@@ -39,7 +39,7 @@ export function changeMsgReq(params) {
 export function deleteMsgReq(params) {
   return request({
     url: '/meassage/delete',
-    method: 'post',
+    method: 'get',
     params,
   })
 }

@@ -13,7 +13,7 @@
     <div style="margin-top: 25px">
       <el-table :data="msgList">
         <el-table-column label="标题" prop="title"></el-table-column>
-        <el-table-column label="发布时间" prop="time"></el-table-column>
+        <el-table-column label="发布时间" prop="publishTime"></el-table-column>
         <el-table-column label="发布人员" prop="groupOp"></el-table-column>
         <el-table-column label="操作" width="380">
           <template #default="{ row }">
@@ -83,13 +83,30 @@
 <script setup>
 import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getMsgReq, addMsgReq } from '../api/message'
+import {
+  getMsgReq,
+  addMsgReq,
+  changeMsgReq,
+  deleteMsgReq,
+} from '../api/message'
 import { onMounted } from 'vue'
+import dayjs from 'dayjs'
+dayjs().format()
 
 const page = ref('page3')
 const title = ref('')
 const content = ref('')
 const value = ref('@')
+const publishTime = ref('')
+const groupMap = {
+  1: '前端组',
+  2: '后端组',
+  3: 'AI组',
+  4: '电控组',
+  5: '机械组',
+  6: '运营组',
+  7: '项目组',
+}
 
 const options = ref([
   {
@@ -111,7 +128,13 @@ const msgList = ref([])
 const getAllMsg = async () => {
   const res = await getMsgReq()
   console.log(res)
+  res.data.forEach((item) => {
+    item.publishTime = dayjs(item.publishTime).format('YYYY-MM-DD HH:mm:ss')
+  })
   msgList.value = res.data
+  msgList.value.forEach((item) => {
+    item.groupOp = groupMap[item.groupOp]
+  })
 }
 
 onMounted(() => {
@@ -138,6 +161,7 @@ const addMsgFn = async () => {
     })
   }
 }
+//请求添加公告
 
 const addMsg = () => {
   if (title.value == '' || content.value == '') {
@@ -155,6 +179,7 @@ const addMsg = () => {
     })
   }
 }
+//添加公告
 
 const change = () => {
   page.value = 'page4'
@@ -163,16 +188,31 @@ const change = () => {
   author.value = '嘻嘻'
 }
 
-const deleteFn = () => {
+const deleteMsg = async (id) => {
+  const res = await deleteMsgReq({ notificationId: id })
+  console.log(res)
+  if (res.code == 200) {
+    ElMessage({
+      type: 'success',
+      message: '删除成功',
+    })
+    getAllMsg()
+  } else {
+    ElMessage({
+      type: 'error',
+      message: res.msg,
+    })
+  }
+}
+
+const deleteFn = (id) => {
+  console.log(id)
   ElMessageBox.confirm('您确定要删除吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning',
   }).then(() => {
-    ElMessage({
-      type: 'success',
-      message: '删除成功',
-    })
+    deleteMsg(id)
   })
 }
 </script>

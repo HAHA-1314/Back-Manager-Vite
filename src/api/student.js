@@ -20,7 +20,7 @@ export function getUserReq(id) {
 export function changeUserReq(params) {
   return request({
     url: '/webuser/update/user',
-    method: 'post',
+    method: 'put',
     params,
   })
 }
@@ -79,3 +79,12 @@ export function putCommentReq(params) {
     params,
   })
 }
+//提交评论
+
+export function getCollegeReq() {
+  return request({
+    url: '/webuser/college',
+    method: 'get',
+  })
+}
+//获取学院

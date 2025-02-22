@@ -20,12 +20,12 @@
           </el-form-item>
           <el-form-item label="学院：">
             <el-select v-model="collegeId" placeholder="请选择学院">
-              <el-option label="计算机学院" value="计算机学院"></el-option>
-              <el-option label="信息工程学院" value="信息工程学院"></el-option>
-              <el-option label="自动化学院" value="自动化学院"></el-option>
-              <el-option label="外国语学院" value="外国语学院"></el-option>
-              <el-option label="机电工程学院" value="机电工程学院"></el-option>
-              <el-option label="集成电路学院" value="集成电路学院"></el-option>
+              <el-option
+                v-for="item in collegeList"
+                :key="item.id"
+                :label="item.college"
+                :value="item.id"
+              ></el-option>
             </el-select>
           </el-form-item>
         </div>
@@ -88,7 +88,7 @@
         <el-table-column
           label="学院"
           prop="collegeId"
-          width="140"
+          width="250"
         ></el-table-column>
         <el-table-column
           label="专业班级"
@@ -167,10 +167,11 @@
             >
               <el-option label="前端组" value="1"></el-option>
               <el-option label="后端组" value="2"></el-option>
-              <el-option label="运营组" value="3"></el-option>
-              <el-option label="AI组" value="4"></el-option>
-              <el-option label="电控组" value="5"></el-option>
-              <el-option label="机械组" value="6"></el-option>
+              <el-option label="AI组" value="3"></el-option>
+              <el-option label="电控组" value="4"></el-option>
+              <el-option label="机械组" value="5"></el-option>
+              <el-option label="运营组" value="6"></el-option>
+              <el-option label="项目组" value="7"></el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="联系方式：">
@@ -193,12 +194,12 @@
               placeholder="请选择"
               :disabled="isDisabled"
             >
-              <el-option label="信息工程学院" value="1"></el-option>
-              <el-option label="计算机学院" value="2"></el-option>
-              <el-option label="机电学院" value="3"></el-option>
-              <el-option label="能源与材料学院" value="4"></el-option>
-              <el-option label="外国语学院" value="5"></el-option>
-              <el-option label="自动化学院" value="6"></el-option>
+              <el-option
+                v-for="item in collegeList"
+                :key="item.id"
+                :label="item.college"
+                :value="item.id"
+              ></el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="专业班级：">
@@ -305,6 +306,7 @@ import {
   returnUserReq,
   getAllTestReq,
   putCommentReq,
+  getCollegeReq,
 } from '../api/student'
 
 // const store = useStore()
@@ -336,6 +338,7 @@ const currentUserId = ref('')
 const isDisabled = ref(true)
 const testList = ref([])
 const newArray = ref([])
+const collegeList = ref([])
 
 const goToPage1 = () => {
   store.dispatch('updatePage', String(page1.value))
@@ -350,23 +353,57 @@ const getAllUser = async () => {
     page: page.value,
     pageSize: pageSize.value,
   })
-  console.log(res);
+  console.log(res)
   studentList.value = res.data.records || []
+  const collegeMap = {
+    1: '建筑与城市规划学院',
+    2: '环境科学与工程学院',
+    3: '外国语学院',
+    4: '轻工化工学院',
+    5: '物理与光电工程学院',
+    6: '信息工程学院',
+    7: '管理学院',
+    8: '机电工程学院',
+    9: '土木与交通工程学院',
+    10: '体育学院',
+    11: '法学院',
+    12: '自动化学院',
+    13: '商学院',
+    14: '生物医药学院',
+    15: '材料与能源学院',
+    16: '计算机学院',
+    17: '艺术与设计学院',
+    18: '数学与统计学院',
+    19: '集成电路学院',
+  }
+  studentList.value.forEach((item) => {
+    item.collegeId = collegeMap[item.collegeId] || '未知学院'
+  })
 }
 //请求获取所有用户
 //分页请求
 const handleCurrentChange = (val) => {
- page.value = val
- getAllUser()
+  page.value = val
+  getAllUser()
+}
+
+const getCollegeList = async () => {
+  const res = await getCollegeReq()
+  collegeList.value = res.data
+  // console.log(collegeList.value)
 }
 
 onMounted(() => {
   getAllUser()
   getAllTest()
+  getCollegeList()
   console.log(store.state.showPage)
   currentUserId.value = route.query.stuId
-  getUser(currentUserId.value)
-  
+  if (currentUserId.value) {
+    getUser(currentUserId.value)
+  }
+  // getUser(currentUserId.value)
+
   // console.log(currentUserId.value)
 })
 //获取所有用户
@@ -617,7 +654,6 @@ const returnUser = () => {
   })
 }
 //回退用户
-
 </script>
 
 <style scoped>

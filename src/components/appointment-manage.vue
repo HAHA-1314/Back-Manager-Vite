@@ -339,7 +339,7 @@
             ></el-input>
           </el-form-item>
           <el-form-item label="年级">
-            <el-select v-model="grade" style="width: 120px" placeholder="2024">
+            <el-select v-model="year" style="width: 120px" placeholder="2024">
               <el-option label="2024" value="2024"></el-option>
               <el-option label="2023" value="2023"></el-option>
               <el-option label="2022" value="2022"></el-option>
@@ -347,31 +347,34 @@
           </el-form-item>
           <el-form-item label="考核轮次">
             <el-select
-              v-model="process"
+              v-model="testId"
               style="width: 120px"
               placeholder="第一轮考核"
             >
-              <el-option label="第一次考核" value="第一次考核"></el-option>
-              <el-option label="第二次考核" value="第二次考核"></el-option>
-              <el-option label="第三次考核" value="第三次考核"></el-option>
+              <el-option
+                v-for="test in testList"
+                :key="test.id"
+                :label="test.name"
+                :value="test.id"
+              ></el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="预约序号">
-            <el-select v-model="appointId" style="width: 80px" placeholder="1">
+            <el-select v-model="father" style="width: 80px" placeholder="1">
               <el-option label="1" value="1"></el-option>
               <el-option label="2" value="2"></el-option>
               <el-option label="3" value="3"></el-option>
             </el-select>
           </el-form-item>
           <el-form-item>
-            <el-button>搜索</el-button>
+            <el-button @click="searchUser">搜索</el-button>
             <el-button @click="clear">重置</el-button>
           </el-form-item>
         </el-form>
         <el-table :data="studentList">
           <el-table-column
             label="序号"
-            prop="appointId"
+            prop="father"
             width="80"
           ></el-table-column>
           <el-table-column
@@ -424,6 +427,7 @@ import {
   getAppointReq,
   getAllTestReq,
   getAllUserReq,
+  getUserReq,
 } from '../api/appoint'
 
 import { onMounted } from 'vue'
@@ -436,8 +440,8 @@ const process = ref('')
 const addBox = ref(false)
 const changeBox = ref(false)
 const id = ref('')
-const name = ref('')
-const grade = ref('')
+const nickname = ref('')
+const year = ref('')
 const begin = ref('')
 const end = ref('')
 const date = ref('')
@@ -452,6 +456,9 @@ const currentTestId = ref('')
 const testList = ref([])
 const appointPage = ref(1)
 const studentPage = ref(1)
+const appointList = ref([])
+const stuId = ref('')
+const studentList = ref([])
 
 const goToPerson = (stuId) => {
   router.push({
@@ -463,10 +470,6 @@ const goToPerson = (stuId) => {
   store.dispatch('updatePage', String(newPage.value))
   // console.log(stuId)
 }
-
-const appointList = ref([])
-
-const studentList = ref([])
 
 const handleChange = async (selected) => {
   currentTestId.value = selected
@@ -546,9 +549,31 @@ const getAllUser = async () => {
 
 const handleStudentChange = (val) => {
   studentPage.value = val
-  getAllUser() 
+  getAllUser()
 }
 //用户分页
+
+const searchUser = async () => {
+  console.log(testId.value)
+  const res = await getUserReq({
+    stuId: stuId.value,
+    nickname: nickname.value,
+    year: year.value,
+    testId: testId.value,
+    father: father.value,
+    page: 1,
+    pageSize: 4,
+  })
+  console.log(res)
+
+  studentList.value = [res.data]
+  studentList.value.forEach((item) => {
+    item.begin = dayjs(item.begin).format('YYYY-MM-DD HH:mm')
+    item.end = dayjs(item.end).format('YYYY-MM-DD HH:mm')
+  })
+  console.log(studentList.value)
+}
+//搜索用户
 
 const disabledDate = (time) => {
   const currentTime = Date.now() // 获取当前时间戳
