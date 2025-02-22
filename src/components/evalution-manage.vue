@@ -211,7 +211,7 @@
         <el-form-item label="文件上传">
           <el-upload
             ref="upload"
-            v-model="file"
+            v-model:file-list="fileList"
             class="upload-demo"
             action="http://localhost:8080/api/file/upload"
             :on-success="handleFileChange"
@@ -278,6 +278,16 @@ const changeBoxVisible = ref(false)
 const upload = ref()
 const file = ref('')
 const newestTest = ref('')
+const fileList = ref([
+  {
+    name: 'element-plus-logo.svg',
+    url: 'https://element-plus.org/images/element-plus-logo.svg',
+  },
+  {
+    name: 'element-plus-logo2.svg',
+    url: 'https://element-plus.org/images/element-plus-logo.svg',
+  },
+])
 
 const getAllTestData = async () => {
   const res = await getAllTestReq()
@@ -411,11 +421,14 @@ const getTestData = async (e) => {
     name.value = res.data.name
     content.value = res.data.content
     id.value = res.data.id
-    file.value = res.data.fileList
+
     let startDate = formatDate(dayjs(res.data.begin).format('YYYY-MM-DD'))
     let endDate = formatDate(dayjs(res.data.end).format('YYYY-MM-DD'))
     date.value = [startDate, endDate]
     // console.log(id.value)
+    let fileUrl = res.data.fileList
+    fileList.value = fileUrl ? [{ name: fileUrl, url: fileUrl }] : []
+    console.log(fileList.value)
   }
 }
 //请求得到单独考核信息

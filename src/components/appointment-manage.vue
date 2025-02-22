@@ -334,7 +334,7 @@
           <el-form-item label="学号">
             <el-input
               placeholder="请输入学号"
-              v-model="id"
+              v-model="stuId"
               style="width: 120px"
             ></el-input>
           </el-form-item>
@@ -439,7 +439,7 @@ const newPage = ref('page2')
 const process = ref('')
 const addBox = ref(false)
 const changeBox = ref(false)
-const id = ref('')
+// const id = ref('')
 const nickname = ref('')
 const year = ref('')
 const begin = ref('')
@@ -554,7 +554,13 @@ const handleStudentChange = (val) => {
 //用户分页
 
 const searchUser = async () => {
-  console.log(testId.value)
+  console.log(
+    testId.value,
+    father.value,
+    stuId.value,
+    nickname.value,
+    year.value
+  )
   const res = await getUserReq({
     stuId: stuId.value,
     nickname: nickname.value,
@@ -566,7 +572,7 @@ const searchUser = async () => {
   })
   console.log(res)
 
-  studentList.value = [res.data]
+  studentList.value = res.data.records || []
   studentList.value.forEach((item) => {
     item.begin = dayjs(item.begin).format('YYYY-MM-DD HH:mm')
     item.end = dayjs(item.end).format('YYYY-MM-DD HH:mm')

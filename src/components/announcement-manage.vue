@@ -17,7 +17,7 @@
         <el-table-column label="发布人员" prop="groupOp"></el-table-column>
         <el-table-column label="操作" width="380">
           <template #default="{ row }">
-            <el-button @click="change(row.id)"> 编辑 </el-button>
+            <el-button @click="getMsg(row.id)"> 编辑 </el-button>
             <el-button @click="deleteFn(row.id)"> 删除 </el-button>
           </template>
         </el-table-column>
@@ -78,6 +78,59 @@
       >
     </div>
   </el-card>
+  <el-card
+    style="
+      margin-top: 20px;
+      margin-left: 15px;
+      height: 650px;
+      position: relative;
+      width: 1200px;
+    "
+    v-if="page == 'page5'"
+  >
+    <div style="margin-top: 13px; margin-left: 30px">
+      <el-form>
+        <el-form-item label="标题：">
+          <el-input
+            v-model="title"
+            placeholder="请输入"
+            style="width: 200px; margin-left: 30px"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="内容：">
+          <el-input
+            v-model="content"
+            placeholder="请输入"
+            style="width: 500px; height: 200px; margin-left: 30px"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="添加对象：">
+          <el-select
+            v-model="value"
+            multiple
+            placeholder="+ 选择人员"
+            style="width: 200px"
+          >
+            <el-option
+              v-for="item in options"
+              :key="item.value"
+              :lable="item.lable"
+              :value="item.value"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+    </div>
+    <div style="position: absolute; bottom: 70px; right: 100px">
+      <el-button style="width: 80px; margin-right: 20px" @click="page = 'page3'"
+        >取消</el-button
+      >
+      <el-button type="primary" style="width: 80px" @click="changeMsgFn"
+        >确认</el-button
+      >
+    </div>
+  </el-card>
 </template>
 
 <script setup>
@@ -87,6 +140,7 @@ import {
   getMsgReq,
   addMsgReq,
   changeMsgReq,
+  getMsgByIdReq,
   deleteMsgReq,
 } from '../api/message'
 import { onMounted } from 'vue'
@@ -98,6 +152,7 @@ const title = ref('')
 const content = ref('')
 const value = ref('@')
 const publishTime = ref('')
+const currentId = ref('')
 const groupMap = {
   1: '前端组',
   2: '后端组',
@@ -181,11 +236,63 @@ const addMsg = () => {
 }
 //添加公告
 
-const change = () => {
+const changeFn = () => {
   page.value = 'page4'
   title.value = '我是公告标题'
   content.value = '我是公告内容'
   author.value = '嘻嘻'
+}
+
+const getMsg = async (id) => {
+  page.value = 'page5'
+  console.log(id)
+  const res = await getMsgByIdReq({ id: id })
+  console.log(res)
+  title.value = res.data.title
+  content.value = res.data.content
+  currentId.value = id
+  console.log(currentId.value)
+}
+//获取单个公告
+
+const changeMsgFn = async () => {
+  if (title.value == '' || content.value == '') {
+    ElMessage({
+      type: 'warning',
+      message: '请完善信息',
+    })
+  } else {
+    ElMessageBox.confirm('您确定要修改吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }).then(() => {
+      changeMsg()
+    })
+  }
+  // console.log(id)
+}
+
+const changeMsg = async () => {
+  console.log(currentId.value)
+  const res = await changeMsgReq({
+    id: currentId.value,
+    title: title.value,
+    content: content.value,
+  })
+  if (res.code == 200) {
+    ElMessage({
+      type: 'success',
+      message: '修改成功',
+    })
+    getAllMsg()
+    page.value = 'page3'
+  } else {
+    ElMessage({
+      type: 'error',
+      message: res.msg,
+    })
+  }
 }
 
 const deleteMsg = async (id) => {
@@ -204,6 +311,7 @@ const deleteMsg = async (id) => {
     })
   }
 }
+//删除公告
 
 const deleteFn = (id) => {
   console.log(id)
@@ -215,6 +323,7 @@ const deleteFn = (id) => {
     deleteMsg(id)
   })
 }
+//删除公告前提
 </script>
 
 <style scoped>

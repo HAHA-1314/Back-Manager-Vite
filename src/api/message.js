@@ -44,3 +44,11 @@ export function deleteMsgReq(params) {
   })
 }
 //删除公告
+
+export function getMsgByIdReq(params) {
+  return request({
+    url: '/meassage/selectOne',
+    method: 'get',
+    params,
+  })
+}

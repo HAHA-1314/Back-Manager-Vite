@@ -76,7 +76,7 @@
         ></el-table-column>
         <el-table-column
           label="当前考核流程"
-          prop="testId"
+          prop="test"
           width="160"
         ></el-table-column>
         <el-table-column
@@ -165,13 +165,12 @@
               placeholder="请选择"
               :disabled="isDisabled"
             >
-              <el-option label="前端组" value="1"></el-option>
-              <el-option label="后端组" value="2"></el-option>
-              <el-option label="AI组" value="3"></el-option>
-              <el-option label="电控组" value="4"></el-option>
-              <el-option label="机械组" value="5"></el-option>
-              <el-option label="运营组" value="6"></el-option>
-              <el-option label="项目组" value="7"></el-option>
+              <el-option
+                v-for="item in groupList"
+                :key="item.value"
+                :label="item.label"
+                :value="item.groupId"
+              ></el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="联系方式：">
@@ -340,8 +339,40 @@ const testList = ref([])
 const newArray = ref([])
 const collegeList = ref([])
 
+const groupList = [
+  {
+    label: '前端组',
+    groupId: '1',
+  },
+  {
+    label: '后端组',
+    groupId: '2',
+  },
+  {
+    label: 'AI组',
+    groupId: '3',
+  },
+  {
+    label: '电控组',
+    groupId: '4',
+  },
+  {
+    label: '机械组',
+    groupId: '5',
+  },
+  {
+    label: '运营组',
+    groupId: '6',
+  },
+  {
+    label: '项目组',
+    groupId: '7',
+  },
+]
+
 const goToPage1 = () => {
   store.dispatch('updatePage', String(page1.value))
+  isDisabled.value = true
 }
 const goToPage2 = async (id) => {
   store.dispatch('updatePage', String(page2.value))
@@ -465,12 +496,29 @@ const getUser = async (id) => {
   changeId.value = id
   nickname.value = data.nickname
   stuId.value = data.stuId
-  groupName.value = data.groupName
+  // groupOp.value = data.groupId
   telephone.value = data.telephone
   year.value = data.year
   collegeId.value = data.collegeId
   majorClass.value = data.majorClass
   selfIntroduction.value = data.selfIntroduction
+
+  if (data.groupId == 1) {
+    groupOp.value = '前端组'
+  } else if (data.groupId == 2) {
+    groupOp.value = '后端组'
+  } else if (data.groupId == 3) {
+    groupOp.value = 'AI组'
+  } else if (data.groupId == 4) {
+    groupOp.value = '电控组 '
+  } else if (data.groupId == 5) {
+    groupOp.value = '机械组'
+  } else if (data.groupId == 6) {
+    groupOp.value = '运营组'
+  } else if (data.groupId == 7) {
+    groupOp.value = '项目组'
+  }
+
   // const id = id
 }
 //获取单个用户

@@ -58,10 +58,11 @@ export function getAllUserReq(params) {
 }
 //获取所有用户
 
-export function getUserReq() {
+export function getUserReq(params) {
   return request({
-    url: `/appointment/get/users`,
+    url: '/appointment/get/users',
     method: 'get',
+    params: params,
   })
 }
 //获取用户
