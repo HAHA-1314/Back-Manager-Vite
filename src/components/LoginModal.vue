@@ -13,8 +13,7 @@
                 border-radius: 50%;
                 margin-top: 40px;
               "
-              placeholder="请输入账号"
-            >
+              placeholder="请输入账号">
               <template #prefix
                 ><el-icon><User /></el-icon
               ></template>
@@ -29,8 +28,7 @@
               type="password"
               placeholder="请输入密码"
               show-password
-              @keyup.enter.native="handleLogin"
-            >
+              @keyup.enter.native="handleLogin">
               <template #prefix
                 ><el-icon><Lock /></el-icon
               ></template>
@@ -57,33 +55,33 @@ import { ref, getCurrentInstance, watch } from "vue";
 import { useStore } from "vuex";
 import { useRouter, useRoute } from "vue-router";
 import Cookies from "js-cookie";
-import { encrypt,decrypt } from "../utils/jsencrypt";
+import { encrypt, decrypt } from "../utils/jsencrypt";
 const { proxy } = getCurrentInstance();
 const store = useStore();
 const router = useRouter();
 const route = useRoute();
 const loginForm = ref({
-  username: '',
-  password: '',
-})
-const redirect = ref('')
+  username: Cookies.get("username") || "",
+  password: decrypt(Cookies.get("password")) || "",
+});
+const redirect = ref("");
 
 watch(
   //将登录页携带的参数（重定向路径、参数）赋值给 redirect
   route,
   (newRoute) => {
-    console.log(newRoute)
-    console.log(newRoute.query)
-    redirect.value = newRoute.query && newRoute.query.redirect
+    console.log(newRoute);
+    console.log(newRoute.query);
+    redirect.value = newRoute.query && newRoute.query.redirect;
   },
   { immediate: true }
-)
+);
 
 const loginRules = {
   //表单验证规则
-  username: [{ required: true, trigger: 'blur', message: '请输入您的账号' }],
-  password: [{ required: true, trigger: 'blur', message: '请输入您的密码' }],
-}
+  username: [{ required: true, trigger: "blur", message: "请输入您的账号" }],
+  password: [{ required: true, trigger: "blur", message: "请输入您的密码" }],
+};
 
 const handleLogin = () => {
   // console.log(loginForm.value.username, loginForm.valuepassword);
@@ -92,24 +90,24 @@ const handleLogin = () => {
       Cookies.set("username", loginForm.value.username, { expires: 30 });
       Cookies.set("password", encrypt(loginForm.value.password), {
         expires: 30,
-      })
-      store.dispatch('login', loginForm.value).then((res) => {
-        console.log(res)
+      });
+      store.dispatch("login", loginForm.value).then((res) => {
+        console.log(res);
         if (res.code == 200) {
-          const query = route.query
+          const query = route.query;
           const otherQueryParams = Object.keys(query).reduce((acc, cur) => {
-            if (cur !== 'redirect') {
-              acc[cur] = query[cur]
+            if (cur !== "redirect") {
+              acc[cur] = query[cur];
             }
-            return acc
-          }, {})
-          router.push({ path: redirect.value || '/', query: otherQueryParams })
+            return acc;
+          }, {});
+          router.push({ path: redirect.value || "/", query: otherQueryParams });
         }
-      })
+      });
       // console.log(loginForm.value);
     }
-  })
-}
+  });
+};
 </script>
 
 <style scoped>

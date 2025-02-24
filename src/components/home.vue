@@ -228,7 +228,7 @@ const today_enroll = ref(0);
 const cumulation_num = ref(null);
 const current_step = ref(null);
 const current_num = ref(null);
-const month = ref(dayjs().startOf('month').format("YYYY-MM"));
+const month = ref(dayjs().startOf("month").format("YYYY-MM"));
 const up = ref(true); //较昨日新增人数 上涨
 const down = ref(false); //较昨日新增人数 下调
 
@@ -328,6 +328,7 @@ const option = ref({
     axisLabel: {
       formatter: "{value}",
     },
+    minInterval: 1,
   },
   series: [
     {
