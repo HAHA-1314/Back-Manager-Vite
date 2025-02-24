@@ -20,3 +20,11 @@ export function updateGroup(data) {
     data,
   });
 }
+//获取单个组别信息
+export function getOneGroup(params) {
+  return request({
+    url: "/clazz",
+    method: "get",
+    params,
+  });
+}
