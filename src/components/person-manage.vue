@@ -58,7 +58,9 @@
       </el-form>
     </el-card>
     <el-card style="min-width: 95%" class="personBottom">
-      <el-button style="width: 80px; color: #959595; margin-bottom: 8px"
+      <el-button
+        style="width: 80px; color: #959595; margin-bottom: 8px"
+        @click="exportExcel"
         >导出</el-button
       >
       <el-table :data="studentList">
@@ -306,6 +308,7 @@ import {
   getAllTestReq,
   putCommentReq,
   getCollegeReq,
+  getExcelReq,
 } from '../api/student'
 
 // const store = useStore()
@@ -338,7 +341,7 @@ const isDisabled = ref(true)
 const testList = ref([])
 const newArray = ref([])
 const collegeList = ref([])
-
+const excelList = ref([])
 const groupList = [
   {
     label: '前端组',
@@ -369,6 +372,27 @@ const groupList = [
     groupId: '7',
   },
 ]
+const collegeMap = {
+  1: '建筑与城市规划学院',
+  2: '环境科学与工程学院',
+  3: '外国语学院',
+  4: '轻工化工学院',
+  5: '物理与光电工程学院',
+  6: '信息工程学院',
+  7: '管理学院',
+  8: '机电工程学院',
+  9: '土木与交通工程学院',
+  10: '体育学院',
+  11: '法学院',
+  12: '自动化学院',
+  13: '商学院',
+  14: '生物医药学院',
+  15: '材料与能源学院',
+  16: '计算机学院',
+  17: '艺术与设计学院',
+  18: '数学与统计学院',
+  19: '集成电路学院',
+}
 
 const goToPage1 = () => {
   store.dispatch('updatePage', String(page1.value))
@@ -386,27 +410,7 @@ const getAllUser = async () => {
   })
   console.log(res)
   studentList.value = res.data.records || []
-  const collegeMap = {
-    1: '建筑与城市规划学院',
-    2: '环境科学与工程学院',
-    3: '外国语学院',
-    4: '轻工化工学院',
-    5: '物理与光电工程学院',
-    6: '信息工程学院',
-    7: '管理学院',
-    8: '机电工程学院',
-    9: '土木与交通工程学院',
-    10: '体育学院',
-    11: '法学院',
-    12: '自动化学院',
-    13: '商学院',
-    14: '生物医药学院',
-    15: '材料与能源学院',
-    16: '计算机学院',
-    17: '艺术与设计学院',
-    18: '数学与统计学院',
-    19: '集成电路学院',
-  }
+
   studentList.value.forEach((item) => {
     item.collegeId = collegeMap[item.collegeId] || '未知学院'
   })
@@ -446,6 +450,51 @@ const getAllTest = async () => {
   // console.log(testList.value)
 }
 //获取所有考核
+
+const exportExcel = async () => {
+  excelList.value = studentList.value.map((item, index) => {
+    // 修改属性名
+    const {
+      id,
+      test,
+      collegeId,
+      telephone,
+      nickname,
+      groupOp,
+      testId,
+      ...rest
+    } = item
+    return {
+      ...rest,
+      stuId: id,
+      testName: test,
+      phone: telephone,
+      name: nickname,
+      college: collegeId,
+      ordinal: index + 1,
+    }
+  })
+
+  console.log(excelList.value)
+  const res = await getExcelReq(excelList.value)
+  console.log(res)
+
+  const url = URL.createObjectURL(res)
+
+  // 创建下载链接
+  const link = document.createElement('a')
+  link.href = url
+  link.setAttribute('download', '考核名单.xlsx') // 设置下载的文件名
+
+  // 触发点击
+  document.body.appendChild(link)
+  link.click()
+
+  // 清理
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+  // console.log(res)
+}
 
 const getUserProcess = async (id) => {
   processList.value = []

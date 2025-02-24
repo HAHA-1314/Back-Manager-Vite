@@ -115,8 +115,7 @@
             action="http://localhost:8080/api/file/upload"
             :on-success="handleFileChange"
             :auto-upload="true"
-            :on-exceed="handleExceed"
-            :limit="1"
+            multiple
           >
             <template #trigger>
               <el-button type="primary">上传文件</el-button>
@@ -276,18 +275,11 @@ const id = ref('')
 const addBoxVisible = ref(false)
 const changeBoxVisible = ref(false)
 const upload = ref()
-const file = ref('')
+const file = ref([])
 const newestTest = ref('')
-const fileList = ref([
-  {
-    name: 'element-plus-logo.svg',
-    url: 'https://element-plus.org/images/element-plus-logo.svg',
-  },
-  {
-    name: 'element-plus-logo2.svg',
-    url: 'https://element-plus.org/images/element-plus-logo.svg',
-  },
-])
+const fileList = ref([])
+
+let fileUrl = ref([])
 
 const getAllTestData = async () => {
   const res = await getAllTestReq()
@@ -418,6 +410,7 @@ const getTestData = async (e) => {
   changeBoxVisible.value = true
   const res = await getTestReq(e)
   if (res.code == 200) {
+    fileUrl = []
     name.value = res.data.name
     content.value = res.data.content
     id.value = res.data.id
@@ -426,8 +419,12 @@ const getTestData = async (e) => {
     let endDate = formatDate(dayjs(res.data.end).format('YYYY-MM-DD'))
     date.value = [startDate, endDate]
     // console.log(id.value)
-    let fileUrl = res.data.fileList
-    fileList.value = fileUrl ? [{ name: fileUrl, url: fileUrl }] : []
+    fileUrl = res.data.fileList
+
+    fileList.value = fileUrl.map((url) => ({
+      name: url.split('/').pop(),
+      url: url,
+    }))
     console.log(fileList.value)
   }
 }
@@ -459,18 +456,12 @@ const changeTestData = async (id) => {
     })
   }
 }
-
-const handleExceed = () => {
-  ElMessage({
-    type: 'error',
-    message: '文件数量不能超过1个',
-  })
-}
-//限制文件数量
+//请求修改考核信息
 
 const handleFileChange = (res) => {
   if (res.code == 200) {
-    file.value = res.data
+    console.log(res.data)
+    file.value.push(res.data)
     console.log(file.value)
   }
 }

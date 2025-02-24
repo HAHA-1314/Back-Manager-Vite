@@ -88,3 +88,13 @@ export function getCollegeReq() {
   })
 }
 //获取学院
+
+export function getExcelReq(params) {
+  return request({
+    url: '/webuser/export',
+    method: 'post',
+    data: params,
+    responseType: 'blob',
+  })
+}
+//导出excel

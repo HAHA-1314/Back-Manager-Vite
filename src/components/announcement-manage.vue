@@ -26,6 +26,7 @@
   </div>
 
   <el-card
+    class="addBox"
     style="
       margin-top: 20px;
       margin-left: 15px;
@@ -57,12 +58,13 @@
             multiple
             placeholder="+ 选择人员"
             style="width: 200px"
+            @change="handleChange"
           >
             <el-option
-              v-for="item in options"
-              :key="item.value"
-              :lable="item.lable"
-              :value="item.value"
+              v-for="item in userArray"
+              :key="item.id"
+              :lable="item.nickname"
+              :value="item.nickname"
             >
             </el-option>
           </el-select>
@@ -79,6 +81,7 @@
     </div>
   </el-card>
   <el-card
+    class="changeBox"
     style="
       margin-top: 20px;
       margin-left: 15px;
@@ -106,16 +109,17 @@
         </el-form-item>
         <el-form-item label="添加对象：">
           <el-select
-            v-model="value"
+            v-model="changeSelected"
             multiple
             placeholder="+ 选择人员"
             style="width: 200px"
+            @change="changeSelectedFn"
           >
             <el-option
-              v-for="item in options"
-              :key="item.value"
-              :lable="item.lable"
-              :value="item.value"
+              v-for="item in userArray"
+              :key="item.userId"
+              :lable="item.nickname"
+              :value="item.nickname"
             >
             </el-option>
           </el-select>
@@ -142,6 +146,8 @@ import {
   changeMsgReq,
   getMsgByIdReq,
   deleteMsgReq,
+  getUserReq,
+  getMsgUserReq,
 } from '../api/message'
 import { onMounted } from 'vue'
 import dayjs from 'dayjs'
@@ -151,8 +157,14 @@ const page = ref('page3')
 const title = ref('')
 const content = ref('')
 const value = ref('@')
+const addSelectedIds = ref([])
+const changeSelected = ref([])
+const changeSelectedIds = ref([])
 const publishTime = ref('')
 const currentId = ref('')
+const userArray = ref([])
+const selectedArray = ref([])
+
 const groupMap = {
   1: '前端组',
   2: '后端组',
@@ -162,21 +174,6 @@ const groupMap = {
   6: '运营组',
   7: '项目组',
 }
-
-const options = ref([
-  {
-    label: 'tinsley',
-    value: 'tinsley',
-  },
-  {
-    label: 'haha',
-    value: 'haha',
-  },
-  {
-    label: '芳',
-    value: '芳',
-  },
-])
 
 const msgList = ref([])
 
@@ -194,12 +191,26 @@ const getAllMsg = async () => {
 
 onMounted(() => {
   getAllMsg()
+  getAllUser()
 })
 
+const getAllUser = async () => {
+  const res = await getUserReq({
+    page: 1,
+    pageSize: 100,
+  })
+  // console.log(res)
+  userArray.value = res.data.records
+  // console.log(userArray.value)
+}
+//获取所有用户
+
 const addMsgFn = async () => {
+  console.log(addSelectedIds.value)
   const res = await addMsgReq({
     title: title.value,
     content: content.value,
+    userId: addSelectedIds.value,
   })
   console.log(res)
   if (res.code == 200) {
@@ -218,8 +229,26 @@ const addMsgFn = async () => {
 }
 //请求添加公告
 
+const handleChange = (selectedValues) => {
+  addSelectedIds.value = []
+  selectedValues.forEach((value) => {
+    const selectedItem = userArray.value.find((item) => item.nickname === value)
+    if (selectedItem) {
+      addSelectedIds.value.push(selectedItem.id)
+    }
+  })
+  // addSelected.value = selectedIds
+  console.log('选中的 id 列表:', addSelectedIds.value)
+}
+//获取选中的userId
+
 const addMsg = () => {
-  if (title.value == '' || content.value == '') {
+  console.log(addSelectedIds.value)
+  if (
+    title.value == '' ||
+    content.value == '' ||
+    addSelectedIds.value.length == 0
+  ) {
     ElMessage({
       type: 'warning',
       message: '请完善信息',
@@ -236,24 +265,50 @@ const addMsg = () => {
 }
 //添加公告
 
-const changeFn = () => {
-  page.value = 'page4'
-  title.value = '我是公告标题'
-  content.value = '我是公告内容'
-  author.value = '嘻嘻'
+const getMsgUser = async (id) => {
+  selectedArray.value = []
+
+  const res = await getMsgUserReq({
+    notificationId: id,
+  })
+  const arr = ref([])
+  arr.value = res.data
+  // console.log(arr.value)
+  arr.value.forEach((item) => {
+    if (!item.status) {
+      selectedArray.value.push(item)
+    }
+  })
+  // selected.value = selectedArray.value.map((item) => item.nickname)
+
+  changeSelected.value = selectedArray.value.map((item) => item.nickname)
+  console.log(selectedArray.value)
 }
+//获取单个公告的用户
 
 const getMsg = async (id) => {
   page.value = 'page5'
   console.log(id)
+  getMsgUser(id)
   const res = await getMsgByIdReq({ id: id })
-  console.log(res)
   title.value = res.data.title
   content.value = res.data.content
   currentId.value = id
   console.log(currentId.value)
 }
 //获取单个公告
+
+const changeSelectedFn = (selectedValues) => {
+  changeSelectedIds.value = []
+  selectedValues.forEach((value) => {
+    const selectedItem = userArray.value.find((item) => item.nickname === value)
+    if (selectedItem) {
+      changeSelectedIds.value.push(selectedItem.id)
+    }
+  })
+  // addSelected.value = selectedIds
+  console.log('选中修改的 id 列表:', changeSelectedIds.value)
+}
 
 const changeMsgFn = async () => {
   if (title.value == '' || content.value == '') {
@@ -272,6 +327,7 @@ const changeMsgFn = async () => {
   }
   // console.log(id)
 }
+//修改公告
 
 const changeMsg = async () => {
   console.log(currentId.value)
@@ -279,6 +335,7 @@ const changeMsg = async () => {
     id: currentId.value,
     title: title.value,
     content: content.value,
+    userId: changeSelectedIds.value,
   })
   if (res.code == 200) {
     ElMessage({
@@ -294,6 +351,7 @@ const changeMsg = async () => {
     })
   }
 }
+//请求修改公告
 
 const deleteMsg = async (id) => {
   const res = await deleteMsgReq({ notificationId: id })
