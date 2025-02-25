@@ -30,11 +30,17 @@
         prop="createName"
         width="150"
       ></el-table-column>
-      <el-table-column
-        label="当前状态"
-        prop="status"
-        width="300"
-      ></el-table-column>
+      <el-table-column label="当前状态" prop="status" width="300"
+        ><template #default="{ row }">
+          <p
+            class="status"
+            prop="status"
+            :style="{ backgroundColor: getStatusColor(row.status) }"
+          >
+            {{ row.status }}
+          </p>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" width="350" prop="id">
         <template #default="{ row }">
           <el-button @click="getTestData(row.id)">编辑</el-button>
@@ -292,6 +298,17 @@ const getAllTestData = async () => {
 }
 //请求获取考核信息
 
+const getStatusColor = (status) => {
+  if (status === '已结束') {
+    return 'red'
+  } else if (status === '正在进行中') {
+    return 'green'
+  } else if (status === '未开始') {
+    return 'gray'
+  }
+  return 'transparent' // 默认颜色
+}
+
 onMounted(() => {
   getAllTestData()
 })
@@ -499,6 +516,12 @@ const handleFileChange = (res) => {
   display: flex;
   margin: 70px auto;
   flex-wrap: wrap;
+}
+
+.status {
+  color: white;
+  padding: 5px 8px;
+  background-color: red;
 }
 
 .el-icon {
