@@ -167,7 +167,11 @@
                 prop="date"
                 label="发布时间"
                 width=""
-                align="center" />
+                align="center">
+                <template v-slot="scope">
+                  {{ dayjs(scope.row.date).format("YYYY-MM-DD HH:mm:ss") }}
+                </template>
+              </el-table-column>
             </el-table>
           </div>
         </div>
@@ -191,7 +195,11 @@
                 prop="date"
                 label="发布时间"
                 width=""
-                align="center" />
+                align="center">
+                <template v-slot="scope">
+                  {{ dayjs(scope.row.date).format("YYYY-MM-DD HH:mm:ss") }}
+                </template>
+              </el-table-column>
             </el-table>
           </div>
         </div>
@@ -224,10 +232,10 @@ use([
 const Announce_tableData = ref([]); //公告列表
 const Test_tableData = ref([]); //考核列表
 const Person_tableData = ref([]); //人员列表
-const today_enroll = ref(0);
-const cumulation_num = ref(null);
-const current_step = ref(null);
-const current_num = ref(null);
+const today_enroll = ref(0); //今日新增人数
+const cumulation_num = ref(null); //累计人数
+const current_step = ref(null); //当前流程
+const current_num = ref(null); //当前流程人数
 const month = ref(dayjs().startOf("month").format("YYYY-MM"));
 const up = ref(true); //较昨日新增人数 上涨
 const down = ref(false); //较昨日新增人数 下调
@@ -273,6 +281,10 @@ const getHeaderList = async () => {
   }
   res = await api.getCurrentStep();
   if (res.code === 200) current_step.value = res.data;
+  res = await api.getTestPerson();
+  if (res.code === 200) current_num.value = res.data;
+  res = await api.getAllEnroll();
+  if (res.code === 200) cumulation_num.value = res.data || 0;
 };
 
 const getPersonTable = async (form) => {
@@ -290,11 +302,11 @@ const getPersonTable = async (form) => {
 const getTestTable = async () => {
   const res = await api.getTestList();
   // const res = await api.getTestList(form);
-  if (!res.data.records) return;
-  res.data.records.map((item) => {
+  if (!res.data) return;
+  res.data.map((item) => {
     Test_tableData.value.push({
       title: item.title,
-      date: item.createTime,
+      date: item.publishTime,
     });
     // if (testPage.page === res.data.total) testPage.stop();
   });
@@ -304,11 +316,11 @@ const getAnnounceTable = async () => {
   // const res = await api.getAnnounceList(form);
   const res = await api.getAnnounceList();
   // console.log(res)
-  if (!res.data.records) return;
-  res.data.records.map((item) => {
+  if (!res.data) return;
+  res.data.map((item) => {
     Announce_tableData.value.push({
       title: item.title,
-      date: item.createTime,
+      date: item.publishTime,
     });
     // if (announcePage.page === res.data.total) announcePage.stop();
   });
@@ -406,7 +418,7 @@ const changeMonth = (value) => {
 }
 
 .msg-num {
-  font-size: 20px;
+  font-size: calc(16px + (10) * ((100vw - 300px) / (1300)));
   font-weight: 500;
   margin-top: 20px;
   margin-left: -10px;
