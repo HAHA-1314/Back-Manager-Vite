@@ -103,7 +103,7 @@ const ruleForm = ref({
   introduction: "",
 });
 const checkImages = (rule, value, callback) => {
-  if (sendPics.value === "") {
+  if (ruleForm.value.pic.length === 0) {
     callback(new Error("请上传轮播图图片"));
   } else {
     callback();
@@ -137,6 +137,7 @@ const rules = ref({
   ],
 });
 const setPics = () => {
+  sendPics.value = sendPics.value.filter((item) => item.trim() !== "");
   listImages.value = sendPics.value.slice(2).map((item) => ({ url: item }));
 };
 const handleFileChange = (file, index) => {
@@ -161,8 +162,8 @@ const buttonConfirm = async () => {
   $("#summernote").summernote("fontName", "Helvetica");
   const markupStr = $("#summernote").summernote("code");
   ruleForm.value.introduction = extractTextFromHTML(markupStr);
-  sendPics.value = sendPics.value.filter((item) => item.trim() !== "");
   ruleForm.value.pic = sendPics.value;
+  ruleForm.value.pic = ruleForm.value.pic.filter((item) => item.trim() !== "");
   await ruleFormRef.value.validate();
 
   if (route.name === "u-group-intro") {
