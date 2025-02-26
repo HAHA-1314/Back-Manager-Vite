@@ -33,7 +33,7 @@ export function getTestList() {
   });
 }
 
-// 当前进行的流程 
+// 当前进行的流程
 export function getCurrentStep() {
   return request({
     url: "/test/get/current",
@@ -47,5 +47,21 @@ export function getMonthEnroll(params) {
     url: "/webuser/get/applicantsStatics",
     method: "get",
     params,
+  });
+}
+
+// 获取当前流程人数
+export function getTestPerson() {
+  return request({
+    url: "/webuser/test/persons",
+    method: "get",
+  });
+}
+
+// 获取所有报名人数
+export function getAllEnroll() {
+  return request({
+    url: "/user/getUserCount",
+    method: "get",
   });
 }
