@@ -65,7 +65,11 @@
       >
       <el-table :data="studentList">
         <!-- <el-table-column label=""></el-table-column> -->
-        <el-table-column label="序号" prop="id" width="70"></el-table-column>
+        <el-table-column
+          label="序号"
+          prop="number"
+          width="70"
+        ></el-table-column>
         <el-table-column
           label="姓名"
           prop="nickname"
@@ -255,7 +259,13 @@
           </div>
 
           <div class="right">
-            <div style="display: flex">
+            <div
+              style="
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+              "
+            >
               <el-popover
                 placement="bottom"
                 title="输入评价"
@@ -275,11 +285,9 @@
                   <el-button type="success">通过</el-button>
                 </template>
               </el-popover>
-
               <el-button type="danger" @click="failUser">未通过</el-button>
+              <el-button type="plain" @click="returnUser">回退</el-button>
             </div>
-
-            <el-button type="plain" @click="returnUser">回退</el-button>
           </div>
         </div>
       </el-card>
@@ -295,7 +303,7 @@ import { computed } from 'vue'
 
 import { useRoute } from 'vue-router'
 import store from '../store'
-import { onMounted } from 'vue'
+import { onMounted, onUpdated } from 'vue'
 
 import {
   getAllUserReq,
@@ -309,6 +317,7 @@ import {
   putCommentReq,
   getCollegeReq,
   getExcelReq,
+  getCommentReq,
 } from '../api/student'
 
 // const store = useStore()
@@ -397,6 +406,7 @@ const collegeMap = {
 const goToPage1 = () => {
   store.dispatch('updatePage', String(page1.value))
   isDisabled.value = true
+  clear()
 }
 const goToPage2 = async (id) => {
   store.dispatch('updatePage', String(page2.value))
@@ -408,11 +418,12 @@ const getAllUser = async () => {
     page: page.value,
     pageSize: pageSize.value,
   })
-  console.log(res)
+  // console.log(res)
   studentList.value = res.data.records || []
 
-  studentList.value.forEach((item) => {
+  studentList.value.forEach((item, index) => {
     item.collegeId = collegeMap[item.collegeId] || '未知学院'
+    item.number = index + 1
   })
 }
 //请求获取所有用户
@@ -432,20 +443,23 @@ onMounted(() => {
   getAllUser()
   getAllTest()
   getCollegeList()
-  console.log(store.state.showPage)
+  // console.log(store.state.showPage)
   currentUserId.value = route.query.stuId
   if (currentUserId.value) {
     getUser(currentUserId.value)
   }
-  // getUser(currentUserId.value)
 
-  // console.log(currentUserId.value)
+  currentUserId.value = localStorage.getItem('currentUserId')
+  console.log(currentUserId.value)
+  if (currentUserId.value) {
+    getUser(currentUserId.value)
+  }
 })
 //获取所有用户
 
 const getAllTest = async () => {
   const res = await getAllTestReq()
-  console.log(res)
+  // console.log(res)
   testList.value = res.data
   // console.log(testList.value)
 }
@@ -475,9 +489,9 @@ const exportExcel = async () => {
     }
   })
 
-  console.log(excelList.value)
+  // console.log(excelList.value)
   const res = await getExcelReq(excelList.value)
-  console.log(res)
+  // console.log(res)
 
   const url = URL.createObjectURL(res)
 
@@ -517,7 +531,7 @@ const getUserProcess = async (id) => {
     const currentIndex = processList.value.findIndex(
       (item) => item.testId === currentTestId.value
     )
-    console.log(currentIndex)
+    // console.log(currentIndex)
     // 获取上一个元素的 testId
     if (currentIndex > 0) {
       lastId.value = processList.value[currentIndex - 1].id
@@ -533,14 +547,17 @@ const getUserProcess = async (id) => {
     }
     // console.log(lastId.value, nextId.value)
   }
-  console.log(processList.value)
+  // console.log(processList.value)
 }
 //获取用户的考核进度
 
 const getUser = async (id) => {
-  const res = await getUserReq(id)
+  currentUserId.value = id
+  localStorage.setItem('currentUserId', currentUserId.value)
+
+  const res = await getUserReq(currentUserId.value)
   getUserProcess(id)
-  console.log(res)
+  // console.log(res)
   const data = res.data
   changeId.value = id
   nickname.value = data.nickname
@@ -575,8 +592,13 @@ const getUser = async (id) => {
 const searchUser = async (stuId) => {
   const res = await getUserReq(stuId)
   if (res.code == 200) {
-    console.log(res.data)
+    // console.log(res.data)
     studentList.value = [res.data]
+    studentList.value.forEach((item, index) => {
+      item.collegeId = collegeMap[item.collegeId] || '未知学院'
+      item.number = index + 1
+    })
+    // console.log(studentList.value)
   } else {
     ElMessage({
       type: 'error',
@@ -624,7 +646,7 @@ const changeUser = async (changeId) => {
     })
   }
   getAllUser()
-  console.log(res)
+  // console.log(res)
 }
 //请求修改用户信息
 
@@ -659,7 +681,7 @@ const putComment = async () => {
     userId: currentUserId.value,
     comment: comment.value,
   })
-  console.log(res)
+  // console.log(res)
 }
 //请求提交评价
 
@@ -680,9 +702,9 @@ const passUser = async () => {
     })
 
     getUserProcess(currentUserId.value)
-    console.log(currentUserId.value)
+    // console.log(currentUserId.value)
   }
-  console.log(res)
+  // console.log(res)
 }
 //请求通过用户
 
@@ -719,7 +741,7 @@ const failUser = () => {
 //未通过用户前提
 
 const returnFn = async () => {
-  console.log(currentTestId.value)
+  // console.log(currentTestId.value)
   const res = await returnUserReq({
     testId: currentTestId.value,
     userId: currentUserId.value,
@@ -737,7 +759,7 @@ const returnFn = async () => {
       message: res.msg,
     })
   }
-  console.log(res)
+  // console.log(res)
 }
 //请求回退用户
 
@@ -819,7 +841,8 @@ const returnUser = () => {
 }
 
 .right {
-  margin-top: -100px;
+  margin-top: -200px;
+  margin-right: -90px;
   width: 200px;
   display: flex;
   flex-wrap: wrap;

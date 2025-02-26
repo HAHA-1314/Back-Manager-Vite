@@ -98,3 +98,12 @@ export function getExcelReq(params) {
   })
 }
 //导出excel
+
+export function getCommentReq(params) {
+  return request({
+    url: '/test/comment',
+    method: 'get',
+    params: params,
+  })
+}
+//获取评论

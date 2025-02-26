@@ -29,7 +29,11 @@
         <el-button @click="addBox = true">添加预约</el-button>
       </div>
       <el-table :data="appointList">
-        <el-table-column label="序号" prop="id" width="120"></el-table-column>
+        <el-table-column
+          label="序号"
+          prop="number"
+          width="120"
+        ></el-table-column>
         <el-table-column label="预约开启时间" prop="begin"></el-table-column>
         <el-table-column label="预约结束时间" prop="end"></el-table-column>
         <el-table-column
@@ -374,7 +378,7 @@
         <el-table :data="studentList">
           <el-table-column
             label="序号"
-            prop="father"
+            prop="number"
             width="80"
           ></el-table-column>
           <el-table-column
@@ -487,10 +491,11 @@ const getTestAppoint = async () => {
     appointList.value = res.data.records || []
     currentAppointId.value = appointList.value[appointList.value.length - 1].id
     // console.log(currentAppointId.value)
-    appointList.value.forEach((item) => {
+    appointList.value.forEach((item, index) => {
       item.begin = dayjs(item.begin).format('YYYY-MM-DD HH:mm')
       item.end = dayjs(item.end).format('YYYY-MM-DD HH:mm')
       item.intervals = item.intervals === '00:30:00' ? '30分钟' : '1小时'
+      item.number = index + 1
     })
   })
 }
@@ -504,10 +509,11 @@ const getAppointList = async () => {
     appointList.value = res.data.records || []
     currentAppointId.value = appointList.value[appointList.value.length - 1].id
     console.log(currentAppointId.value)
-    appointList.value.forEach((item) => {
+    appointList.value.forEach((item, index) => {
       item.begin = dayjs(item.begin).format('YYYY-MM-DD HH:mm')
       item.end = dayjs(item.end).format('YYYY-MM-DD HH:mm')
       item.intervals = item.intervals === '00:30:00' ? '30分钟' : '1小时'
+      item.number = index + 1
     })
   })
 }
@@ -538,9 +544,10 @@ const getAllUser = async () => {
     pageSize: 4,
   }).then((res) => {
     studentList.value = res.data.records || []
-    studentList.value.forEach((item) => {
+    studentList.value.forEach((item, index) => {
       item.begin = dayjs(item.begin).format('YYYY-MM-DD HH:mm')
       item.end = dayjs(item.end).format('YYYY-MM-DD HH:mm')
+      item.number = index + 1
     })
   })
   console.log(studentList.value)
@@ -661,6 +668,7 @@ const clear = () => {
   appointId.value = ''
   process.value = ''
 }
+//重置
 
 const deleteAppointData = async (id, father) => {
   console.log(id, father)
