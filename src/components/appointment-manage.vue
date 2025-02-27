@@ -32,7 +32,12 @@
         <el-table-column
           label="序号"
           prop="number"
-          width="120"
+          width="110"
+        ></el-table-column>
+        <el-table-column
+          label="预约序号"
+          prop="father"
+          width="110"
         ></el-table-column>
         <el-table-column label="预约开启时间" prop="begin"></el-table-column>
         <el-table-column label="预约结束时间" prop="end"></el-table-column>
@@ -56,10 +61,10 @@
 
       <el-pagination
         v-model:current-page="appointPage"
-        page-size="2"
         background
+        :page-size="2"
         layout="prev, pager, next"
-        :total="appointList.length"
+        :total="appointTotal"
         style="position: absolute; bottom: 15px; right: 20px"
         @current-change="handleAppointChange"
       />
@@ -364,10 +369,13 @@
             </el-select>
           </el-form-item>
           <el-form-item label="预约序号">
-            <el-select v-model="father" style="width: 80px" placeholder="1">
-              <el-option label="1" value="1"></el-option>
-              <el-option label="2" value="2"></el-option>
-              <el-option label="3" value="3"></el-option>
+            <el-select v-model="fatherId" style="width: 80px" placeholder="1">
+              <el-option
+                v-for="fatherId in fatherList"
+                :key="fatherId"
+                :label="fatherId"
+                :value="fatherId"
+              ></el-option>
             </el-select>
           </el-form-item>
           <el-form-item>
@@ -400,15 +408,15 @@
           </el-table-column>
           <el-table-column label="操作">
             <template #default="{ row }">
-              <el-button @click="goToPerson(row.stuId)">查看</el-button>
+              <el-button @click="goToPerson(row.id)">查看</el-button>
             </template>
           </el-table-column> </el-table
         ><el-pagination
           v-model:current-page="studentPage"
-          page-size="4"
+          :page-size="4"
           background
           layout="prev, pager, next"
-          :total="studentList.length"
+          :total="studentTotal"
           style="position: absolute; bottom: 15px; right: 20px"
           @current-change="handleStudentChange"
         />
@@ -432,6 +440,7 @@ import {
   getAllTestReq,
   getAllUserReq,
   getUserReq,
+  getFatherReq,
 } from '../api/appoint'
 
 import { onMounted } from 'vue'
@@ -463,12 +472,16 @@ const studentPage = ref(1)
 const appointList = ref([])
 const stuId = ref('')
 const studentList = ref([])
+const fatherList = ref([])
+const fatherId = ref('')
+const appointTotal = ref(1)
+const studentTotal = ref(1)
 
-const goToPerson = (stuId) => {
+const goToPerson = (id) => {
   router.push({
     path: 'person-management',
     query: {
-      stuId: stuId,
+      stuId: id,
     },
   })
   store.dispatch('updatePage', String(newPage.value))
@@ -506,6 +519,8 @@ const getAppointList = async () => {
     page: appointPage.value,
     pageSize: 2,
   }).then((res) => {
+    appointTotal.value = res.data.total
+    console.log(appointTotal.value)
     appointList.value = res.data.records || []
     currentAppointId.value = appointList.value[appointList.value.length - 1].id
     console.log(currentAppointId.value)
@@ -531,10 +546,18 @@ const getTestList = async () => {
 }
 //请求获取考核信息
 
+const getFather = async () => {
+  const res = await getFatherReq()
+  fatherList.value = res.data
+  console.log(fatherList.value)
+}
+//获取预约序号
+
 onMounted(() => {
   getAppointList()
   getTestList()
   getAllUser()
+  getFather()
 })
 //获取预约信息
 
@@ -544,6 +567,8 @@ const getAllUser = async () => {
     pageSize: 4,
   }).then((res) => {
     studentList.value = res.data.records || []
+    studentTotal.value = res.data.total
+    console.log(studentTotal.value)
     studentList.value.forEach((item, index) => {
       item.begin = dayjs(item.begin).format('YYYY-MM-DD HH:mm')
       item.end = dayjs(item.end).format('YYYY-MM-DD HH:mm')
@@ -573,7 +598,7 @@ const searchUser = async () => {
     nickname: nickname.value,
     year: year.value,
     testId: testId.value,
-    father: father.value,
+    father: fatherId.value,
     page: 1,
     pageSize: 4,
   })

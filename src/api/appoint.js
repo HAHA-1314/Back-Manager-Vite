@@ -66,3 +66,12 @@ export function getUserReq(params) {
   })
 }
 //获取用户
+
+export function getFatherReq(params) {
+  return request({
+    url: '/appointment/get/father',
+    method: 'get',
+    params: params,
+  })
+}
+//获取预约序号

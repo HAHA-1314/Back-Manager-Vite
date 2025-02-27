@@ -57,7 +57,7 @@
         </div>
       </el-form>
     </el-card>
-    <el-card style="min-width: 95%" class="personBottom">
+    <el-card style="min-width: 95%; height: 470px" class="personBottom">
       <el-button
         style="width: 80px; color: #959595; margin-bottom: 8px"
         @click="exportExcel"
@@ -107,17 +107,20 @@
           </template>
         </el-table-column>
       </el-table>
+      <br />
       <el-pagination
         v-model:current-page="page"
         v-model:page-size="pageSize"
         layout="prev, pager, next"
-        :total="studentList.length"
+        :total="studentTotal"
+        :page-sizes="6"
         style="float: right"
         :background="true"
         @current-change="handleCurrentChange"
       ></el-pagination>
     </el-card>
   </div>
+
   <div class="detailBox" v-if="showPage === 'page2'">
     <el-button style="margin-top: 10px" @click="goToPage1">返回</el-button>
     <div class="detailMain">
@@ -232,24 +235,25 @@
                 v-for="(item, index) in processList"
                 :key="index"
                 :size="large"
+                :class="{ 'green-timestamp': item.status === 1 }"
                 :icon="icon"
                 :type="
                   item.status === 1
-                    ? 'primary'
+                    ? 'success'
                     : item.status === 0
                     ? ''
                     : item.status === 2
                     ? 'primary'
                     : ''
                 "
-                :hollow="item.status === 1"
+                :hollow="item.status === 2 || item.status === 0"
                 :timestamp="
                   item.status === 1
-                    ? '正在进行'
+                    ? '正在进行\n' + (item.comment || '')
                     : item.status === 0
-                    ? '未通过'
+                    ? '未通过\n' + (item.comment || '')
                     : item.status === 2
-                    ? '已通过'
+                    ? '已通过\n' + (item.comment || '')
                     : ''
                 "
               >
@@ -319,6 +323,7 @@ import {
   getExcelReq,
   getCommentReq,
 } from '../api/student'
+import { color } from 'echarts'
 
 // const store = useStore()
 const route = useRoute()
@@ -351,6 +356,8 @@ const testList = ref([])
 const newArray = ref([])
 const collegeList = ref([])
 const excelList = ref([])
+const commentList = ref([])
+const studentTotal = ref(1)
 const groupList = [
   {
     label: '前端组',
@@ -420,7 +427,8 @@ const getAllUser = async () => {
   })
   // console.log(res)
   studentList.value = res.data.records || []
-
+  studentTotal.value = res.data.total
+  // console.log(studentList.value)
   studentList.value.forEach((item, index) => {
     item.collegeId = collegeMap[item.collegeId] || '未知学院'
     item.number = index + 1
@@ -440,22 +448,27 @@ const getCollegeList = async () => {
 }
 
 onMounted(() => {
+  const currentPage = computed(() => store.state.showPage)
+  console.log(currentPage.value)
+  if (currentPage.value == 'page2') {
+    currentUserId.value = route.query.stuId
+    if (currentUserId.value) {
+      getUser(currentUserId.value)
+    }
+
+    currentUserId.value = localStorage.getItem('currentUserId')
+    console.log(currentUserId.value)
+    if (currentUserId.value) {
+      getUser(currentUserId.value)
+    }
+  }
   getAllUser()
   getAllTest()
   getCollegeList()
-  // console.log(store.state.showPage)
-  currentUserId.value = route.query.stuId
-  if (currentUserId.value) {
-    getUser(currentUserId.value)
-  }
 
-  currentUserId.value = localStorage.getItem('currentUserId')
-  console.log(currentUserId.value)
-  if (currentUserId.value) {
-    getUser(currentUserId.value)
-  }
+  // console.log(store.state.showPage)
 })
-//获取所有用户
+//页面最初渲染数据
 
 const getAllTest = async () => {
   const res = await getAllTestReq()
@@ -523,7 +536,7 @@ const getUserProcess = async (id) => {
     const newArrayItem = newArray.value[i] || {}
     const testListItem = testList.value[i] || {}
     processList.value.push({ ...newArrayItem, ...testListItem })
-  }
+  } //合并考核数组和学生进度
   const targetObject = processList.value.find((item) => item.status === 1)
   if (targetObject) {
     currentTestId.value = targetObject.id
@@ -547,9 +560,32 @@ const getUserProcess = async (id) => {
     }
     // console.log(lastId.value, nextId.value)
   }
-  // console.log(processList.value)
+  await getComment()
+
+  processList.value = commentList.value.map((comment, index) => {
+    const processItem = processList.value[index] || {}
+    return {
+      ...processItem,
+      comment: comment, // 假设 comment 对象中有 comment 属性
+    }
+  })
+
+  console.log(processList.value)
 }
 //获取用户的考核进度
+
+const getComment = async () => {
+  // 用于存储每个请求的结果
+  commentList.value = []
+  for (const test of testList.value) {
+    const testId = test.id // 假设 testList 中的每个对象有一个 id 属性作为 testId
+    const res = await getCommentReq({ userId: currentUserId.value, testId })
+    commentList.value.push(res.data) // 将每个请求的结果存储到数组中
+  }
+  // 可以在这里处理所有请求的结果
+  console.log(commentList.value)
+}
+//获取用户的评价
 
 const getUser = async (id) => {
   currentUserId.value = id
@@ -614,6 +650,7 @@ const clear = () => {
     (stuId.value = ''),
     (collegeId.value = ''),
     (process.value = '')
+  getAllUser()
 }
 //重置
 
@@ -860,6 +897,16 @@ const returnUser = () => {
 }
 
 .el-timeline-item {
-  height: 100px;
+  height: 75px;
+}
+
+:deep(.el-timeline-item__timestamp) {
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.green-timestamp {
+  --el-text-color-secondary: green;
+  --el-text-color-primary: green; /* 设置为绿色 */
 }
 </style>
