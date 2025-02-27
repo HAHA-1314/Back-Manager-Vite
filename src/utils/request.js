@@ -100,7 +100,7 @@ service.interceptors.response.use(
           }
         )
           .then(() => {
-            console.log("router", router, store);
+            // console.log("router", router, store);
             isRelogin.show = false;
             store.commit("logout");
           })

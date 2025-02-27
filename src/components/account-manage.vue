@@ -115,21 +115,21 @@
         align="center">
       </el-table-column>
       <el-table-column
-        prop="createtime"
+        prop="createTime"
         label="创建时间"
         show-overflow-tooltip
         align="center">
         <template #default="{ row }">
-          {{ dayjs(row.createtime).format("YYYY-MM-DD HH:mm:ss") }}
+          {{ dayjs(row.createTime).format("YYYY-MM-DD HH:mm:ss") }}
         </template>
       </el-table-column>
       <el-table-column
-        prop="updatetime"
+        prop="updateTTime"
         label="更新时间"
         show-overflow-tooltip
         align="center">
         <template #default="{ row }">
-          {{ dayjs(row.updatetime).format("YYYY-MM-DD HH:mm:ss") }}
+          {{ dayjs(row.updateTime).format("YYYY-MM-DD HH:mm:ss") }}
         </template>
       </el-table-column>
       <el-table-column
