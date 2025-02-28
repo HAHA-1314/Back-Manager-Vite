@@ -6,6 +6,9 @@ import { getDetail, updateInfo } from "../api/object";
 import { useRoute } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { editProject, addProject } from "../api/project";
+import { Cropper } from "vue-advanced-cropper";
+import { uploadFile } from "../api/article";
+import "vue-advanced-cropper/dist/style.css";
 const route = useRoute();
 const listImages = ref([]);
 const state = ref("");
@@ -197,7 +200,7 @@ const buttonConfirm = async () => {
         cancelButtonText: "取消",
       })
         .then(async () => {
-          setPics()
+          setPics();
           const res = await editProject({
             id: id.value,
             name: ruleForm.value.name,
@@ -257,6 +260,59 @@ const clearForm = () => {
 const clearValidate = () => {
   ruleFormRef.value.clearValidate();
 };
+//裁剪图片
+const dialogCropper = ref(false);
+const cropperRef = ref(null);
+const cropUrl = ref("");
+const currentUploadIndex = ref(null); // 记录当前操作的 el-upload 的 index
+const beforeUpload = (file, index) => {
+  // 生成一个临时 URL
+  currentUploadIndex.value = index; // 记录当前操作的 el-upload 的 index
+  cropUrl.value = URL.createObjectURL(file);
+  console.log("图片路径:", cropUrl.value);
+  dialogCropper.value = true;
+  return false; // 阻止自动上传
+};
+const cropImage = async () => {
+  const result = cropperRef.value.getResult();
+  if (result.canvas) {
+    // 将裁剪后的图片转换为 Blob
+    result.canvas.toBlob((blob) => {
+      if (blob) {
+        // 将 Blob 转换为 File
+        const timestamp = new Date().getTime(); // 获取当前时间戳
+        const fileName = `cropped-image-${timestamp}.png`; // 动态文件名
+        const file = new File([blob], fileName, {
+          type: "image/png",
+        });
+        // 上传到服务器
+        uploadImage(file, currentUploadIndex.value);
+      }
+    }, "image/png");
+  }
+};
+// 上传图片到服务器
+const uploadImage = (file, index) => {
+  const formData = new FormData();
+  formData.append("file", file); // 将文件添加到 FormData
+  console.log("FormData 内容:", formData.get("file")); // 检查文件是否附加成功
+  uploadFile(formData)
+    .then((response) => {
+      console.log(response.data);
+      dialogCropper.value = false;
+      if(index !==2){
+        sendPics.value[index] = response.data;
+      }else{
+        sendPics.value.push(response.data);
+      }
+      listImages.value = sendPics.value.slice(2).map((item) => ({ url: item })); // 取第三位及以后的图片
+    })
+    .catch((error) => {
+      ElMessage.error("上传失败！");
+      console.error("上传失败:", error);
+    });
+};
+
 defineExpose({
   renderProject,
   clearForm,
@@ -281,6 +337,7 @@ defineExpose({
                 <el-upload
                   v-model="ruleForm.pic"
                   action="http://localhost:8080/api/file/upload"
+                  :before-upload="(file) => beforeUpload(file, 0)"
                   list-type="picture"
                   :on-success="(file) => handleFileChange(file, 0)"
                   :show-file-list="false"
@@ -307,6 +364,7 @@ defineExpose({
                 <el-upload
                   v-model="ruleForm.pic"
                   action="http://localhost:8080/api/file/upload"
+                  :before-upload="(file) => beforeUpload(file, 1)"
                   list-type="picture"
                   :on-success="(file) => handleFileChange(file, 1)"
                   :show-file-list="false"
@@ -334,6 +392,7 @@ defineExpose({
                 v-model:file-list="listImages"
                 action="http://localhost:8080/api/file/upload"
                 list-type="picture-card"
+                :before-upload="(file) => beforeUpload(file, 2)"
                 :on-success="handleFileChange"
                 :on-preview="handlePictureCardPreview"
                 :on-remove="handleRemove"
@@ -348,6 +407,29 @@ defineExpose({
                   alt="Preview Image"
                   class="previewImg"
                 />
+              </el-dialog>
+              <el-dialog v-model="dialogPreview">
+                <img
+                  :src="dialogPreviewUrl"
+                  alt="Preview Image"
+                  class="previewImg"
+                />
+              </el-dialog>
+              <el-dialog v-model="dialogCropper" title="图片裁剪" width="600px">
+                <div v-if="cropUrl" style="height: 300px; width: 300px">
+                  <cropper
+                    ref="cropperRef"
+                    class="cropper"
+                    :src="cropUrl"
+                    :stencil-props="{
+                      aspectRatio: 16 / 9,
+                    }"
+                  ></cropper>
+                </div>
+                <template #footer>
+                  <el-button @click="dialogCropper = false">取消</el-button>
+                  <el-button type="primary" @click="cropImage">确认</el-button>
+                </template>
               </el-dialog>
             </div>
           </el-scrollbar>

@@ -43,3 +43,14 @@ export function delArticle(id) {
     },
   });
 }
+//上传文件
+export function uploadFile(data) {
+  return request({
+    url: "/file/upload",
+    method: "post",
+    headers: {
+      "Content-Type": "form-data", 
+    },
+    data,
+  });
+} 

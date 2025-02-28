@@ -1,22 +1,21 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import {
   getArticleList,
   getArticleDetail,
   addArticle,
   updateArticle,
   delArticle,
+  uploadFile,
 } from "../api/article";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { toRaw } from "vue";
+import { Picture as IconPicture } from "@element-plus/icons-vue";
+import { Cropper } from "vue-advanced-cropper";
+import "vue-advanced-cropper/dist/style.css";
 const dialogVisible = ref(false);
 const title = ref("");
-const dialogImageUrl = ref("");
-const dialogSee = ref(false);
 const ruleFormRef = ref();
 const articleId = ref("");
-const sendPics = ref([]);
-
 const ruleForm = ref({
   name: "",
   pics: [],
@@ -31,8 +30,30 @@ const clearForm = () => {
   ruleForm.value.name = "";
   ruleForm.value.pics = [];
   ruleForm.value.url = "";
-  sendPics.value = [];
 };
+//蒙层处理
+const singleBox = ref(null);
+const overlay = ref(null);
+const singleBox2 = ref(null);
+const overlay2 = ref(null);
+const dialogPreview = ref(false);
+const dialogPreviewUrl = ref("");
+const handleMouseEnter = (box, overlay, index) => {
+  box.addEventListener("mouseenter", () => {
+    if (index === 0) {
+      overlay.style.display = ruleForm.value.pics[0] ? "flex" : "none";
+    } else {
+      overlay.style.display = ruleForm.value.url ? "flex" : "none";
+    }
+  });
+};
+
+const handleMouseLeave = (box, overlay) => {
+  box.addEventListener("mouseleave", () => {
+    overlay.style.display = "none";
+  });
+};
+
 const rules = {
   name: [
     { required: true, message: "请输入推文名称", trigger: "blur" },
@@ -44,16 +65,17 @@ const rules = {
 const getArticle = async () => {
   const res = await getArticleList();
   console.log(res.data);
-  const truncatedData = res.data.map(item => {
-  // 检查 name 属性的长度，如果超过 15，进行截取
-  const truncatedName = item.name.length > 15 ? item.name.slice(0, 15) + '...' : item.name;
+  const truncatedData = res.data.map((item) => {
+    // 检查 name 属性的长度，如果超过 15，进行截取
+    const truncatedName =
+      item.name.length > 15 ? item.name.slice(0, 15) + "..." : item.name;
 
-  // 返回一个新的对象，替换 name 属性
-  return {
-    ...item, // 保留其他属性
-    name: truncatedName // 更新 name 属性
-  };
-});
+    // 返回一个新的对象，替换 name 属性
+    return {
+      ...item, // 保留其他属性
+      name: truncatedName, // 更新 name 属性
+    };
+  });
   tableData.value = truncatedData || [];
 };
 const handleAdd = () => {
@@ -64,14 +86,9 @@ const handleAdd = () => {
 const handleEdit = async (row) => {
   articleId.value = row.id;
   title.value = "编辑推文";
-  const { data } = await getArticleDetail(row.id);
-  ruleForm.value.name = data.name;
-  ruleForm.value.url = data.url;
-  data.pic.forEach((item) => {
-    ruleForm.value.pics.push({ url: item });
-  });
-  sendPics.value = data.pic;
   dialogVisible.value = true;
+  const { data } = await getArticleDetail(row.id);
+  ruleForm.value = { name: data.name, url: data.url, pics: data.pic };
 };
 const handleDelete = async (row) => {
   ElMessageBox.confirm("是否删除项目", "Warning", {
@@ -103,7 +120,6 @@ const handleClose = () => {
 const tableData = ref([]);
 const buttonConfirm = async () => {
   await ruleFormRef.value.validate();
-  const rawData = toRaw(sendPics.value);
 
   if (title.value === "添加推文") {
     ElMessageBox.confirm("是否确定添加推文", "注意", {
@@ -112,11 +128,7 @@ const buttonConfirm = async () => {
       cancelButtonText: "取消",
     })
       .then(async () => {
-        const res = await addArticle({
-          name: ruleForm.value.name,
-          pics: rawData,
-          url: ruleForm.value.url,
-        });
+        const res = await addArticle(ruleForm.value);
         if (res.code === 200) {
           ElMessage.success("添加成功");
         } else {
@@ -138,9 +150,7 @@ const buttonConfirm = async () => {
       .then(async () => {
         const res = await updateArticle({
           id: articleId.value,
-          name: ruleForm.value.name,
-          pics: rawData,
-          url: ruleForm.value.url,
+          ...ruleForm.value,
         });
         if (res.code === 200) {
           ElMessage.success("编辑成功");
@@ -157,20 +167,92 @@ const buttonConfirm = async () => {
   }
 };
 
-const handleRemove = (uploadFile) => {
-  sendPics.value = sendPics.value.filter((item) => item !== uploadFile.url);
+const handleFileChange = (file, index) => {
+  if (index === 0) {
+    ruleForm.value.pics[0] = file.data;
+  } else {
+    ruleForm.value.url = file.data;
+  }
 };
-const handlePictureCardPreview = (uploadFile) => {
-  dialogImageUrl.value = uploadFile.url;
-  dialogSee.value = true;
+const checkPic = (index) => {
+  if (index === 0) {
+    dialogPreviewUrl.value = ruleForm.value.pics[0];
+  } else {
+    dialogPreviewUrl.value = ruleForm.value.url;
+  }
+  dialogPreview.value = true;
 };
-const handleFileChange = (file) => {
-  sendPics.value.push(file.data);
-  console.log(sendPics.value);
+const delPic = (index) => {
+  if (index === 0) {
+    ruleForm.value.pics = [];
+  } else {
+    ruleForm.value.url = "";
+  }
+};
+//裁剪图片
+const dialogCropper = ref(false);
+const cropperRef = ref(null);
+const cropUrl = ref("");
+const beforeUpload = (file) => {
+  // 生成一个临时 URL
+  cropUrl.value = URL.createObjectURL(file);
+  console.log("图片路径:", cropUrl.value);
+  dialogCropper.value = true;
+  return false; // 阻止自动上传
+};
+const cropImage = async () => {
+  const result = cropperRef.value.getResult();
+  if (result.canvas) {
+    // 将裁剪后的图片转换为 Blob
+    result.canvas.toBlob((blob) => {
+      if (blob) {
+        // 将 Blob 转换为 File
+        const timestamp = new Date().getTime(); // 获取当前时间戳
+        const fileName = `cropped-image-${timestamp}.png`; // 动态文件名
+        const file = new File([blob],fileName, {
+          type: "image/png",
+        });
+        // 上传到服务器
+        uploadImage(file);
+      }
+    }, "image/png");
+  }
+};
+// 上传图片到服务器
+const uploadImage = (file) => {
+  const formData = new FormData();
+  formData.append("file", file); // 将文件添加到 FormData
+  console.log("FormData 内容:", formData.get("file")); // 检查文件是否附加成功
+  uploadFile(formData)
+    .then((response) => {
+      ElMessage.success("上传成功！");
+      console.log(response.data);
+      dialogCropper.value = false;
+    
+        ruleForm.value.pics[0] = response.data;
+      
+    })
+    .catch((error) => {
+      ElMessage.error("上传失败！");
+      console.error("上传失败:", error);
+    });
 };
 onMounted(() => {
   getArticle();
 });
+watch(
+  () => singleBox.value,
+  (newValue) => {
+    if (newValue) {
+      console.log(newValue);
+      handleMouseEnter(singleBox.value, overlay.value, 0);
+      handleMouseLeave(singleBox.value, overlay.value);
+      handleMouseEnter(singleBox2.value, overlay2.value, 1);
+      handleMouseLeave(singleBox2.value, overlay2.value);
+    }
+  },
+  { deep: true }
+);
 </script>
 
 <template>
@@ -223,38 +305,94 @@ onMounted(() => {
         </el-form-item>
 
         <el-form-item
-          label="图片添加："
+          label="封面图片："
           style="display: flex; flex-direction: column; align-items: start"
           prop="pics"
         >
-          <el-scrollbar>
-            <div class="imgList">
-              <el-upload
-                v-model:file-list="ruleForm.pics"
-                action="http://localhost:8080/api/file/upload"
-                list-type="picture-card"
-                :on-success="handleFileChange"
-                :on-preview="handlePictureCardPreview"
-                :on-remove="handleRemove"
-                class="avatar-uploader"
-              >
-                <el-icon><Plus /></el-icon>
-              </el-upload>
-
-              <el-dialog v-model="dialogSee">
-                <img w-full :src="dialogImageUrl" alt="Preview Image" />
-              </el-dialog>
+          <div class="imgList" ref="singleBox">
+            <el-upload
+              v-model="ruleForm.pics"
+              action="http://localhost:8080/api/file/upload"
+              list-type="picture"
+              :before-upload= "beforeUpload"
+              :on-success="(file) => handleFileChange(file, 0)"
+              :on-remove="handleRemove"
+              class="avatar-uploader"
+              :show-file-list="false"
+            >
+              <img
+                :src="ruleForm.pics[0]"
+                v-if="ruleForm.pics[0]"
+                class="articleImg"
+              />
+              <el-image v-else>
+                <template #error>
+                  <div class="image-slot" style="background-color: #e5e5e5">
+                    <el-icon><icon-picture /></el-icon>
+                  </div>
+                </template>
+              </el-image>
+            </el-upload>
+            <div class="overlay" ref="overlay">
+              <el-icon class="hoverIcon" @click="checkPic(0)"
+                ><ZoomIn
+              /></el-icon>
+              <el-icon class="hoverIcon" @click="delPic(0)"><Delete /></el-icon>
             </div>
-          </el-scrollbar>
+          </div>
         </el-form-item>
 
-        <el-form-item label="推文链接：" prop="url">
-          <el-input
-            placeholder="请输入链接"
-            style="width: 300px"
-            v-model="ruleForm.url"
-          ></el-input>
+        <el-form-item
+          label="推文长图："
+          prop="url"
+          style="display: flex; flex-direction: column; align-items: start"
+        >
+          <div class="imgList" ref="singleBox2">
+            <el-upload
+              v-model="ruleForm.url"
+              action="http://localhost:8080/api/file/upload"
+              list-type="picture"
+              :on-success="(file) => handleFileChange(file, 1)"
+              :on-remove="handleRemove"
+              class="avatar-uploader"
+              :show-file-list="false"
+            >
+              <img :src="ruleForm.url" v-if="ruleForm.url" class="articleImg" />
+              <el-image v-else>
+                <template #error>
+                  <div class="image-slot" style="background-color: #e5e5e5">
+                    <el-icon><icon-picture /></el-icon>
+                  </div>
+                </template>
+              </el-image>
+            </el-upload>
+            <div class="overlay" ref="overlay2">
+              <el-icon class="hoverIcon" @click="checkPic(1)"
+                ><ZoomIn
+              /></el-icon>
+              <el-icon class="hoverIcon" @click="delPic(1)"><Delete /></el-icon>
+            </div>
+          </div>
         </el-form-item>
+        <el-dialog v-model="dialogPreview">
+          <img :src="dialogPreviewUrl" alt="Preview Image" class="previewImg" />
+        </el-dialog>
+        <el-dialog v-model="dialogCropper" title="图片裁剪" width="600px">
+          <div v-if="cropUrl" style="height: 300px; width: 300px">
+            <cropper
+              ref="cropperRef"
+              class="cropper"
+              :src="cropUrl"
+              :stencil-props="{
+                aspectRatio: 16 / 9,
+              }"
+            ></cropper>
+          </div>
+          <template #footer>
+            <el-button @click="dialogCropper = false">取消</el-button>
+            <el-button type="primary" @click="cropImage">确认</el-button>
+          </template>
+        </el-dialog>
       </el-form>
     </el-card>
     <el-footer
@@ -291,18 +429,17 @@ onMounted(() => {
 }
 .imgList {
   display: flex;
-  width: 1100px;
   margin-top: 15px;
 }
 :deep(.el-upload) {
   box-sizing: border-box;
-  border: 2px dashed #bbb;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
   width: 240px;
   height: 135px;
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  transition: var(--el-transition-duration-fast);
 }
 :deep(.el-upload-list--picture-card .el-upload-list__item) {
   width: 240px;
@@ -312,11 +449,7 @@ onMounted(() => {
   display: inline-flex;
   flex-wrap: nowrap;
 }
-.el-icon {
-  font-size: 40px;
-  color: #101010;
-  text-align: center;
-}
+
 .el-footer {
   display: flex;
   justify-content: flex-end;
@@ -326,5 +459,46 @@ onMounted(() => {
   color: white;
   background-color: #006eff;
   width: 130px;
+}
+.articleImg {
+  max-width: 100%;
+  height: 135px;
+}
+.el-upload .image-slot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--el-text-color-secondary);
+  font-size: 20px;
+  width: 240px;
+  height: 135px;
+}
+.overlay {
+  position: absolute;
+  top: 15px;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* 半透明蒙层 */
+  justify-content: center;
+  align-items: center;
+  gap: 20px; /* 图标之间的间距 */
+  color: white;
+  font-size: 30px;
+  border-radius: 6px;
+  display: none; /* 默认情况下，蒙层不可见 */
+  width: 240px;
+  height: 135px;
+}
+.hoverIcon {
+  font-size: 20px;
+}
+.previewImg {
+  width: 100%;
+  height: 100%;
+}
+.cropper {
+  width: 400px;
+  height: 225px;
+  background: #ddd;
 }
 </style>
