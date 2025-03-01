@@ -571,6 +571,13 @@ const getUserProcess = async (id) => {
   })
 
   console.log(processList.value)
+  if (processList.value.length == 0) {
+    processList.value.push({
+      name: '暂无考核数据',
+
+      comment: '',
+    })
+  }
 }
 //获取用户的考核进度
 
@@ -664,6 +671,8 @@ const change = () => {
 //修改前提
 
 const changeUser = async (changeId) => {
+  // console.log(changeId)
+  console.log(groupOp.value)
   const res = await changeUserReq({
     id: changeId,
     nickname: nickname.value,
@@ -683,7 +692,7 @@ const changeUser = async (changeId) => {
     })
   }
   getAllUser()
-  // console.log(res)
+  console.log(res)
 }
 //请求修改用户信息
 
@@ -737,7 +746,7 @@ const passUser = async () => {
       type: 'success',
       message: '通过',
     })
-
+    comment.value = ''
     getUserProcess(currentUserId.value)
     // console.log(currentUserId.value)
   }
@@ -907,6 +916,6 @@ const returnUser = () => {
 
 .green-timestamp {
   --el-text-color-secondary: green;
-  --el-text-color-primary: green; /* 设置为绿色 */
+  --el-text-color-primary: green;
 }
 </style>
