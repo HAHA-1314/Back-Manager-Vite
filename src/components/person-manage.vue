@@ -449,22 +449,25 @@ const getCollegeList = async () => {
 
 onMounted(() => {
   const currentPage = computed(() => store.state.showPage)
-  console.log(currentPage.value)
-  if (currentPage.value == 'page2') {
-    currentUserId.value = route.query.stuId
-    if (currentUserId.value) {
-      getUser(currentUserId.value)
-    }
 
-    currentUserId.value = localStorage.getItem('currentUserId')
-    console.log(currentUserId.value)
-    if (currentUserId.value) {
-      getUser(currentUserId.value)
-    }
-  }
   getAllUser()
   getAllTest()
   getCollegeList()
+
+  //  const currentPage = computed(() => store.state.showPage)
+  if (currentPage.value == 'page2') {
+    let appointToPerson = route.query.stuId
+    console.log(appointToPerson)
+    if (appointToPerson) {
+      getUser(appointToPerson)
+    } else {
+      currentUserId.value = localStorage.getItem('currentUserId')
+      console.log(currentUserId.value)
+      if (currentUserId.value) {
+        getUser(currentUserId.value)
+      }
+    }
+  }
 
   // console.log(store.state.showPage)
 })
@@ -672,6 +675,22 @@ const change = () => {
 
 const changeUser = async (changeId) => {
   // console.log(changeId)
+  console.log(groupOp.value)
+  if (groupOp.value == '前端组') {
+    groupOp.value = 1
+  } else if (groupOp.value == '后端组') {
+    groupOp.value = 2
+  } else if (groupOp.value == 'AI组') {
+    groupOp.value = 3
+  } else if (groupOp.value == '电控组') {
+    groupOp.value = 4
+  } else if (groupOp.value == '机械组') {
+    groupOp.value = 5
+  } else if (groupOp.value == '运营组') {
+    groupOp.value = 6
+  } else if (groupOp.value == '项目组') {
+    groupOp.value = 7
+  }
   console.log(groupOp.value)
   const res = await changeUserReq({
     id: changeId,
