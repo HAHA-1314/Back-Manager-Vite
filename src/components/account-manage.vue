@@ -81,7 +81,12 @@
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="editVisible = false">退出</el-button>
-        <el-button type="primary" @click="editItem('Form2')"> 提交 </el-button>
+        <el-button
+          type="primary"
+          :loading="editloading"
+          @click="editItem('Form2')">
+          提交
+        </el-button>
       </div>
     </template>
   </el-dialog>
@@ -168,6 +173,7 @@ const store = useStore();
 const addVisible = ref(false);
 const editVisible = ref(false);
 const deleteVisible = ref(false);
+const editloading = ref(false);
 const groupOptions = ref();
 // const Form1 = ref(null);
 // const Form2 = ref(null);
@@ -298,10 +304,11 @@ const editItem = async (formName) => {
     // ...editForm.value,
     id: editForm.value.id,
     password: editForm.value.password,
-    groupOp: editForm.value.groupId
-  }
+    groupOp: editForm.value.groupId,
+  };
   proxy.$refs[formName].validate((valid) => {
     if (valid) {
+      editloading.value = true;
       api.updateAccount(form).then((res) => {
         if (res.code === 200) {
           ElMessage({
@@ -315,6 +322,7 @@ const editItem = async (formName) => {
             message: res.msg,
           });
         }
+        editloading.value = false;
         getList();
       });
     } else {
