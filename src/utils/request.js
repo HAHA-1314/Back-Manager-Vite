@@ -4,6 +4,7 @@ import {
   ElMessageBox,
   ElMessage,
   ElLoading,
+  messageConfig,
 } from "element-plus";
 import { tansParams } from "@/utils/tansParams";
 import store from "@/store";
@@ -54,16 +55,35 @@ service.interceptors.request.use(
             : config.data,
         time: new Date().getTime(),
       };
-      // 文件上传限制
-      const requestSize = Object.keys(JSON.stringify(requestObj)).length; // 请求数据大小
-      const limitSize = 5 * 1024 * 1024; // 限制存放数据5M
-      if (requestSize >= limitSize) {
-        console.warn(
-          `[${config.url}]: ` +
-            "请求数据大小超出允许的5M限制，无法进行防重复提交验证。"
-        );
-        return config;
+      const sessionObj = JSON.parse(sessionStorage.getItem("sessionObj"));
+      // console.log("sessionObj", sessionObj);
+      if (!sessionObj) {
+        sessionStorage.setItem("sessionObj", JSON.stringify(requestObj));
+      } else {
+        console.log("sessionObj", sessionObj, requestObj);
+        const s_url = sessionObj.url; // 请求地址
+        const s_data = sessionObj.data; // 请求数据
+        const s_time = sessionObj.time; // 请求时间
+        const interval = 800; // 间隔时间(ms)，小于此时间视为重复提交
+        sessionStorage.setItem("sessionObj", JSON.stringify(requestObj));
+        if (
+          (!(s_data && requestObj.data) || s_data === requestObj.data) &&
+          s_url === requestObj.url &&
+          new Date().getTime() - s_time < interval
+        ) {
+          return Promise.reject(new Error("请勿频繁提交！"));
+        }
       }
+      // 文件上传限制
+      // const requestSize = Object.keys(JSON.stringify(requestObj)).length; // 请求数据大小
+      // const limitSize = 5 * 1024 * 1024; // 限制存放数据5M
+      // if (requestSize >= limitSize) {
+      //   console.warn(
+      //     `[${config.url}]: ` +
+      //       "请求数据大小超出允许的5M限制。"
+      //   );
+      //   return config;
+      // }
     }
     return config;
   },

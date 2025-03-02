@@ -38,7 +38,8 @@
         <el-row justify="center" style="margin-top: 40px">
           <el-button
             type="primary"
-            :icon="Edit"
+            :loading="loading"
+            :icon="SwitchButton"
             round
             style="width: 100px; height: 40px; font-size: 18px"
             @click.native.prevent="handleLogin"
@@ -53,6 +54,7 @@
 <script setup>
 import { ref, getCurrentInstance, watch } from "vue";
 import { useStore } from "vuex";
+import { User, Lock, SwitchButton } from "@element-plus/icons-vue";
 import { useRouter, useRoute } from "vue-router";
 import Cookies from "js-cookie";
 import { encrypt, decrypt } from "../utils/jsencrypt";
@@ -60,11 +62,13 @@ const { proxy } = getCurrentInstance();
 const store = useStore();
 const router = useRouter();
 const route = useRoute();
+
 const loginForm = ref({
   username: Cookies.get("username") || "",
   password: decrypt(Cookies.get("password")) || "",
 });
 const redirect = ref("");
+const loading = ref(false);
 
 watch(
   //将登录页携带的参数（重定向路径、参数）赋值给 redirect
@@ -87,24 +91,32 @@ const handleLogin = () => {
   // console.log(loginForm.value.username, loginForm.valuepassword);
   proxy.$refs.loginRef.validate((valid) => {
     if (valid) {
+      loading.value = true;
       Cookies.set("username", loginForm.value.username, { expires: 30 });
       Cookies.set("password", encrypt(loginForm.value.password), {
         expires: 30,
       });
-      store.dispatch("login", loginForm.value).then((res) => {
-        console.log(res);
-        if (res.code == 200) {
-          const query = route.query;
-          const otherQueryParams = Object.keys(query).reduce((acc, cur) => {
-            if (cur !== "redirect") {
-              acc[cur] = query[cur];
-            }
-            return acc;
-          }, {});
-          router.push({ path: redirect.value || "/", query: otherQueryParams });
-        }
-      });
-      // console.log(loginForm.value);
+      store
+        .dispatch("login", loginForm.value)
+        .then((res) => {
+          console.log(res);
+          if (res.code === 200) {
+            const query = route.query;
+            const otherQueryParams = Object.keys(query).reduce((acc, cur) => {
+              if (cur !== "redirect") {
+                acc[cur] = query[cur];
+              }
+              return acc;
+            }, {});
+            router.push({
+              path: redirect.value || "/",
+              query: otherQueryParams,
+            });
+          }
+        })
+        .catch(() => {
+          loading.value = false;
+        });
     }
   });
 };
