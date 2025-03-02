@@ -220,9 +220,8 @@
             class="upload-demo"
             action="http://localhost:8080/api/file/upload"
             :on-success="handleFileChange"
+            :on-remove="handleRemove"
             :auto-upload="true"
-            :on-exceed="handleExceed"
-            :limit="1"
           >
             <template #trigger>
               <el-button type="primary">上传文件</el-button>
@@ -319,6 +318,7 @@ const openAddBox = () => {
   name.value = ''
   content.value = ''
   date.value = ''
+  file.value = []
 }
 //从添加入口打开添加框
 
@@ -337,7 +337,7 @@ const addTestData = async () => {
       message: '添加成功',
     })
     addBoxVisible.value = false
-    file.value = ''
+
     getAllTestData()
   } else {
     ElMessage({
@@ -442,13 +442,16 @@ const getTestData = async (e) => {
       name: url.split('/').pop(),
       url: url,
     }))
-    console.log(fileList.value)
+    // console.log(fileList.value)
+    file.value = fileUrl
+    console.log(file.value)
   }
 }
 //请求得到单独考核信息
 
 const changeTestData = async (id) => {
   console.log(id)
+  console.log(file.value)
   begin.value = dayjs(date.value[0]).format('YYYY-MM-DD ')
   end.value = dayjs(date.value[1]).format('YYYY-MM-DD ')
   const res = await changeTestReq({
@@ -466,6 +469,7 @@ const changeTestData = async (id) => {
     })
     changeBoxVisible.value = false
     getAllTestData()
+    file.value = []
   } else {
     ElMessage({
       type: 'error',
@@ -483,6 +487,12 @@ const handleFileChange = (res) => {
   }
 }
 //上传文件
+
+const handleRemove = (item, fileList) => {
+  console.log(item.url, fileList)
+  file.value = file.value.filter((url) => url !== item.url)
+  console.log(file.value)
+}
 </script>
 
 <style scoped>

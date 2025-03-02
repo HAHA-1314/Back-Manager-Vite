@@ -27,7 +27,7 @@ export function changeTestReq(params) {
   return request({
     url: '/test',
     method: 'put',
-    params: params,
+    data: params,
   })
 }
 //修改考核

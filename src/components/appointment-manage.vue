@@ -408,7 +408,7 @@
           </el-table-column>
           <el-table-column label="操作">
             <template #default="{ row }">
-              <el-button @click="goToPerson(row.id)">查看</el-button>
+              <el-button @click="goToPerson(row.stuId)">查看</el-button>
             </template>
           </el-table-column> </el-table
         ><el-pagination
@@ -478,6 +478,7 @@ const appointTotal = ref(1)
 const studentTotal = ref(1)
 
 const goToPerson = (id) => {
+  console.log(id)
   router.push({
     path: 'person-management',
     query: {
