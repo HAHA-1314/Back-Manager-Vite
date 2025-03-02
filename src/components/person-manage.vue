@@ -636,10 +636,16 @@ const getUser = async (id) => {
 //获取单个用户
 
 const searchUser = async (stuId) => {
-  const res = await getUserReq(stuId)
+  console.log(nickname.value, stuId, collegeId.value, process.value, year.value)
+  const res = await getAllUserReq({
+    page: 1,
+    pageSize: 4,
+    nickname: nickname.value,
+    stuId: stuId,
+  })
   if (res.code == 200) {
     // console.log(res.data)
-    studentList.value = [res.data]
+    studentList.value = res.data.records || []
     studentList.value.forEach((item, index) => {
       item.collegeId = collegeMap[item.collegeId] || '未知学院'
       item.number = index + 1

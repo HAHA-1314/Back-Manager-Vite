@@ -404,11 +404,11 @@
           <el-table-column label="预约时间" prop="time" width="350">
             <template #default="scope">
               {{ scope.row.begin }} - {{ scope.row.end }}
-            </template>
-          </el-table-column>
+            </template> </el-table-column
+          >id
           <el-table-column label="操作">
             <template #default="{ row }">
-              <el-button @click="goToPerson(row.stuId)">查看</el-button>
+              <el-button @click="goToPerson(row.id)">查看</el-button>
             </template>
           </el-table-column> </el-table
         ><el-pagination
@@ -479,6 +479,7 @@ const studentTotal = ref(1)
 
 const goToPerson = (id) => {
   console.log(id)
+
   router.push({
     path: 'person-management',
     query: {
@@ -511,6 +512,8 @@ const getTestAppoint = async () => {
       item.intervals = item.intervals === '00:30:00' ? '30分钟' : '1小时'
       item.number = index + 1
     })
+    console.log(appointList.value)
+    fatherList.value = appointList.value.map((item) => item.father)
   })
 }
 //筛选预约信息

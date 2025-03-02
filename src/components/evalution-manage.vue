@@ -43,7 +43,7 @@
       </el-table-column>
       <el-table-column label="操作" width="350" prop="id">
         <template #default="{ row }">
-          <el-button @click="getTestData(row.id)">编辑</el-button>
+          <el-button @click="getTestData(row)">编辑</el-button>
           <el-button @click="deleteTest(row.id)">删除</el-button>
         </template>
       </el-table-column>
@@ -283,6 +283,8 @@ const upload = ref()
 const file = ref([])
 const newestTest = ref('')
 const fileList = ref([])
+const parent = ref('')
+const son = ref('')
 
 let fileUrl = ref([])
 
@@ -423,9 +425,18 @@ const deleteTest = (e) => {
 }
 //删除考核信息
 
-const getTestData = async (e) => {
+const getTestData = async (row) => {
+  parent.value = row.parent
+  console.log(row.id, parent.value)
+  const currentIndex = testList.value.findIndex((item) => item.id === row.id)
+  if (currentIndex !== -1 && currentIndex < testList.value.length - 1) {
+    const nextRow = testList.value[currentIndex + 1]
+
+    son.value = nextRow.id
+    console.log('下一行的ID是:', son.value)
+  }
   changeBoxVisible.value = true
-  const res = await getTestReq(e)
+  const res = await getTestReq(row.id)
   if (res.code == 200) {
     fileUrl = []
     name.value = res.data.name
@@ -437,7 +448,6 @@ const getTestData = async (e) => {
     date.value = [startDate, endDate]
     // console.log(id.value)
     fileUrl = res.data.fileList
-
     fileList.value = fileUrl.map((url) => ({
       name: url.split('/').pop(),
       url: url,
@@ -461,6 +471,8 @@ const changeTestData = async (id) => {
     end: end.value + '00:00:00',
     id: id,
     fileList: file.value,
+    parent: parent.value,
+    son: son.value,
   })
   if (res.code == 200) {
     ElMessage({
