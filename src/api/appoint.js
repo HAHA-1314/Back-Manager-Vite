@@ -12,7 +12,7 @@ export function addAppointReq(params) {
   return request({
     url: '/appointment',
     method: 'post',
-    params: params,
+    data: params,
   })
 }
 //添加预约

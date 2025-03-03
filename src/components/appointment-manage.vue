@@ -651,7 +651,6 @@ const addAppointData = async () => {
     end: end.value + ':00',
     intervals: intervals.value === '30分钟' ? '00:30:00' : '01:00:00',
     num: num.value,
-    lastFather: currentAppointId.value,
   })
   if (res.code == 200) {
     ElMessage({
@@ -711,6 +710,7 @@ const deleteAppointData = async (id, father) => {
       message: '删除成功',
     })
     getTestAppoint()
+    getAppointList()
   } else {
     ElMessage({
       type: 'error',
