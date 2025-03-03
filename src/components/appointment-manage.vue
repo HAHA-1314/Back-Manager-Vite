@@ -504,6 +504,8 @@ const getTestAppoint = async () => {
     pageSize: 2,
     testId: currentTestId.value,
   }).then((res) => {
+    appointTotal.value = res.data.total
+    console.log(appointTotal.value)
     appointList.value = res.data.records || []
     currentAppointId.value = appointList.value[appointList.value.length - 1].id
     // console.log(currentAppointId.value)
@@ -541,7 +543,13 @@ const getAppointList = async () => {
 
 const handleAppointChange = (val) => {
   appointPage.value = val
-  getAppointList()
+
+  if (currentTestId.value) {
+    console.log(currentTestId.value)
+    getTestAppoint()
+  } else {
+    getAppointList()
+  }
 }
 //预约分页
 const getTestList = async () => {
@@ -660,6 +668,7 @@ const addAppointData = async () => {
     })
     addBox.value = false
     getTestAppoint()
+    getAppointList()
   } else {
     ElMessage({
       type: 'error',
@@ -743,6 +752,7 @@ const getAppointData = async (appointId) => {
     date.value = [res.data.begin, res.data.end]
     console.log(date.value)
     name.value = res.data.name
+    testId.value = res.data.testId
   }
   currentAppointId.value = appointId
 }
@@ -759,7 +769,7 @@ const changeAppointData = async (numInt, currentAppointId) => {
     end: end.value + ':00',
     intervals: intervals.value === '30分钟' ? '00:30:00' : '01:00:00',
     num: numInt,
-    testId: name.value,
+    testId: name.value || testId.value,
   })
   if (res.code == 200) {
     ElMessage({

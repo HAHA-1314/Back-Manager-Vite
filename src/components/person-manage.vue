@@ -58,11 +58,19 @@
       </el-form>
     </el-card>
     <el-card style="min-width: 95%; height: 470px" class="personBottom">
-      <el-button
-        style="width: 80px; color: #959595; margin-bottom: 8px"
-        @click="exportExcel"
-        >导出</el-button
-      >
+      <div style="display: flex; justify-content: space-between">
+        <el-button
+          style="width: 80px; color: #959595; margin-bottom: 8px"
+          @click="exportExcel"
+          >导出</el-button
+        >
+        <el-button
+          type="success"
+          style="width: 120px; color: white; margin-bottom: 8px"
+          >一键通过报名</el-button
+        >
+      </div>
+
       <el-table :data="studentList">
         <!-- <el-table-column label=""></el-table-column> -->
         <el-table-column
@@ -227,7 +235,7 @@
           </el-form-item>
         </el-form>
       </el-card>
-      <el-card>
+      <el-card style="overflow: auto">
         <div class="card2">
           <div class="left" style="height: 400px">
             <el-timeline>
@@ -300,7 +308,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 // import { useStore } from 'vuex'
 import { computed } from 'vue'
@@ -540,7 +548,9 @@ const getUserProcess = async (id) => {
     const testListItem = testList.value[i] || {}
     processList.value.push({ ...newArrayItem, ...testListItem })
   } //合并考核数组和学生进度
-  const targetObject = processList.value.find((item) => item.status === 1)
+  const targetObject = processList.value.find(
+    (item) => item.status === 1 || item.status === 0
+  )
   if (targetObject) {
     currentTestId.value = targetObject.id
     // console.log(currentTestId.value)
@@ -760,6 +770,12 @@ const putComment = async () => {
 
 const passUser = async () => {
   putComment()
+  console.log(
+    comment.value,
+    currentTestId.value,
+    currentUserId.value,
+    nextId.value
+  )
   const res = await passUserReq({
     testId: currentTestId.value,
     userId: currentUserId.value,
@@ -775,7 +791,7 @@ const passUser = async () => {
     getUserProcess(currentUserId.value)
     // console.log(currentUserId.value)
   }
-  // console.log(res)
+  console.log(res)
 }
 //请求通过用户
 
@@ -912,8 +928,6 @@ const returnUser = () => {
 }
 
 .right {
-  margin-top: -200px;
-  margin-right: -90px;
   width: 200px;
   display: flex;
   flex-wrap: wrap;
