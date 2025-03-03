@@ -233,7 +233,7 @@
             ></i>
             <el-form-item label="考核轮次" style="width: 240px">
               <el-select
-                v-model="process"
+                v-model="name"
                 style="margin-left: 30px"
                 placeholder="第一次考核"
               >
@@ -461,12 +461,13 @@ const date = ref('')
 const appointId = ref('')
 const intervals = ref('')
 const num = ref('')
-const testId = ref('')
+const testId = ref(1)
 const lastFather = ref('')
 const father = ref('')
 const currentAppointId = ref('')
 const currentTestId = ref('')
 const testList = ref([])
+const name = ref('')
 const appointPage = ref(1)
 const studentPage = ref(1)
 const appointList = ref([])
@@ -740,32 +741,50 @@ const getAppointData = async (appointId) => {
     intervals.value = res.data.intervals === '00:30:00' ? '30分钟' : '1小时'
     num.value = res.data.num
     date.value = [res.data.begin, res.data.end]
+    console.log(date.value)
     name.value = res.data.name
   }
   currentAppointId.value = appointId
 }
 //获取单个预约信息
 
-const changeAppointData = async () => {
+const changeAppointData = async (numInt, currentAppointId) => {
+  console.log(date.value)
+
+  begin.value = dayjs(date.value[0]).format('YYYY-MM-DD HH:mm')
+  end.value = dayjs(date.value[1]).format('YYYY-MM-DD HH:mm')
   const res = await changeAppointReq({
-    id: currentAppointId.value,
-    begin: begin.value,
-    end: end.value,
-    intervals: intervals.value,
-    num: num.value,
-    testId: 14,
+    id: currentAppointId,
+    begin: begin.value + ':00',
+    end: end.value + ':00',
+    intervals: intervals.value === '30分钟' ? '00:30:00' : '01:00:00',
+    num: numInt,
+    testId: name.value,
   })
+  if (res.code == 200) {
+    ElMessage({
+      type: 'success',
+      message: '修改成功',
+    })
+    changeBox.value = false
+  } else {
+    ElMessage({
+      type: 'error',
+      message: res.msg,
+    })
+  }
 }
 //请求修改预约信息
 
-const changeAppoint = (currentAppiontId) => {
-  console.log(currentAppiontId)
+const changeAppoint = (currentAppointId) => {
+  console.log(name.value)
+  const numInt = parseInt(num.value, 10)
   ElMessageBox.confirm('您确定要修改吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning',
   }).then(() => {
-    changeAppointData()
+    changeAppointData(numInt, currentAppointId)
   })
 }
 //修改预约

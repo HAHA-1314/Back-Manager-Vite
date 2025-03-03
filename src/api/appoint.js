@@ -29,7 +29,7 @@ export function changeAppointReq(params) {
   return request({
     url: '/appointment',
     method: 'put',
-    params: params,
+    data: params,
   })
 }
 //修改预约
