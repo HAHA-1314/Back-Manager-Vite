@@ -552,6 +552,7 @@ const handleAppointChange = (val) => {
   }
 }
 //预约分页
+
 const getTestList = async () => {
   await getAllTestReq().then((res) => {
     testList.value = res.data || []
@@ -616,11 +617,12 @@ const searchUser = async () => {
     pageSize: 4,
   })
   console.log(res)
-
+  studentTotal.value = res.data.total
   studentList.value = res.data.records || []
-  studentList.value.forEach((item) => {
+  studentList.value.forEach((item, index) => {
     item.begin = dayjs(item.begin).format('YYYY-MM-DD HH:mm')
     item.end = dayjs(item.end).format('YYYY-MM-DD HH:mm')
+    item.number = index + 1
   })
   console.log(studentList.value)
 }
@@ -667,8 +669,11 @@ const addAppointData = async () => {
       message: '添加成功',
     })
     addBox.value = false
-    getTestAppoint()
-    getAppointList()
+    if (currentTestId.value) {
+      getTestAppoint()
+    } else {
+      getAppointList()
+    }
   } else {
     ElMessage({
       type: 'error',
@@ -719,8 +724,11 @@ const deleteAppointData = async (id, father) => {
       type: 'success',
       message: '删除成功',
     })
-    getTestAppoint()
-    getAppointList()
+    if (currentTestId.value) {
+      getTestAppoint()
+    } else {
+      getAppointList()
+    }
   } else {
     ElMessage({
       type: 'error',
@@ -777,6 +785,11 @@ const changeAppointData = async (numInt, currentAppointId) => {
       message: '修改成功',
     })
     changeBox.value = false
+    if (currentTestId.value) {
+      getTestAppoint()
+    } else {
+      getAppointList()
+    }
   } else {
     ElMessage({
       type: 'error',
