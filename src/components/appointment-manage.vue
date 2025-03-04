@@ -768,7 +768,10 @@ const getAppointData = async (appointId) => {
 
 const changeAppointData = async (numInt, currentAppointId) => {
   console.log(date.value)
-
+  if (name.value == '') {
+    name.value = testId.value
+  }
+  console.log(name.value)
   begin.value = dayjs(date.value[0]).format('YYYY-MM-DD HH:mm')
   end.value = dayjs(date.value[1]).format('YYYY-MM-DD HH:mm')
   const res = await changeAppointReq({

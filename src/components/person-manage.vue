@@ -67,6 +67,7 @@
         <el-button
           type="success"
           style="width: 120px; color: white; margin-bottom: 8px"
+          @click="registerAll"
           >一键通过报名</el-button
         >
       </div>
@@ -177,11 +178,7 @@
             ></el-input>
           </el-form-item>
           <el-form-item label="方向：">
-            <el-select
-              v-model="groupOp"
-              placeholder="请选择"
-              :disabled="isDisabled"
-            >
+            <el-select v-model="groupOp" placeholder="请选择" :disabled="true">
               <el-option
                 v-for="item in groupList"
                 :key="item.value"
@@ -330,6 +327,7 @@ import {
   getCollegeReq,
   getExcelReq,
   getCommentReq,
+  registerAllReq,
 } from '../api/student'
 import { color } from 'echarts'
 
@@ -349,7 +347,7 @@ const groupOp = ref('')
 const changeId = ref('')
 const comment = ref('')
 const page = ref(1)
-const pageSize = ref(6)
+const pageSize = ref(5)
 const page1 = ref('page1')
 const page2 = ref('page2')
 const showPage = computed(() => store.state.showPage)
@@ -366,6 +364,7 @@ const collegeList = ref([])
 const excelList = ref([])
 const commentList = ref([])
 const studentTotal = ref(1)
+const exportStudentList = ref([])
 const groupList = [
   {
     label: '前端组',
@@ -490,7 +489,13 @@ const getAllTest = async () => {
 //获取所有考核
 
 const exportExcel = async () => {
-  excelList.value = studentList.value.map((item, index) => {
+  const response = await getAllUserReq({
+    page: 1,
+    pageSize: 1000,
+  })
+  exportStudentList.value = response.data.records
+
+  excelList.value = exportStudentList.value.map((item, index) => {
     // 修改属性名
     const {
       id,
@@ -533,6 +538,19 @@ const exportExcel = async () => {
   URL.revokeObjectURL(url)
   // console.log(res)
 }
+//导出excel
+
+const registerAll = async () => {
+  const res = await registerAllReq()
+  if (res.code == 200) {
+    ElMessage({
+      type: 'success',
+      message: '一键通过成功',
+    })
+  }
+  getAllUser()
+}
+//一键通过报名
 
 const getUserProcess = async (id) => {
   processList.value = []
@@ -810,7 +828,7 @@ const failFn = async () => {
   } else {
     ElMessage({
       type: 'error',
-      message: res.msg,
+      message: '未通过失败',
     })
   }
 }
@@ -843,7 +861,7 @@ const returnFn = async () => {
   } else {
     ElMessage({
       type: 'error',
-      message: res.msg,
+      message: '回退失败',
     })
   }
   // console.log(res)
