@@ -50,7 +50,7 @@ export function addTestReq(params) {
 export function uploadFileReq(params) {
   // console.log(formData)
   return request({
-    url: '/file/upload',
+    url: 'https://smalla.cosh.fun/api/file/upload',
     method: 'post',
     params,
   })
