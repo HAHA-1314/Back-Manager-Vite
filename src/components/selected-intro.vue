@@ -12,6 +12,7 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { Picture as IconPicture } from "@element-plus/icons-vue";
 import { Cropper } from "vue-advanced-cropper";
 import "vue-advanced-cropper/dist/style.css";
+const fileUrl = ref(import.meta.env.VITE_APP_URL+"/file/upload")
 const dialogVisible = ref(false);
 const title = ref("");
 const ruleFormRef = ref();
@@ -59,12 +60,11 @@ const rules = {
     { required: true, message: "请输入推文名称", trigger: "blur" },
     { max: 50, message: "名称长度不能超过50个字符", trigger: "blur" },
   ],
-  pics: [{ required: true, message: "请上传图片", trigger: "blur" }],
-  url: [{ required: true, message: "请输入推文链接", trigger: "blur" }],
+  pics: [{ required: true, message: "请上传封面图片", trigger: "blur" }],
+  url: [{ required: true, message: "请上传推文长图", trigger: "blur" }],
 };
 const getArticle = async () => {
   const res = await getArticleList();
-  console.log(res.data);
   const truncatedData = res.data.map((item) => {
     // 检查 name 属性的长度，如果超过 15，进行截取
     const truncatedName =
@@ -196,7 +196,6 @@ const cropUrl = ref("");
 const beforeUpload = (file) => {
   // 生成一个临时 URL
   cropUrl.value = URL.createObjectURL(file);
-  console.log("图片路径:", cropUrl.value);
   dialogCropper.value = true;
   return false; // 阻止自动上传
 };
@@ -222,15 +221,11 @@ const cropImage = async () => {
 const uploadImage = (file) => {
   const formData = new FormData();
   formData.append("file", file); // 将文件添加到 FormData
-  console.log("FormData 内容:", formData.get("file")); // 检查文件是否附加成功
   uploadFile(formData)
     .then((response) => {
       ElMessage.success("上传成功！");
-      console.log(response.data);
       dialogCropper.value = false;
-    
-        ruleForm.value.pics[0] = response.data;
-      
+      ruleForm.value.pics[0] = response.data;
     })
     .catch((error) => {
       ElMessage.error("上传失败！");
@@ -244,7 +239,6 @@ watch(
   () => singleBox.value,
   (newValue) => {
     if (newValue) {
-      console.log(newValue);
       handleMouseEnter(singleBox.value, overlay.value, 0);
       handleMouseLeave(singleBox.value, overlay.value);
       handleMouseEnter(singleBox2.value, overlay2.value, 1);
@@ -312,11 +306,10 @@ watch(
           <div class="imgList" ref="singleBox">
             <el-upload
               v-model="ruleForm.pics"
-              action="http://localhost:8080/api/file/upload"
+              :action= fileUrl
               list-type="picture"
               :before-upload= "beforeUpload"
               :on-success="(file) => handleFileChange(file, 0)"
-              :on-remove="handleRemove"
               class="avatar-uploader"
               :show-file-list="false"
             >
@@ -350,10 +343,9 @@ watch(
           <div class="imgList" ref="singleBox2">
             <el-upload
               v-model="ruleForm.url"
-              action="http://localhost:8080/api/file/upload"
+              :action= fileUrl
               list-type="picture"
               :on-success="(file) => handleFileChange(file, 1)"
-              :on-remove="handleRemove"
               class="avatar-uploader"
               :show-file-list="false"
             >

@@ -9,6 +9,7 @@ import { editProject, addProject } from "../api/project";
 import { Cropper } from "vue-advanced-cropper";
 import { uploadFile } from "../api/article";
 import "vue-advanced-cropper/dist/style.css";
+const fileUrl = ref(import.meta.env.VITE_APP_URL+"/file/upload")
 const route = useRoute();
 const listImages = ref([]);
 const state = ref("");
@@ -39,7 +40,6 @@ const initSummernote = () => {
 };
 const renderDetail = async () => {
   const res = await getDetail();
-  console.log(res.data);
   ruleForm.value.introduction = res.data.introduction;
   sendPics.value = res.data.pic;
   listImages.value = res.data.pic.slice(2).map((item) => ({ url: item })); // 取第三位及以后的图片
@@ -144,9 +144,6 @@ const setPics = () => {
   listImages.value = sendPics.value.slice(2).map((item) => ({ url: item }));
 };
 const handleFileChange = (file, index) => {
-  console.log(index);
-  console.log(file.data);
-
   if (index === 0) {
     sendPics.value[0] = file.data;
   } else if (index === 1) {
@@ -158,7 +155,6 @@ const handleFileChange = (file, index) => {
       sendPics.value.push(file.data);
     }
   }
-  console.log(sendPics.value);
 };
 // 处理表单提交
 const buttonConfirm = async () => {
@@ -182,7 +178,6 @@ const buttonConfirm = async () => {
           pic: sendPics.value,
           introduction: ruleForm.value.introduction,
         });
-        console.log(res);
         if (res.code === 200) {
           ElMessage.success("修改成功");
         } else {
@@ -269,7 +264,6 @@ const beforeUpload = (file, index) => {
   // 生成一个临时 URL
   currentUploadIndex.value = index; // 记录当前操作的 el-upload 的 index
   cropUrl.value = URL.createObjectURL(file);
-  console.log("图片路径:", cropUrl.value);
   dialogCropper.value = true;
   return false; // 阻止自动上传
 };
@@ -295,10 +289,8 @@ const cropImage = async () => {
 const uploadImage = (file, index) => {
   const formData = new FormData();
   formData.append("file", file); // 将文件添加到 FormData
-  console.log("FormData 内容:", formData.get("file")); // 检查文件是否附加成功
   uploadFile(formData)
     .then((response) => {
-      console.log(response.data);
       dialogCropper.value = false;
       if(index !==2){
         sendPics.value[index] = response.data;
@@ -336,7 +328,7 @@ defineExpose({
               <div class="singleBox" ref="singleBox">
                 <el-upload
                   v-model="ruleForm.pic"
-                  action="http://localhost:8080/api/file/upload"
+                  :action= fileUrl
                   :before-upload="(file) => beforeUpload(file, 0)"
                   list-type="picture"
                   :on-success="(file) => handleFileChange(file, 0)"
@@ -363,7 +355,7 @@ defineExpose({
               <div class="singleBox" ref="singleBox2">
                 <el-upload
                   v-model="ruleForm.pic"
-                  action="http://localhost:8080/api/file/upload"
+                  :action= fileUrl
                   :before-upload="(file) => beforeUpload(file, 1)"
                   list-type="picture"
                   :on-success="(file) => handleFileChange(file, 1)"
