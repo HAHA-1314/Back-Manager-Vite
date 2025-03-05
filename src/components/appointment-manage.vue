@@ -233,7 +233,7 @@
             ></i>
             <el-form-item label="考核轮次" style="width: 240px">
               <el-select
-                v-model="process"
+                v-model="name"
                 style="margin-left: 30px"
                 placeholder="第一次考核"
               >
@@ -404,11 +404,11 @@
           <el-table-column label="预约时间" prop="time" width="350">
             <template #default="scope">
               {{ scope.row.begin }} - {{ scope.row.end }}
-            </template>
-          </el-table-column>
+            </template> </el-table-column
+          >id
           <el-table-column label="操作">
             <template #default="{ row }">
-              <el-button @click="goToPerson(row.stuId)">查看</el-button>
+              <el-button @click="goToPerson(row.id)">查看</el-button>
             </template>
           </el-table-column> </el-table
         ><el-pagination
@@ -461,12 +461,13 @@ const date = ref('')
 const appointId = ref('')
 const intervals = ref('')
 const num = ref('')
-const testId = ref('')
+const testId = ref(1)
 const lastFather = ref('')
 const father = ref('')
 const currentAppointId = ref('')
 const currentTestId = ref('')
 const testList = ref([])
+const name = ref('')
 const appointPage = ref(1)
 const studentPage = ref(1)
 const appointList = ref([])
@@ -479,6 +480,7 @@ const studentTotal = ref(1)
 
 const goToPerson = (id) => {
   console.log(id)
+
   router.push({
     path: 'person-management',
     query: {
@@ -502,6 +504,8 @@ const getTestAppoint = async () => {
     pageSize: 2,
     testId: currentTestId.value,
   }).then((res) => {
+    appointTotal.value = res.data.total
+    console.log(appointTotal.value)
     appointList.value = res.data.records || []
     currentAppointId.value = appointList.value[appointList.value.length - 1].id
     // console.log(currentAppointId.value)
@@ -511,6 +515,8 @@ const getTestAppoint = async () => {
       item.intervals = item.intervals === '00:30:00' ? '30分钟' : '1小时'
       item.number = index + 1
     })
+    console.log(appointList.value)
+    fatherList.value = appointList.value.map((item) => item.father)
   })
 }
 //筛选预约信息
@@ -537,9 +543,16 @@ const getAppointList = async () => {
 
 const handleAppointChange = (val) => {
   appointPage.value = val
-  getAppointList()
+
+  if (currentTestId.value) {
+    console.log(currentTestId.value)
+    getTestAppoint()
+  } else {
+    getAppointList()
+  }
 }
 //预约分页
+
 const getTestList = async () => {
   await getAllTestReq().then((res) => {
     testList.value = res.data || []
@@ -604,11 +617,12 @@ const searchUser = async () => {
     pageSize: 4,
   })
   console.log(res)
-
+  studentTotal.value = res.data.total
   studentList.value = res.data.records || []
-  studentList.value.forEach((item) => {
+  studentList.value.forEach((item, index) => {
     item.begin = dayjs(item.begin).format('YYYY-MM-DD HH:mm')
     item.end = dayjs(item.end).format('YYYY-MM-DD HH:mm')
+    item.number = index + 1
   })
   console.log(studentList.value)
 }
@@ -648,7 +662,6 @@ const addAppointData = async () => {
     end: end.value + ':00',
     intervals: intervals.value === '30分钟' ? '00:30:00' : '01:00:00',
     num: num.value,
-    lastFather: currentAppointId.value,
   })
   if (res.code == 200) {
     ElMessage({
@@ -656,7 +669,11 @@ const addAppointData = async () => {
       message: '添加成功',
     })
     addBox.value = false
-    getTestAppoint()
+    if (currentTestId.value) {
+      getTestAppoint()
+    } else {
+      getAppointList()
+    }
   } else {
     ElMessage({
       type: 'error',
@@ -707,7 +724,11 @@ const deleteAppointData = async (id, father) => {
       type: 'success',
       message: '删除成功',
     })
-    getTestAppoint()
+    if (currentTestId.value) {
+      getTestAppoint()
+    } else {
+      getAppointList()
+    }
   } else {
     ElMessage({
       type: 'error',
@@ -737,32 +758,59 @@ const getAppointData = async (appointId) => {
     intervals.value = res.data.intervals === '00:30:00' ? '30分钟' : '1小时'
     num.value = res.data.num
     date.value = [res.data.begin, res.data.end]
+    console.log(date.value)
     name.value = res.data.name
+    testId.value = res.data.testId
   }
   currentAppointId.value = appointId
 }
 //获取单个预约信息
 
-const changeAppointData = async () => {
+const changeAppointData = async (numInt, currentAppointId) => {
+  console.log(date.value)
+  if (name.value == '') {
+    name.value = testId.value
+  }
+  console.log(name.value)
+  begin.value = dayjs(date.value[0]).format('YYYY-MM-DD HH:mm')
+  end.value = dayjs(date.value[1]).format('YYYY-MM-DD HH:mm')
   const res = await changeAppointReq({
-    id: currentAppointId.value,
-    begin: begin.value,
-    end: end.value,
-    intervals: intervals.value,
-    num: num.value,
-    testId: 14,
+    id: currentAppointId,
+    begin: begin.value + ':00',
+    end: end.value + ':00',
+    intervals: intervals.value === '30分钟' ? '00:30:00' : '01:00:00',
+    num: numInt,
+    testId: name.value || testId.value,
   })
+  if (res.code == 200) {
+    ElMessage({
+      type: 'success',
+      message: '修改成功',
+    })
+    changeBox.value = false
+    if (currentTestId.value) {
+      getTestAppoint()
+    } else {
+      getAppointList()
+    }
+  } else {
+    ElMessage({
+      type: 'error',
+      message: res.msg,
+    })
+  }
 }
 //请求修改预约信息
 
-const changeAppoint = (currentAppiontId) => {
-  console.log(currentAppiontId)
+const changeAppoint = (currentAppointId) => {
+  console.log(name.value)
+  const numInt = parseInt(num.value, 10)
   ElMessageBox.confirm('您确定要修改吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning',
   }).then(() => {
-    changeAppointData()
+    changeAppointData(numInt, currentAppointId)
   })
 }
 //修改预约

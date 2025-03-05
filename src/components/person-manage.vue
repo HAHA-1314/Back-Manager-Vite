@@ -58,11 +58,20 @@
       </el-form>
     </el-card>
     <el-card style="min-width: 95%; height: 470px" class="personBottom">
-      <el-button
-        style="width: 80px; color: #959595; margin-bottom: 8px"
-        @click="exportExcel"
-        >导出</el-button
-      >
+      <div style="display: flex; justify-content: space-between">
+        <el-button
+          style="width: 80px; color: #959595; margin-bottom: 8px"
+          @click="exportExcel"
+          >导出</el-button
+        >
+        <el-button
+          type="success"
+          style="width: 120px; color: white; margin-bottom: 8px"
+          @click="registerAll"
+          >一键通过报名</el-button
+        >
+      </div>
+
       <el-table :data="studentList">
         <!-- <el-table-column label=""></el-table-column> -->
         <el-table-column
@@ -169,11 +178,7 @@
             ></el-input>
           </el-form-item>
           <el-form-item label="方向：">
-            <el-select
-              v-model="groupOp"
-              placeholder="请选择"
-              :disabled="isDisabled"
-            >
+            <el-select v-model="groupOp" placeholder="请选择" :disabled="true">
               <el-option
                 v-for="item in groupList"
                 :key="item.value"
@@ -227,7 +232,7 @@
           </el-form-item>
         </el-form>
       </el-card>
-      <el-card>
+      <el-card style="overflow: auto">
         <div class="card2">
           <div class="left" style="height: 400px">
             <el-timeline>
@@ -300,7 +305,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 // import { useStore } from 'vuex'
 import { computed } from 'vue'
@@ -322,6 +327,7 @@ import {
   getCollegeReq,
   getExcelReq,
   getCommentReq,
+  registerAllReq,
 } from '../api/student'
 import { color } from 'echarts'
 
@@ -341,7 +347,7 @@ const groupOp = ref('')
 const changeId = ref('')
 const comment = ref('')
 const page = ref(1)
-const pageSize = ref(6)
+const pageSize = ref(5)
 const page1 = ref('page1')
 const page2 = ref('page2')
 const showPage = computed(() => store.state.showPage)
@@ -358,6 +364,7 @@ const collegeList = ref([])
 const excelList = ref([])
 const commentList = ref([])
 const studentTotal = ref(1)
+const exportStudentList = ref([])
 const groupList = [
   {
     label: '前端组',
@@ -482,7 +489,13 @@ const getAllTest = async () => {
 //获取所有考核
 
 const exportExcel = async () => {
-  excelList.value = studentList.value.map((item, index) => {
+  const response = await getAllUserReq({
+    page: 1,
+    pageSize: 1000,
+  })
+  exportStudentList.value = response.data.records
+
+  excelList.value = exportStudentList.value.map((item, index) => {
     // 修改属性名
     const {
       id,
@@ -525,6 +538,19 @@ const exportExcel = async () => {
   URL.revokeObjectURL(url)
   // console.log(res)
 }
+//导出excel
+
+const registerAll = async () => {
+  const res = await registerAllReq()
+  if (res.code == 200) {
+    ElMessage({
+      type: 'success',
+      message: '一键通过成功',
+    })
+  }
+  getAllUser()
+}
+//一键通过报名
 
 const getUserProcess = async (id) => {
   processList.value = []
@@ -540,7 +566,9 @@ const getUserProcess = async (id) => {
     const testListItem = testList.value[i] || {}
     processList.value.push({ ...newArrayItem, ...testListItem })
   } //合并考核数组和学生进度
-  const targetObject = processList.value.find((item) => item.status === 1)
+  const targetObject = processList.value.find(
+    (item) => item.status === 1 || item.status === 0
+  )
   if (targetObject) {
     currentTestId.value = targetObject.id
     // console.log(currentTestId.value)
@@ -636,10 +664,16 @@ const getUser = async (id) => {
 //获取单个用户
 
 const searchUser = async (stuId) => {
-  const res = await getUserReq(stuId)
+  console.log(nickname.value, stuId, collegeId.value, process.value, year.value)
+  const res = await getAllUserReq({
+    page: 1,
+    pageSize: 4,
+    nickname: nickname.value,
+    stuId: stuId,
+  })
   if (res.code == 200) {
     // console.log(res.data)
-    studentList.value = [res.data]
+    studentList.value = res.data.records || []
     studentList.value.forEach((item, index) => {
       item.collegeId = collegeMap[item.collegeId] || '未知学院'
       item.number = index + 1
@@ -754,6 +788,12 @@ const putComment = async () => {
 
 const passUser = async () => {
   putComment()
+  console.log(
+    comment.value,
+    currentTestId.value,
+    currentUserId.value,
+    nextId.value
+  )
   const res = await passUserReq({
     testId: currentTestId.value,
     userId: currentUserId.value,
@@ -769,7 +809,7 @@ const passUser = async () => {
     getUserProcess(currentUserId.value)
     // console.log(currentUserId.value)
   }
-  // console.log(res)
+  console.log(res)
 }
 //请求通过用户
 
@@ -788,7 +828,7 @@ const failFn = async () => {
   } else {
     ElMessage({
       type: 'error',
-      message: res.msg,
+      message: '未通过失败',
     })
   }
 }
@@ -821,7 +861,7 @@ const returnFn = async () => {
   } else {
     ElMessage({
       type: 'error',
-      message: res.msg,
+      message: '回退失败',
     })
   }
   // console.log(res)
@@ -906,8 +946,6 @@ const returnUser = () => {
 }
 
 .right {
-  margin-top: -200px;
-  margin-right: -90px;
   width: 200px;
   display: flex;
   flex-wrap: wrap;

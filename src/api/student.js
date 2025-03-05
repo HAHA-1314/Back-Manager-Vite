@@ -106,4 +106,13 @@ export function getCommentReq(params) {
     params: params,
   })
 }
-//获取评论
+//获取评论All
+
+export function registerAllReq(params) {
+  return request({
+    url: '/test/update/first',
+    method: 'put',
+    params: params,
+  })
+}
+//一键报名
