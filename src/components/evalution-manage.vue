@@ -118,7 +118,7 @@
             ref="upload"
             v-model="file"
             class="upload-demo"
-            action="https://smalla.cosh.fun/api/file/upload"
+            action="uploadUrl"
             :on-success="handleFileChange"
             :auto-upload="true"
             multiple
@@ -218,7 +218,7 @@
             ref="upload"
             v-model:file-list="fileList"
             class="upload-demo"
-            action="https://smalla.cosh.fun/api/file/upload"
+            action="uploadUrl"
             :on-success="handleFileChange"
             :on-remove="handleRemove"
             :auto-upload="true"
@@ -285,6 +285,7 @@ const newestTest = ref('')
 const fileList = ref([])
 const parent = ref('')
 const son = ref('')
+const uploadUrl = ref(import.meta.env.VITE_APP_BASE_API + '/file/upload')
 
 let fileUrl = ref([])
 
