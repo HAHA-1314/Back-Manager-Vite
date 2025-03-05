@@ -768,10 +768,12 @@ const getAppointData = async (appointId) => {
 
 const changeAppointData = async (numInt, currentAppointId) => {
   console.log(date.value)
-  if (name.value == '') {
+  console.log(testId.value)
+  if (isNaN(Number(name.value))) {
     name.value = testId.value
+    console.log(name.value)
   }
-  console.log(name.value)
+
   begin.value = dayjs(date.value[0]).format('YYYY-MM-DD HH:mm')
   end.value = dayjs(date.value[1]).format('YYYY-MM-DD HH:mm')
   const res = await changeAppointReq({
@@ -780,7 +782,7 @@ const changeAppointData = async (numInt, currentAppointId) => {
     end: end.value + ':00',
     intervals: intervals.value === '30分钟' ? '00:30:00' : '01:00:00',
     num: numInt,
-    testId: name.value || testId.value,
+    testId: name.value,
   })
   if (res.code == 200) {
     ElMessage({
