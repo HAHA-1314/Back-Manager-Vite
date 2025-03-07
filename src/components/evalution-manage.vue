@@ -118,7 +118,7 @@
             ref="upload"
             v-model="file"
             class="upload-demo"
-            action="uploadUrl"
+            action="https://smalla.cosh.fun/api/file/upload"
             :on-success="handleFileChange"
             :auto-upload="true"
             multiple
@@ -218,7 +218,7 @@
             ref="upload"
             v-model:file-list="fileList"
             class="upload-demo"
-            action="uploadUrl"
+            action="https://smalla.cosh.fun/api/file/upload"
             :on-success="handleFileChange"
             :on-remove="handleRemove"
             :auto-upload="true"
