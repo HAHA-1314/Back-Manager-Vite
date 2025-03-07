@@ -76,7 +76,9 @@
         ><CloseBold
       /></el-icon>
     </div>
-    <div style="margin-top: 30px; margin-left: 30px; height: 470px">
+    <div
+      style="margin-top: 30px; margin-left: 30px; height: 470px; overflow: auto"
+    >
       <el-form>
         <div style="display: flex; align-content: center; margin-left: -11px">
           <i
@@ -176,7 +178,9 @@
         ><CloseBold
       /></el-icon>
     </div>
-    <div style="margin-top: 30px; margin-left: 30px">
+    <div
+      style="margin-top: 30px; margin-left: 30px; height: 470px; overflow: auto"
+    >
       <el-form>
         <div style="display: flex; align-content: center; margin-left: -11px">
           <i
