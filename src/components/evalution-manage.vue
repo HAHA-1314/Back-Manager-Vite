@@ -285,7 +285,7 @@ const newestTest = ref('')
 const fileList = ref([])
 const parent = ref('')
 const son = ref('')
-const uploadUrl = ref(import.meta.env.VITE_APP_URL + '/file/upload')
+const uploadUrl = ref('https://smalla.cosh.fun/api/file/upload')
 
 let fileUrl = ref([])
 
