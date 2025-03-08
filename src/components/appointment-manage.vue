@@ -706,11 +706,11 @@ const addAppoint = () => {
 //添加预约
 
 const clear = () => {
-  id.value = ''
-  name.value = ''
-  grade.value = ''
-  appointId.value = ''
-  process.value = ''
+  nickname.value = ''
+  testId.value = ''
+  stuId.value = ''
+  fatherId.value = ''
+  year.value = ''
 }
 //重置
 

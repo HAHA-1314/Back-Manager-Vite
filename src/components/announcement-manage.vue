@@ -228,7 +228,7 @@
           v-model="process"
           style="width: 220px"
           placeholder="第一次考核"
-          @change="userByTest"
+          @change="userByTestChange"
         >
           <el-option
             v-for="item in testList"
@@ -380,6 +380,17 @@ const userByTest = async () => {
   // console.log(userArray.value)
 }
 //根据考核获取用户
+
+const userByTestChange = async () => {
+  const res = await getAllUserReq({
+    page: 1,
+    pageSize: 100,
+    testId: process.value,
+  })
+  // console.log(res)
+  msgUserList.value = res.data.records
+  // console.log(userArray.value)
+}
 
 const addUser = (selected) => {
   // console.log(selected)
