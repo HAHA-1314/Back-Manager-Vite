@@ -14,7 +14,7 @@
         "
       >
         <el-select
-          v-model="name"
+          v-model="testName"
           style="width: 120px"
           placeholder="第一次考核"
           @change="handleChange"
@@ -356,9 +356,10 @@
           </el-form-item>
           <el-form-item label="考核轮次">
             <el-select
-              v-model="testId"
+              v-model="userTestName"
               style="width: 120px"
-              placeholder="第一轮考核"
+              placeholder="全部考核"
+              @change="userByTest"
             >
               <el-option
                 v-for="test in testList"
@@ -477,6 +478,8 @@ const fatherList = ref([])
 const fatherId = ref('')
 const appointTotal = ref(1)
 const studentTotal = ref(1)
+const testName = ref('')
+const userTestName = ref('')
 
 const goToPerson = (id) => {
   console.log(id)
@@ -491,6 +494,7 @@ const goToPerson = (id) => {
   store.dispatch('updatePage', String(newPage.value))
   // console.log(stuId)
 }
+//跳转到个人信息
 
 const handleChange = async (selected) => {
   currentTestId.value = selected
@@ -500,25 +504,31 @@ const handleChange = async (selected) => {
 //改变当前考核轮次
 
 const getTestAppoint = async () => {
-  await allAppointReq({
-    page: appointPage.value,
-    pageSize: 2,
-    testId: currentTestId.value,
-  }).then((res) => {
-    appointTotal.value = res.data.total
-    console.log(appointTotal.value)
-    appointList.value = res.data.records || []
-    currentAppointId.value = appointList.value[appointList.value.length - 1].id
-    // console.log(currentAppointId.value)
-    appointList.value.forEach((item, index) => {
-      item.begin = dayjs(item.begin).format('YYYY-MM-DD HH:mm')
-      item.end = dayjs(item.end).format('YYYY-MM-DD HH:mm')
-      item.intervals = item.intervals === '00:30:00' ? '30分钟' : '1小时'
-      item.number = index + 1
+  if (currentTestId.value === 0) {
+    getAppointList()
+    getFather()
+  } else {
+    await allAppointReq({
+      page: appointPage.value,
+      pageSize: 2,
+      testId: currentTestId.value,
+    }).then((res) => {
+      appointTotal.value = res.data.total
+      console.log(appointTotal.value)
+      appointList.value = res.data.records || []
+      currentAppointId.value =
+        appointList.value[appointList.value.length - 1].id
+      // console.log(currentAppointId.value)
+      appointList.value.forEach((item, index) => {
+        item.begin = dayjs(item.begin).format('YYYY-MM-DD HH:mm')
+        item.end = dayjs(item.end).format('YYYY-MM-DD HH:mm')
+        item.intervals = item.intervals === '00:30:00' ? '30分钟' : '1小时'
+        item.number = index + 1
+      })
+      console.log(appointList.value)
+      fatherList.value = appointList.value.map((item) => item.father)
     })
-    console.log(appointList.value)
-    fatherList.value = appointList.value.map((item) => item.father)
-  })
+  }
 }
 //筛选预约信息
 
@@ -557,6 +567,7 @@ const handleAppointChange = (val) => {
 const getTestList = async () => {
   await getAllTestReq().then((res) => {
     testList.value = res.data || []
+    testList.value.unshift({ id: 0, name: '全部考核' })
   })
 }
 //请求获取考核信息
@@ -602,7 +613,7 @@ const handleStudentChange = (val) => {
 
 const searchUser = async () => {
   console.log(
-    testId.value,
+    userTestName.value,
     father.value,
     stuId.value,
     nickname.value,
@@ -612,7 +623,7 @@ const searchUser = async () => {
     stuId: stuId.value,
     nickname: nickname.value,
     year: year.value,
-    testId: testId.value,
+    testId: userTestName.value,
     father: fatherId.value,
     page: 1,
     pageSize: 4,
@@ -629,10 +640,32 @@ const searchUser = async () => {
 }
 //搜索用户
 
+const userByTest = async () => {
+  if (userTestName.value === 0) {
+    getAllUser()
+  } else {
+    const res = await getUserReq({
+      testId: userTestName.value,
+      page: 1,
+      pageSize: 4,
+    })
+    if (res.code == 200) {
+      studentTotal.value = res.data.total
+      studentList.value = res.data.records || []
+      studentList.value.forEach((item, index) => {
+        item.begin = dayjs(item.begin).format('YYYY-MM-DD HH:mm')
+        item.end = dayjs(item.end).format('YYYY-MM-DD HH:mm')
+        item.number = index + 1
+      })
+    }
+  }
+}
+
 const disabledDate = (time) => {
   const currentTime = Date.now() // 获取当前时间戳
   return time.getTime() < currentTime - 8.64e7
 }
+//限制预约时间
 
 const confirmDate = () => {
   let startTime = new Date(date.value[0]).getTime()
@@ -711,6 +744,7 @@ const clear = () => {
   stuId.value = ''
   fatherId.value = ''
   year.value = ''
+  getAllUser()
 }
 //重置
 
