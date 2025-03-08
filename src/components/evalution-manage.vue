@@ -122,6 +122,7 @@
             class="upload-demo"
             :action="uploadUrl"
             :on-success="handleFileChange"
+            :on-preview="handlePreview"
             :auto-upload="true"
             multiple
           >
@@ -225,6 +226,7 @@
             :action="uploadUrl"
             :on-success="handleFileChange"
             :on-remove="handleRemove"
+            :on-preview="handlePreview"
             :auto-upload="true"
           >
             <template #trigger>
@@ -510,6 +512,30 @@ const handleRemove = (item, fileList) => {
   console.log(item.url, fileList)
   file.value = file.value.filter((url) => url !== item.url)
   console.log(file.value)
+}
+//删除文件
+
+const handlePreview = (file) => {
+  // console.log(file.response.data)
+  if (file.response && file.response.data) {
+    openFileUrl(file.response.data)
+  } else if (file.url) {
+    openFileUrl(file.url)
+  } else {
+    ElMessage.error('未找到有效的文件 URL。')
+  }
+}
+//添加时候预览文件
+
+const openFileUrl = (url) => {
+  if (typeof url === 'string' && url.startsWith('http')) {
+    const newWindow = window.open(url, '_blank')
+    if (!newWindow) {
+      ElMessage.error('弹出窗口被阻止，请检查浏览器设置。')
+    }
+  } else {
+    ElMessage.error('无效的 URL: ' + url)
+  }
 }
 </script>
 
