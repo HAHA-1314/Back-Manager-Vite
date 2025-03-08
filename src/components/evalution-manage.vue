@@ -120,7 +120,7 @@
             ref="upload"
             v-model="file"
             class="upload-demo"
-            action="uploadUrl"
+            :action="uploadUrl"
             :on-success="handleFileChange"
             :auto-upload="true"
             multiple
@@ -222,7 +222,7 @@
             ref="upload"
             v-model:file-list="fileList"
             class="upload-demo"
-            action="uploadUrl"
+            :action="uploadUrl"
             :on-success="handleFileChange"
             :on-remove="handleRemove"
             :auto-upload="true"
@@ -272,6 +272,7 @@ import {
 } from '@/api/test.js'
 
 import dayjs from 'dayjs'
+import { uploadFileReq } from '../api/test'
 dayjs().format()
 
 const testList = ref([])
@@ -502,6 +503,7 @@ const handleFileChange = (res) => {
     console.log(file.value)
   }
 }
+
 //上传文件
 
 const handleRemove = (item, fileList) => {
