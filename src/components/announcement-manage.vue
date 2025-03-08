@@ -8,7 +8,7 @@
         margin-right: 30px;
       "
     >
-      <el-button style="width: 80px" @click="page = 'page4'">+添加</el-button>
+      <el-button style="width: 80px" @click="addMsgBox">+添加</el-button>
     </div>
     <div style="margin-top: 25px">
       <el-table :data="msgList">
@@ -53,21 +53,10 @@
           ></el-input>
         </el-form-item>
         <el-form-item label="添加对象：">
-          <el-select
-            v-model="value"
-            multiple
-            placeholder="+ 选择人员"
-            style="width: 200px"
-            @change="handleChange"
-          >
-            <el-option
-              v-for="item in userArray"
-              :key="item.id"
-              :lable="item.nickname"
-              :value="item.nickname"
-            >
-            </el-option>
-          </el-select>
+          <el-button @click="addUserBoxVisible = true">
+            <el-icon style="margin-right: 8px"><Plus /></el-icon>
+            共{{ addSelectedIds.length }}人
+          </el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -108,21 +97,10 @@
           ></el-input>
         </el-form-item>
         <el-form-item label="添加对象：">
-          <el-select
-            v-model="changeSelected"
-            multiple
-            placeholder="+ 选择人员"
-            style="width: 200px"
-            @change="changeSelectedFn"
-          >
-            <el-option
-              v-for="item in userArray"
-              :key="item.userId"
-              :lable="item.nickname"
-              :value="item.nickname"
-            >
-            </el-option>
-          </el-select>
+          <el-button @click="getMsgUserList()">
+            <el-icon style="margin-right: 8px"><Plus /></el-icon>
+            共{{ selectedArray.length + changeSelectedIds.length }}人
+          </el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -135,10 +113,178 @@
       >
     </div>
   </el-card>
+
+  <el-dialog
+    class="addUserBox"
+    v-model="addUserBoxVisible"
+    :show-close="false"
+    style="width: 690px; height: 570px; position: relative"
+  >
+    <div
+      style="
+        background-color: #f8f8f8;
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      "
+    >
+      <p style="display: inline-block; margin-left: 25px">选择人员</p>
+      <el-icon
+        @click="clearUser"
+        style="display: inline-block; margin-right: 20px; cursor: pointer"
+        ><CloseBold
+      /></el-icon>
+    </div>
+    <div
+      style="margin-top: 30px; height: 470px; margin-left: 7px; overflow: auto"
+    >
+      <div style="display: flex; justify-content: space-between">
+        <el-select
+          v-model="process"
+          style="width: 220px"
+          placeholder="第一次考核"
+          @change="userByTest"
+        >
+          <el-option
+            v-for="item in testList"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+          >
+          </el-option>
+        </el-select>
+
+        <el-button style="width: 120px; margin-right: 15px" @click="clear">
+          重置
+        </el-button>
+      </div>
+      <el-table
+        :data="userArray"
+        style="margin-top: 20px; width: 630px"
+        @selection-change="addUser($event)"
+      >
+        <el-table-column prop="nickname" label="姓名" />
+        <el-table-column prop="test" label="当前状态" />
+        <el-table-column type="selection" prop="id" width="55" />
+      </el-table>
+    </div>
+    <div
+      style="
+        z-index: 3;
+        background-color: #f8f8f8;
+        width: 100%;
+        height: 50px;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        display: flex;
+        flex-direction: row-reverse;
+        align-items: center;
+      "
+    >
+      <el-button
+        type="primary"
+        style="width: 120px; margin-right: 10px"
+        v-model="id"
+        @click="addUserBoxVisible = false"
+        >确定</el-button
+      >
+    </div>
+  </el-dialog>
+  <el-dialog
+    class="changeUserBox"
+    v-model="changeUserBoxVisible"
+    :show-close="false"
+    style="width: 690px; height: 570px; position: relative"
+  >
+    <div
+      style="
+        background-color: #f8f8f8;
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      "
+    >
+      <p style="display: inline-block; margin-left: 25px">选择人员</p>
+      <el-icon
+        @click="clearUser"
+        style="display: inline-block; margin-right: 20px; cursor: pointer"
+        ><CloseBold
+      /></el-icon>
+    </div>
+    <div
+      style="margin-top: 30px; height: 470px; margin-left: 7px; overflow: auto"
+    >
+      <div style="display: flex; justify-content: space-between">
+        <el-select
+          v-model="process"
+          style="width: 220px"
+          placeholder="第一次考核"
+          @change="userByTest"
+        >
+          <el-option
+            v-for="item in testList"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+          >
+          </el-option>
+        </el-select>
+
+        <el-button style="width: 120px; margin-right: 15px" @click="clear">
+          重置
+        </el-button>
+      </div>
+      <el-table
+        :data="msgUserList"
+        style="margin-top: 20px; width: 630px"
+        @selection-change="changeUser($event)"
+      >
+        <el-table-column prop="nickname" label="姓名" />
+        <el-table-column prop="test" label="当前状态" />
+        <el-table-column
+          type="selection"
+          prop="id"
+          width="55"
+          :selectable="isSelectable"
+        />
+      </el-table>
+    </div>
+    <div
+      style="
+        z-index: 3;
+        background-color: #f8f8f8;
+        width: 100%;
+        height: 50px;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        display: flex;
+        flex-direction: row-reverse;
+        align-items: center;
+      "
+    >
+      <el-button
+        type="primary"
+        style="width: 120px; margin-right: 10px"
+        v-model="id"
+        @click="changeUserBoxVisible = false"
+        >确定</el-button
+      >
+    </div>
+  </el-dialog>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   getMsgReq,
@@ -146,8 +292,9 @@ import {
   changeMsgReq,
   getMsgByIdReq,
   deleteMsgReq,
-  getUserReq,
   getMsgUserReq,
+  getAllTestReq,
+  getAllUserReq,
 } from '../api/message'
 import { onMounted } from 'vue'
 import dayjs from 'dayjs'
@@ -157,13 +304,17 @@ const page = ref('page3')
 const title = ref('')
 const content = ref('')
 const value = ref('@')
-const addSelectedIds = ref([])
-const changeSelected = ref([])
-const changeSelectedIds = ref([])
+const addSelectedIds = ref([]) //添加的用户id
 const publishTime = ref('')
 const currentId = ref('')
-const userArray = ref([])
-const selectedArray = ref([])
+const userArray = ref([]) //所有用户
+const selectedArray = ref([]) //公告已经有的用户
+const msgUserList = ref([]) //公告返回的用户
+const changeSelectedIds = ref([]) //修改后新加的
+const addUserBoxVisible = ref(false)
+const testList = ref([])
+const process = ref('')
+const changeUserBoxVisible = ref(false)
 
 const groupMap = {
   1: '前端组',
@@ -179,7 +330,7 @@ const msgList = ref([])
 
 const getAllMsg = async () => {
   const res = await getMsgReq()
-  console.log(res)
+  // console.log(res)
   res.data.forEach((item) => {
     item.publishTime = dayjs(item.publishTime).format('YYYY-MM-DD HH:mm:ss')
   })
@@ -188,20 +339,69 @@ const getAllMsg = async () => {
     item.groupOp = groupMap[item.groupOp]
   })
 }
+//获取所有公告
+
+const addMsgBox = () => {
+  page.value = 'page4'
+  title.value = ''
+  content.value = ''
+  addSelectedIds.value = []
+}
+//打开公告盒子
+
+const getAllTest = async () => {
+  const res = await getAllTestReq()
+  // console.log(res)
+  testList.value = res.data
+  // console.log(testList.value)
+}
+//获取所有考核
 
 onMounted(() => {
   getAllMsg()
   getAllUser()
+  getAllTest()
 })
 
+const clear = () => {
+  process.value = ''
+  getAllUser()
+}
+//重置
+
+const userByTest = async () => {
+  const res = await getAllUserReq({
+    page: 1,
+    pageSize: 100,
+    testId: process.value,
+  })
+  // console.log(res)
+  userArray.value = res.data.records
+  // console.log(userArray.value)
+}
+//根据考核获取用户
+
+const addUser = (selected) => {
+  // console.log(selected)
+  addSelectedIds.value = selected.map((item) => item.id)
+}
+//获取选中的userId
+
+const changeUser = (selected) => {
+  console.log(selected)
+  changeSelectedIds.value = selected.map((item) => item.id)
+  console.log(changeSelectedIds.value)
+}
+//获取要修改选中的userId
+
 const getAllUser = async () => {
-  const res = await getUserReq({
+  const res = await getAllUserReq({
     page: 1,
     pageSize: 100,
   })
   // console.log(res)
   userArray.value = res.data.records
-  // console.log(userArray.value)
+  console.log(userArray.value)
 }
 //获取所有用户
 
@@ -229,19 +429,6 @@ const addMsgFn = async () => {
 }
 //请求添加公告
 
-const handleChange = (selectedValues) => {
-  addSelectedIds.value = []
-  selectedValues.forEach((value) => {
-    const selectedItem = userArray.value.find((item) => item.nickname === value)
-    if (selectedItem) {
-      addSelectedIds.value.push(selectedItem.id)
-    }
-  })
-  // addSelected.value = selectedIds
-  console.log('选中的 id 列表:', addSelectedIds.value)
-}
-//获取选中的userId
-
 const addMsg = () => {
   console.log(addSelectedIds.value)
   if (
@@ -265,6 +452,16 @@ const addMsg = () => {
 }
 //添加公告
 
+const isSelectable = (row) => {
+  if (row && row.status === false) {
+    // console.log(row)
+    // console.log('禁用选择')
+    return false // 如果找到且 status 为 false，则禁用选择
+  }
+  return true
+}
+//禁用选择
+
 const getMsgUser = async (id) => {
   selectedArray.value = []
 
@@ -273,42 +470,65 @@ const getMsgUser = async (id) => {
   })
   const arr = ref([])
   arr.value = res.data
+  msgUserList.value = arr.value
   // console.log(arr.value)
   arr.value.forEach((item) => {
     if (!item.status) {
       selectedArray.value.push(item)
     }
   })
-  // selected.value = selectedArray.value.map((item) => item.nickname)
+  msgUserList.value = msgUserList.value.map((item) => {
+    const newItem = { ...item }
+    newItem.id = newItem.userId
+    delete newItem.userId
+    return newItem
+  })
 
-  changeSelected.value = selectedArray.value.map((item) => item.nickname)
   console.log(selectedArray.value)
 }
 //获取单个公告的用户
 
 const getMsg = async (id) => {
+  changeSelectedIds.value = []
+  selectedArray.value = []
   page.value = 'page5'
-  console.log(id)
+  // console.log(id)
   getMsgUser(id)
+  localStorage.setItem('msgId', id)
   const res = await getMsgByIdReq({ id: id })
   title.value = res.data.title
   content.value = res.data.content
   currentId.value = id
-  console.log(currentId.value)
 }
 //获取单个公告
 
-const changeSelectedFn = (selectedValues) => {
-  changeSelectedIds.value = []
-  selectedValues.forEach((value) => {
-    const selectedItem = userArray.value.find((item) => item.nickname === value)
-    if (selectedItem) {
-      changeSelectedIds.value.push(selectedItem.id)
+const getMsgUserList = async () => {
+  changeUserBoxVisible.value = true
+
+  const id = localStorage.getItem('msgId')
+  console.log(id)
+  await getMsgUser(id)
+
+  const mergedArray = [...userArray.value] //合并userArray和msgUserList
+
+  msgUserList.value.forEach((msgUser) => {
+    const existingUserIndex = mergedArray.findIndex(
+      (user) => user.id === msgUser.id
+    )
+
+    if (existingUserIndex !== -1) {
+      // 如果 userArray 中存在相同的 id，则合并属性
+      mergedArray[existingUserIndex] = {
+        ...mergedArray[existingUserIndex],
+        ...msgUser,
+      }
     }
   })
-  // addSelected.value = selectedIds
-  console.log('选中修改的 id 列表:', changeSelectedIds.value)
+  // 打印合并后的数组
+
+  msgUserList.value = mergedArray
 }
+//获取公告的用户 更新table
 
 const changeMsgFn = async () => {
   if (title.value == '' || content.value == '') {
@@ -329,8 +549,16 @@ const changeMsgFn = async () => {
 }
 //修改公告
 
+const clearUser = () => {
+  changeSelectedIds.value = []
+  addSelectedIds.value = []
+  changeUserBoxVisible.value = false
+  addUserBoxVisible.value = false
+}
+//清空用户
+
 const changeMsg = async () => {
-  console.log(currentId.value)
+  // console.log(currentId.value)
   const res = await changeMsgReq({
     id: currentId.value,
     title: title.value,
@@ -355,7 +583,7 @@ const changeMsg = async () => {
 
 const deleteMsg = async (id) => {
   const res = await deleteMsgReq({ notificationId: id })
-  console.log(res)
+  // console.log(res)
   if (res.code == 200) {
     ElMessage({
       type: 'success',
@@ -372,7 +600,7 @@ const deleteMsg = async (id) => {
 //删除公告
 
 const deleteFn = (id) => {
-  console.log(id)
+  // console.log(id)
   ElMessageBox.confirm('您确定要删除吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',

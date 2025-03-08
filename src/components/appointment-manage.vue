@@ -485,6 +485,7 @@ const goToPerson = (id) => {
     path: 'person-management',
     query: {
       stuId: id,
+      fromPage: 'appointment-manage',
     },
   })
   store.dispatch('updatePage', String(newPage.value))

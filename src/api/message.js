@@ -62,3 +62,20 @@ export function getMsgUserReq(params) {
   })
 }
 //获取单个公共的用户选择
+
+export function getAllTestReq() {
+  return request({
+    url: '/appointment/get/tests',
+    method: 'get',
+  })
+}
+//获取所有考核
+
+export function getAllUserReq(params) {
+  return request({
+    url: '/webuser/get/page',
+    method: 'get',
+    params,
+  })
+}
+//获取所有用户

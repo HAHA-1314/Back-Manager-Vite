@@ -32,12 +32,16 @@
 
         <div style="display: flex; justify-content: space-between">
           <el-form-item label="当前考核流程">
-            <el-select v-model="process" placeholder="请选择考核流程">
+            <el-select
+              v-model="process"
+              placeholder="请选择考核流程"
+              @change="searchUserByTest"
+            >
               <el-option
                 v-for="test in testList"
                 :key="test.id"
                 :label="test.name"
-                :value="test.name"
+                :value="test.id"
               ></el-option>
             </el-select>
           </el-form-item>
@@ -309,7 +313,7 @@ import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 // import { useStore } from 'vuex'
 import { computed } from 'vue'
-
+import router from '../routes'
 import { useRoute } from 'vue-router'
 import store from '../store'
 import { onMounted, onUpdated } from 'vue'
@@ -333,6 +337,7 @@ import { color } from 'echarts'
 
 // const store = useStore()
 const route = useRoute()
+
 const year = ref('')
 const nickname = ref('')
 const telephone = ref('')
@@ -365,6 +370,7 @@ const excelList = ref([])
 const commentList = ref([])
 const studentTotal = ref(1)
 const exportStudentList = ref([])
+const fromPage = ref('')
 const groupList = [
   {
     label: '前端组',
@@ -418,10 +424,15 @@ const collegeMap = {
 }
 
 const goToPage1 = () => {
-  store.dispatch('updatePage', String(page1.value))
-  isDisabled.value = true
-  clear()
+  if (fromPage.value == 'appointment-manage') {
+    router.go(-1)
+  } else {
+    store.dispatch('updatePage', String(page1.value))
+    isDisabled.value = true
+    clear()
+  }
 }
+
 const goToPage2 = async (id) => {
   store.dispatch('updatePage', String(page2.value))
   await getUser(id)
@@ -453,6 +464,7 @@ const getCollegeList = async () => {
   collegeList.value = res.data
   // console.log(collegeList.value)
 }
+//获取学院列表
 
 onMounted(() => {
   const currentPage = computed(() => store.state.showPage)
@@ -461,10 +473,10 @@ onMounted(() => {
   getAllTest()
   getCollegeList()
 
-  //  const currentPage = computed(() => store.state.showPage)
   if (currentPage.value == 'page2') {
     let appointToPerson = route.query.stuId
-    console.log(appointToPerson)
+    fromPage.value = route.query.fromPage
+
     if (appointToPerson) {
       getUser(appointToPerson)
     } else {
@@ -475,6 +487,7 @@ onMounted(() => {
       }
     }
   }
+  //判断页面是否为page2
 
   // console.log(store.state.showPage)
 })
@@ -664,12 +677,15 @@ const getUser = async (id) => {
 //获取单个用户
 
 const searchUser = async (stuId) => {
-  console.log(nickname.value, stuId, collegeId.value, process.value, year.value)
+  console.log(process.value, groupOp.value)
   const res = await getAllUserReq({
     page: 1,
     pageSize: 4,
     nickname: nickname.value,
     stuId: stuId,
+    collegeId: collegeId.value,
+    year: year.value,
+    testId: process.value,
   })
   if (res.code == 200) {
     // console.log(res.data)
@@ -687,6 +703,24 @@ const searchUser = async (stuId) => {
   }
 }
 //搜索用户
+
+const searchUserByTest = async () => {
+  console.log(process.value)
+  const res = await getAllUserReq({
+    page: 1,
+    pageSize: 4,
+    testId: process.value,
+  })
+  if (res.code == 200) {
+    studentTotal.value = res.data.total
+    studentList.value = res.data.records || []
+    studentList.value.forEach((item, index) => {
+      item.collegeId = collegeMap[item.collegeId] || '未知学院'
+      item.number = index + 1
+    })
+  }
+}
+//筛选考核用户
 
 const clear = () => {
   ;(year.value = ''),
