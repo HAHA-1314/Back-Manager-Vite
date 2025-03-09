@@ -139,7 +139,7 @@
                 style="color: #45a5ff; font-size: 20px; margin: 0 4px 0 8px"
                 ><Warning
               /></el-icon>
-              <p style="color: #45a5ff; font-size: 10px">单次最多预约4小时</p>
+              <p style="color: #45a5ff; font-size: 10px">单次最多预约8小时</p>
             </el-form-item>
           </div>
           <div style="display: flex; align-content: center; margin-left: -11px">
@@ -219,7 +219,7 @@
       >
         <p style="display: inline-block; margin-left: 20px">预约修改</p>
         <el-icon
-          @click="changeBox = false"
+          @click="clearForm"
           style="display: inline-block; margin-right: 20px; font-size: 16px"
           ><CloseBold
         /></el-icon>
@@ -269,7 +269,7 @@
                 style="color: #45a5ff; font-size: 20px; margin: 0 4px 0 8px"
                 ><Warning
               /></el-icon>
-              <p style="color: #45a5ff; font-size: 10px">单次最多预约4小时</p>
+              <p style="color: #45a5ff; font-size: 10px">单次最多预约8小时</p>
             </el-form-item>
           </div>
           <div style="display: flex; align-content: center; margin-left: -11px">
@@ -572,6 +572,15 @@ const getTestList = async () => {
 }
 //请求获取考核信息
 
+const clearForm = () => {
+  changeBox.value = false
+  process.value = ''
+  intervals.value = ''
+  num.value = ''
+  date.value = []
+}
+//清空表单
+
 const getFather = async () => {
   const res = await getFatherReq()
   fatherList.value = res.data
@@ -675,8 +684,8 @@ const confirmDate = () => {
   // console.log(startMinute, endMinute)
   let timeDifference = endTime - startTime
   // console.log(timeDifference)
-  if (timeDifference > 14500000) {
-    alert('单次预约时间不能超过4小时！')
+  if (timeDifference > 29000000) {
+    alert('单次预约时间不能超过8小时！')
     date.value = []
   } else if (
     (startMinute !== 0 && startMinute !== 30) ||
@@ -703,6 +712,7 @@ const addAppointData = async () => {
       message: '添加成功',
     })
     addBox.value = false
+
     if (currentTestId.value) {
       getTestAppoint()
     } else {
@@ -794,7 +804,7 @@ const getAppointData = async (appointId) => {
     num.value = res.data.num
     date.value = [res.data.begin, res.data.end]
     console.log(date.value)
-    name.value = res.data.name
+    name.value = res.data.testId
     testId.value = res.data.testId
   }
   currentAppointId.value = appointId
