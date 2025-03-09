@@ -42,6 +42,7 @@ const renderDetail = async () => {
   const res = await getDetail();
   ruleForm.value.introduction = res.data.introduction;
   sendPics.value = res.data.pic;
+  id.value = res.data.id;
   listImages.value = res.data.pic.slice(2).map((item) => ({ url: item })); // 取第三位及以后的图片
   initSummernote();
   $("#summernote").summernote("code", ruleForm.value.introduction);
@@ -174,7 +175,7 @@ const buttonConfirm = async () => {
       .then(async () => {
         setPics();
         const res = await updateInfo({
-          id: 1,
+          id: id.value,
           pic: sendPics.value,
           introduction: ruleForm.value.introduction,
         });
