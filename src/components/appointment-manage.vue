@@ -370,7 +370,12 @@
             </el-select>
           </el-form-item>
           <el-form-item label="预约序号">
-            <el-select v-model="fatherId" style="width: 80px" placeholder="1">
+            <el-select
+              v-model="fatherId"
+              style="width: 80px"
+              placeholder="1"
+              @change="userByFather"
+            >
               <el-option
                 v-for="fatherId in fatherList"
                 :key="fatherId"
@@ -480,6 +485,7 @@ const appointTotal = ref(1)
 const studentTotal = ref(1)
 const testName = ref('')
 const userTestName = ref('')
+const fatherCount = ref(0)
 
 const goToPerson = (id) => {
   console.log(id)
@@ -616,8 +622,17 @@ const getAllUser = async () => {
 
 const handleStudentChange = (val) => {
   studentPage.value = val
-  getAllUser()
+  console.log(studentPage.value)
+
+  if (fatherCount.value === 0) {
+    getAllUser()
+  } else if (fatherCount.value === 1) {
+    userByFather()
+  } else if (userTestName.value !== 0) {
+    userByTest()
+  }
 }
+
 //用户分页
 
 const searchUser = async () => {
@@ -650,15 +665,19 @@ const searchUser = async () => {
 //搜索用户
 
 const userByTest = async () => {
+  studentPage.value = 1
+  fatherId.value = ''
   if (userTestName.value === 0) {
     getAllUser()
   } else {
     const res = await getUserReq({
       testId: userTestName.value,
-      page: 1,
+      page: studentPage.value,
       pageSize: 4,
     })
     if (res.code == 200) {
+      console.log('userByTest')
+      fatherCount.value = 0
       studentTotal.value = res.data.total
       studentList.value = res.data.records || []
       studentList.value.forEach((item, index) => {
@@ -750,10 +769,12 @@ const addAppoint = () => {
 
 const clear = () => {
   nickname.value = ''
-  testId.value = ''
+  userTestName.value = ''
   stuId.value = ''
   fatherId.value = ''
   year.value = ''
+  fatherCount.value = 0
+  studentPage.value = 1
   getAllUser()
 }
 //重置
@@ -848,6 +869,33 @@ const changeAppointData = async (numInt, currentAppointId) => {
   }
 }
 //请求修改预约信息
+
+const userByFather = async () => {
+  userTestName.value = ''
+  if (fatherId.value === '') {
+    getAllUser()
+    fatherCount.value = 0
+    return
+  }
+  console.log(fatherId.value)
+  const res = await getUserReq({
+    father: fatherId.value,
+    page: studentPage.value,
+    pageSize: 4,
+  })
+  if (res.code == 200) {
+    console.log('userByFather')
+    studentTotal.value = res.data.total
+    fatherCount.value = 1
+    studentList.value = res.data.records || []
+    console.log(studentList.value)
+    studentList.value.forEach((item, index) => {
+      item.begin = dayjs(item.begin).format('YYYY-MM-DD HH:mm')
+      item.end = dayjs(item.end).format('YYYY-MM-DD HH:mm')
+      item.number = index + 1
+    })
+  }
+}
 
 const changeAppoint = (currentAppointId) => {
   console.log(name.value)
