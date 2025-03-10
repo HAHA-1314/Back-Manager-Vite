@@ -280,7 +280,7 @@ const getHeaderList = async () => {
     down.value = true;
   }
   res = await api.getCurrentStep();
-  if (res.code === 200) current_step.value = res.data;
+  if (res.code === 200) current_step.value = res.data.name ? res.data.name : res.data;
   res = await api.getTestPerson();
   if (res.code === 200) current_num.value = res.data;
   res = await api.getAllEnroll();
