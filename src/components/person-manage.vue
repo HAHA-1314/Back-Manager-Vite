@@ -231,7 +231,9 @@
               :disabled="isDisabled"
               v-model="selfIntroduction"
               placeholder="请输入"
-              style="width: 250px; height: 130px"
+              type="textarea"
+              :rows="6"
+              style="height: 280px; width: 300px"
             ></el-input>
           </el-form-item>
         </el-form>
