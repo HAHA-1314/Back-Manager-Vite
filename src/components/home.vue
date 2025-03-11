@@ -280,7 +280,7 @@ const getHeaderList = async () => {
     down.value = true;
   }
   res = await api.getCurrentStep();
-  if (res.code === 200) current_step.value = res.data;
+  if (res.code === 200) current_step.value = res.data.name ? res.data.name : res.data;
   res = await api.getTestPerson();
   if (res.code === 200) current_num.value = res.data;
   res = await api.getAllEnroll();
@@ -305,8 +305,8 @@ const getTestTable = async () => {
   if (!res.data) return;
   res.data.map((item) => {
     Test_tableData.value.push({
-      title: item.title,
-      date: item.publishTime,
+      title: item.createName,
+      date: item.begin,
     });
     // if (testPage.page === res.data.total) testPage.stop();
   });
@@ -415,6 +415,9 @@ const changeMonth = (value) => {
   margin-top: 12px;
   font-size: 16px;
   font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .msg-num {
@@ -426,7 +429,7 @@ const changeMonth = (value) => {
 }
 
 .msg-step {
-  font-size: 16px;
+  font-size: clamp(0.75rem, 0.393rem + 11.43vw, 1.25rem);
   font-weight: 500;
   margin-top: 20px;
   /* margin-left: -10px; */
