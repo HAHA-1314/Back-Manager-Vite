@@ -51,6 +51,7 @@
             placeholder="请输入"
             type="textarea"
             :rows="6"
+            :maxlength="100"
             style="width: 500px; height: 200px; margin-left: 30px"
           ></el-input>
         </el-form-item>
@@ -97,6 +98,7 @@
             placeholder="请输入"
             type="textarea"
             :rows="6"
+            :maxlength="100"
             style="width: 500px; height: 200px; margin-left: 30px"
           ></el-input>
         </el-form-item>
