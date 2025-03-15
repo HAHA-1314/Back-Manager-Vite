@@ -49,6 +49,8 @@
           <el-input
             v-model="content"
             placeholder="请输入"
+            type="textarea"
+            :rows="6"
             style="width: 500px; height: 200px; margin-left: 30px"
           ></el-input>
         </el-form-item>
@@ -93,6 +95,8 @@
           <el-input
             v-model="content"
             placeholder="请输入"
+            type="textarea"
+            :rows="6"
             style="width: 500px; height: 200px; margin-left: 30px"
           ></el-input>
         </el-form-item>
