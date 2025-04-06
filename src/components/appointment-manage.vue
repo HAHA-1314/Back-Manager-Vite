@@ -623,13 +623,20 @@ const getAllUser = async () => {
 const handleStudentChange = (val) => {
   studentPage.value = val
   console.log(studentPage.value)
-
-  if (fatherCount.value === 0) {
+  // studentPage.value = val > 0 ? val : 1
+  // if (fatherCount.value === 0) {
+  //   getAllUser()
+  // } else if (fatherCount.value === 1) {
+  //   userByFather()
+  // } else if (userTestName.value !== 0) {
+  //   userByTest()
+  // }
+  if (userTestName.value && userTestName.value !== 0) {
+    userByTest()
+  } else if (fatherCount.value === 0) {
     getAllUser()
   } else if (fatherCount.value === 1) {
     userByFather()
-  } else if (userTestName.value !== 0) {
-    userByTest()
   }
 }
 
@@ -665,7 +672,7 @@ const searchUser = async () => {
 //搜索用户
 
 const userByTest = async () => {
-  studentPage.value = 1
+  // studentPage.value = 1
   fatherId.value = ''
   if (userTestName.value === 0) {
     getAllUser()
