@@ -458,8 +458,32 @@ const getAllUser = async () => {
 //分页请求
 const handleCurrentChange = (val) => {
   page.value = val
-  getAllUser()
+  // getAllUser()
+  console.log(process.value)
+  if (process.value) {
+    searchUserByTest()
+  } else {
+    getAllUser()
+  }
 }
+
+const searchUserByTest = async () => {
+  console.log(process.value)
+  const res = await getAllUserReq({
+    page: page.value,
+    pageSize: 5,
+    testId: process.value,
+  })
+  if (res.code == 200) {
+    studentTotal.value = res.data.total
+    studentList.value = res.data.records || []
+    studentList.value.forEach((item, index) => {
+      item.collegeId = collegeMap[item.collegeId] || '未知学院'
+      item.number = index + 1
+    })
+  }
+}
+//筛选考核用户
 
 const getCollegeList = async () => {
   const res = await getCollegeReq()
@@ -705,24 +729,6 @@ const searchUser = async (stuId) => {
   }
 }
 //搜索用户
-
-const searchUserByTest = async () => {
-  console.log(process.value)
-  const res = await getAllUserReq({
-    page: 1,
-    pageSize: 4,
-    testId: process.value,
-  })
-  if (res.code == 200) {
-    studentTotal.value = res.data.total
-    studentList.value = res.data.records || []
-    studentList.value.forEach((item, index) => {
-      item.collegeId = collegeMap[item.collegeId] || '未知学院'
-      item.number = index + 1
-    })
-  }
-}
-//筛选考核用户
 
 const clear = () => {
   ;(year.value = ''),
